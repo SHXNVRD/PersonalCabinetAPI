@@ -1,9 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "UH0DIuapQYHYbyhVloswDkb0otte0XNyy+0RS1P4V/usssQwAsQo5Nz8NTw2+sjoh45Ce5qgW2KmTr4SNpf7Bg==",
+  "dgSpecHash": "mCgjXqoSs659ov8+F3FSfoLPreQ+uhAvdinBzcFq/DdYiy/FLSfU+6PTcwKgbJRuVQiQ+z8Xz1jRBukkekM0Cw==",
   "success": true,
   "projectFilePath": "/home/rodion/source/PersonalCabinetAPI/src/Application/Application.csproj",
   "expectedPackageFiles": [
+    "/home/rodion/.nuget/packages/fluentresults/3.16.0/fluentresults.3.16.0.nupkg.sha512",
+    "/home/rodion/.nuget/packages/fluentvalidation/11.9.2/fluentvalidation.11.9.2.nupkg.sha512",
+    "/home/rodion/.nuget/packages/mediatr/12.4.0/mediatr.12.4.0.nupkg.sha512",
+    "/home/rodion/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.aspnetcore.authentication/2.2.0/microsoft.aspnetcore.authentication.2.2.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.aspnetcore.authentication.abstractions/2.2.0/microsoft.aspnetcore.authentication.abstractions.2.2.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.aspnetcore.authentication.cookies/2.2.0/microsoft.aspnetcore.authentication.cookies.2.2.0.nupkg.sha512",
@@ -40,17 +44,23 @@
     "/home/rodion/.nuget/packages/microsoft.extensions.options/8.0.2/microsoft.extensions.options.8.0.2.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.extensions.webencoders/2.2.0/microsoft.extensions.webencoders.2.2.0.nupkg.sha512",
+    "/home/rodion/.nuget/packages/microsoft.identitymodel.abstractions/8.0.2/microsoft.identitymodel.abstractions.8.0.2.nupkg.sha512",
+    "/home/rodion/.nuget/packages/microsoft.identitymodel.jsonwebtokens/8.0.2/microsoft.identitymodel.jsonwebtokens.8.0.2.nupkg.sha512",
+    "/home/rodion/.nuget/packages/microsoft.identitymodel.logging/8.0.2/microsoft.identitymodel.logging.8.0.2.nupkg.sha512",
+    "/home/rodion/.nuget/packages/microsoft.identitymodel.tokens/8.0.2/microsoft.identitymodel.tokens.8.0.2.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.net.http.headers/2.2.0/microsoft.net.http.headers.2.2.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.netcore.platforms/2.0.0/microsoft.netcore.platforms.2.0.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/microsoft.win32.registry/4.5.0/microsoft.win32.registry.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.buffers/4.5.0/system.buffers.4.5.0.nupkg.sha512",
+    "/home/rodion/.nuget/packages/system.identitymodel.tokens.jwt/8.0.2/system.identitymodel.tokens.jwt.8.0.2.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.accesscontrol/4.5.0/system.security.accesscontrol.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.cryptography.cng/4.5.0/system.security.cryptography.cng.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.cryptography.pkcs/4.5.0/system.security.cryptography.pkcs.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.cryptography.xml/4.5.0/system.security.cryptography.xml.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.permissions/4.5.0/system.security.permissions.4.5.0.nupkg.sha512",
     "/home/rodion/.nuget/packages/system.security.principal.windows/4.5.0/system.security.principal.windows.4.5.0.nupkg.sha512",
-    "/home/rodion/.nuget/packages/system.text.encodings.web/4.5.0/system.text.encodings.web.4.5.0.nupkg.sha512"
+    "/home/rodion/.nuget/packages/system.text.encodings.web/4.5.0/system.text.encodings.web.4.5.0.nupkg.sha512",
+    "/home/rodion/.nuget/packages/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg.sha512"
   ],
   "logs": []
 }

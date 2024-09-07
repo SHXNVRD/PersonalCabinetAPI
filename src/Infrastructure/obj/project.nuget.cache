@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "FWJm72v8PlDIW5QqcW9ZuhbtgF/6F9Z0+S6pOZjX2KzhOQzh0vc8KpLXKZH8hcLuP3zKApDaHh6iIxWoOflsTw==",
+  "dgSpecHash": "DKiXEg6BaGRDTW5UJFXin9x2WuE5UhEpXPE8w1fnxco72wR5kKrqA7vksGzNKod98wH185SKvckzpOu8jKs5uQ==",
   "success": true,
   "projectFilePath": "/home/rodion/source/PersonalCabinetAPI/src/Infrastructure/Infrastructure.csproj",
   "expectedPackageFiles": [

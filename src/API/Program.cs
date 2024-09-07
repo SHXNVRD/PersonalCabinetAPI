@@ -1,24 +1,56 @@
+using API.Extensions;
+using Application.DTOs;
+using Application.Interfaces;
+using Application.Options;
+using Application.Services;
+using Application.Users.Commands.Registration;
 using Domain.Models;
+using FluentValidation;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAuthorization();
-builder.Services.AddAuthentication();
+builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
 
-builder.Services.AddIdentityCore<User>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddSignInManager<SignInManager<User>>()
-    .AddUserManager<UserManager<User>>();
+builder.Services
+    .AddIdentity<User, IdentityRole<long>>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
+    })
+    .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(AppDbContext))));
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
+
+builder.ConfigureJwtAuthentication();
+builder.ConfigureSwagger();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssemblyContaining<AuthResponse>();
+});
+builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();
+builder.Services.AddFluentValidationAutoValidation(config =>
+{
+    config.DisableBuiltInModelValidation = true;
+});
 
 var app = builder.Build();
 
@@ -29,6 +61,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

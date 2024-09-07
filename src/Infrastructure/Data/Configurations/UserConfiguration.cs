@@ -13,8 +13,12 @@ namespace Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder
-            .Property(u => u.Id)
-            .UseIdentityColumn();
+                .Property(u => u.Id)
+                .UseIdentityColumn();
+
+            builder
+                .Property(u => u.RegistrationDate)
+                .HasDefaultValueSql("NOW()");
         }
     }
 }

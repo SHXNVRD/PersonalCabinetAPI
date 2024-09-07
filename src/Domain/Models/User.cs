@@ -8,7 +8,7 @@ namespace Domain.Models
 {
     public class User : IdentityUser<long>
     {
-        public DateTime RegistrationDate { get; set; } = DateTime.Now;
+        public DateTime RegistrationDate { get; set; }
         public DateTime DateOfBirth { get; set; }
     }
 }

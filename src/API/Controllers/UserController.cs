@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Application.DTOs;
 using FluentResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -12,8 +13,9 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        [Authorize]
         [HttpGet("{email}")]
-        public Task<ActionResult<UserResponse>> GetByEmail([FromRoute] string email)
+        public IActionResult GetByEmail([FromRoute] string email)
         {
             throw new Exception();
         }

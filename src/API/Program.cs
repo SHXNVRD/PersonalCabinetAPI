@@ -1,4 +1,5 @@
 using API.Extensions;
+using API.Middlewares;
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Options;
@@ -21,13 +22,20 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
 
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromSeconds(120);
+});
+
 builder.Services
     .AddIdentity<User, IdentityRole<long>>(options =>
     {
         options.User.RequireUniqueEmail = true;
         options.Password.RequiredLength = 8;
     })
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders()
+    .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(AppDbContext))));
@@ -51,6 +59,8 @@ builder.Services.AddFluentValidationAutoValidation(config =>
 {
     config.DisableBuiltInModelValidation = true;
 });
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 

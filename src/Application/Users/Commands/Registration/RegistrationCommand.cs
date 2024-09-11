@@ -8,11 +8,9 @@ using MediatR;
 
 namespace Application.Users.Commands.Registration
 {
-    public class RegistrationCommand : IRequest<Result<AuthResponse>>
-    {
-        public string UserName { get; set; } = null!;
-        public string PhoneNumber { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
-    }
+    public record RegistrationCommand(
+        string UserName,
+        string PhoneNumber,
+        string Email,
+        string Password) : IRequest<Result<AuthResponse>>;
 }

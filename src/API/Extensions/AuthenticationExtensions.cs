@@ -37,7 +37,7 @@ namespace API.Extensions
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.FromSeconds(5)
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
 

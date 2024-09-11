@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Models
 {
-    public class User : IdentityUser<long>
+    public class BonusSystem
     {
-        public DateTime RegistrationDate { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public long Id { get; set; }
+        public string Title { get; set; } = null!;
+        public float DiscountPercent { get; set; }
         public ICollection<Card>? Cards { get; set; }
     }
 }

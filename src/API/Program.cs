@@ -1,15 +1,69 @@
-var builder = WebApplication.CreateBuilder(args);
+using API.Extensions;
+using API.Middlewares;
+using Application.DTOs;
+using Application.Interfaces;
+using Application.Options;
+using Application.Services;
+using Application.Users.Commands.Registration;
+using Domain.Models;
+using FluentValidation;
+using Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromSeconds(120);
+});
+
+builder.Services
+    .AddIdentity<User, IdentityRole<long>>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.Password.RequiredLength = 8;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders()
+    .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(AppDbContext))));
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
+
+builder.ConfigureJwtAuthentication();
+builder.ConfigureSwagger();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssemblyContaining<AuthResponse>();
+});
+builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();
+builder.Services.AddFluentValidationAutoValidation(config =>
+{
+    config.DisableBuiltInModelValidation = true;
+});
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,9 +71,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

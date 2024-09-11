@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Extensions;
 using Application.Interfaces;
-using Domain.Models;
+using Domain.Models;    
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -41,13 +36,14 @@ namespace Application.Users.Commands.Registration
             {
                 return roleResult.ToFluentResult<AuthResponse>();
             }
-            
-            var response = new AuthResponse()
-            {
-                Token = _tokenService.GenerateToken(user)
-            };
 
-            return Result.Ok(response);
+            return Result.Ok(new AuthResponse()
+            {
+                Token = await _tokenService.GenerateTokenAsync(user),
+                RefreshToken = await _tokenService.GenerateRefreshTokenAsync(user),
+                TokenType = _tokenService.TokenType,
+                ExpiresIn = _tokenService.AccessTokenExpiresInSeconds
+            });
         }
     }
 }

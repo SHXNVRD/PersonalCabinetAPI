@@ -9,7 +9,8 @@ namespace Application.Options
     {
         public string Issuer { get; set; } = null!;
         public string Audience { get; set; } = null!;
-        public int ExpiresSeconds { get; set; }
+        public int AccessTokenExpiresInSeconds { get; set; }
+        public string TokenType { get; set; } = null!;
         public string Key { get; set; } = null!;
     }
 }

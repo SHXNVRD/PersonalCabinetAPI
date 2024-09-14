@@ -16,6 +16,7 @@ namespace Domain.Models
         public ICollection<Discount>? Discounts { get; set; }
         public ICollection<Purchase>? Purchases { get; set; }
         public int Number { get; set; }
+        public string CodeHash { get; set; } = null!;
         public DateTime? ActivationDate { get; set; }
         public bool IsActivated { get; set; }
     }

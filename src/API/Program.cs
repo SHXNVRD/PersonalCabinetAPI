@@ -2,12 +2,14 @@ using API.Extensions;
 using API.Middlewares;
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Application.Options;
 using Application.Services;
 using Application.Users.Commands.Registration;
 using Domain.Models;
 using FluentValidation;
 using Infrastructure.Data;
+using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -24,7 +26,7 @@ builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
-    options.TokenLifespan = TimeSpan.FromSeconds(120);
+    options.TokenLifespan = TimeSpan.FromDays(90);
 });
 
 builder.Services
@@ -59,6 +61,7 @@ builder.Services.AddFluentValidationAutoValidation(config =>
 {
     config.DisableBuiltInModelValidation = true;
 });
+builder.Services.AddScoped<ICardRepository, CardRepository>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 

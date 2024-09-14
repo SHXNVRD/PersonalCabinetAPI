@@ -13,8 +13,6 @@ namespace Application.Users.Commands.RefreshToken
             RuleFor(c => c.AccessToken)
                 .NotEmpty().WithMessage("Access Token is required")
                 .Matches(@"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$").WithMessage("Invalid access token");
-
-            
         }
     }
 }

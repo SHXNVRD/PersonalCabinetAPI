@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using Application.DTOs;
+using Application.Interfaces.Repositories;
+using Domain.Models;
+using FluentResults;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+
+namespace Application.Cards.Commands
+{
+    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<CardActivatedResponse>>
+    {
+        private readonly UserManager<User> _userManager;
+        private readonly ICardRepository _cardRepository;
+
+        public ActivateCardCommandHandler(UserManager<User> userManager, ICardRepository cardRepository)
+        {
+            _userManager = userManager;
+            _cardRepository = cardRepository;
+        }
+
+        public async Task<Result<CardActivatedResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
+        {
+            var user = await _userManager.FindByEmailAsync(request.UserEmail);
+
+            if (user == null)
+                return Result.Fail("User with specified email not found");
+
+            var card = await _cardRepository.FindByNumberAsync(request.CardNumber);
+
+            if (card == null)
+                return Result.Fail($"Fail to activated card with number {request.CardNumber}");
+
+            var codeHash = await ComputeSha256HashAsync(request.CardCode);
+            var activated =  await _cardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
+
+            if (!activated)
+                return Result.Fail($"Fail to activated card with number {request.CardNumber}");
+            
+            return Result.Ok(new CardActivatedResponse()
+            {
+                ActivatedCardId = card.Id
+            });
+        }
+
+        private async Task<string> ComputeSha256HashAsync(string rawData)
+        {
+            if (rawData == null)
+                throw new ArgumentNullException(nameof(rawData));
+
+            using SHA256 sha256 = SHA256.Create();
+            var bytes = await Task.Run(() => sha256.ComputeHash(Encoding.ASCII.GetBytes(rawData)));
+            return Convert.ToHexString(bytes);
+        }
+    }
+}

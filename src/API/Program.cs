@@ -2,20 +2,26 @@ using API.Extensions;
 using API.Middlewares;
 using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Application.Options;
 using Application.Services;
 using Application.Users.Commands.Registration;
 using Domain.Models;
 using FluentValidation;
 using Infrastructure.Data;
+using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Application.Behaviors;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
+builder.Host.ConfigureSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,7 +30,7 @@ builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
-    options.TokenLifespan = TimeSpan.FromSeconds(120);
+    options.TokenLifespan = TimeSpan.FromDays(90);
 });
 
 builder.Services
@@ -53,16 +59,21 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssemblyContaining<AuthResponse>();
+    config.AddOpenBehavior(typeof(RequestLoggningPipelineBehavior<,>));
 });
+
 builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();
 builder.Services.AddFluentValidationAutoValidation(config =>
 {
     config.DisableBuiltInModelValidation = true;
 });
+builder.Services.AddScoped<ICardRepository, CardRepository>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {

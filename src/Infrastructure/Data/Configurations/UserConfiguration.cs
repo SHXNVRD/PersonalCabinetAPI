@@ -19,6 +19,12 @@ namespace Infrastructure.Data.Configurations
             builder
                 .Property(u => u.RegistrationDate)
                 .HasDefaultValueSql("NOW()");
+
+            builder
+                .HasMany(u => u.Cards)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId)
+                .IsRequired(false);
         }
     }
 }

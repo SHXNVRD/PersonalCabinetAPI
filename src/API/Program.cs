@@ -13,11 +13,15 @@ using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Application.Behaviors;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
+builder.Host.ConfigureSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -55,7 +59,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssemblyContaining<AuthResponse>();
+    config.AddOpenBehavior(typeof(RequestLoggningPipelineBehavior<,>));
 });
+
 builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();
 builder.Services.AddFluentValidationAutoValidation(config =>
 {
@@ -66,6 +72,8 @@ builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {

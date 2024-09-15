@@ -11,6 +11,5 @@ namespace Application.Cards.Commands
     public record ActivateCardCommand(
         string UserEmail,
         int CardNumber,
-        string CardCode
-    ) : IRequest<Result<CardActivatedResponse>>;
+        string CardCode) : IRequest<Result<CardActivatedResponse>>;
 }

@@ -8,7 +8,7 @@ using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Users.Commands
+namespace Application.Users.Commands.Revoke
 {
     public class RevokeCommandHandler : IRequestHandler<RevokeCommand, Result>
     {

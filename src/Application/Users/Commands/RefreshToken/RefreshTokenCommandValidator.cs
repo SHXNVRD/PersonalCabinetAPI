@@ -10,9 +10,7 @@ namespace Application.Users.Commands.RefreshToken
     {
         public RefreshTokenCommandValidator()
         {
-            RuleFor(c => c.AccessToken)
-                .NotEmpty().WithMessage("Access Token is required")
-                .Matches(@"^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$").WithMessage("Invalid access token");
+            RuleFor(c => c.UserId).NotEmpty().WithMessage("Access Token is required");
         }
     }
 }

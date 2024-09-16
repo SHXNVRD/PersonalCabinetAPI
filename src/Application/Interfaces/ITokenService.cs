@@ -14,7 +14,7 @@ namespace Application.Interfaces
         string TokenType { get; }
         Task<string> GenerateTokenAsync(User user);
         Task<string> GenerateRefreshTokenAsync(User user);
-        ClaimsPrincipal GetPrincipal(string token);
+        bool TryGetPrincipal(string token, out ClaimsPrincipal claimsPrincipal);
         Task<bool> VerifyUserRefreshTokenAsync(User user, string refreshToken);
         Task<IdentityResult> RevokeRefreshTokenAsync(User user);
     }

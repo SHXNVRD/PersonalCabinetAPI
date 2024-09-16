@@ -13,7 +13,7 @@ using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Cards.Commands
+namespace Application.Cards.Commands.Activate
 {
     public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<CardActivatedResponse>>
     {
@@ -28,21 +28,21 @@ namespace Application.Cards.Commands
 
         public async Task<Result<CardActivatedResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.UserEmail);
+            var user = await _userManager.FindByIdAsync(request.UserId);
 
             if (user == null)
-                return Result.Fail("User with specified email not found");
+                return Result.Fail("User with specified id not found");
 
             var card = await _cardRepository.FindByNumberAsync(request.CardNumber);
 
             if (card == null)
-                return Result.Fail($"Fail to activated card with number {request.CardNumber}");
+                return Result.Fail($"Card with specified number not found");
 
             var codeHash = await ComputeSha256HashAsync(request.CardCode);
             var activated =  await _cardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
 
             if (!activated)
-                return Result.Fail($"Fail to activated card with number {request.CardNumber}");
+                return Result.Fail($"Failed to activated card");
             
             return Result.Ok(new CardActivatedResponse()
             {

@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Requests;
 using Application.DTOs;
+using Application.Extensions;
 using Application.Users.Commands;
 using Application.Users.Commands.Login;
 using Application.Users.Commands.RefreshToken;
 using Application.Users.Commands.Registration;
-using Application.Users.Commands.Revoke;
+using Application.Users.Commands.RevokeToken;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +41,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(request);
 
             if (result.IsFailed)
-                return Unauthorized(result.Errors);
+                return result.ToUnauthorizedResult();
 
             return result.ToActionResult();
         }
@@ -54,7 +57,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(request);
 
             if (result.IsFailed)
-               return Unauthorized(result.Errors);
+               return result.ToUnauthorizedResult();
 
             return result.ToActionResult();
         }
@@ -66,13 +69,20 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshTokenCommand request)
+        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefershTokenRequest request)
         {
-            var result = await _mediatR.Send(request);
+            var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (result.IsFailed)
-               return Unauthorized(result.Errors);
-
+            if (userId == null)
+                return Unauthorized("Access token does not contain user id");
+            
+            var command = new RefreshTokenCommand(
+                UserId: userId,
+                RefreshToken: request.RefreshToken
+            );
+            
+            var result = await _mediatR.Send(command);
+            
             return result.ToActionResult();
         }
 
@@ -83,7 +93,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> Revoke([FromBody] RevokeCommand request)
+        public async Task<ActionResult> Revoke([FromBody] RevokeTokenCommand request)
         {
             var result = await _mediatR.Send(request);
 

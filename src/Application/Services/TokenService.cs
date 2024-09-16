@@ -40,7 +40,7 @@ namespace Application.Services
             return refreshToken;
         }
 
-        public ClaimsPrincipal GetPrincipal(string token)
+        public bool TryGetPrincipal(string token, out ClaimsPrincipal claimsPrincipal)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -54,13 +54,17 @@ namespace Application.Services
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+            claimsPrincipal = tokenHandler.ValidateToken(
+                token,
+                tokenValidationParameters,
+                out SecurityToken securityToken);
+                
             var jwtSecurityToken = securityToken as JwtSecurityToken;
             
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new SecurityTokenException("Invalid token");
-
-            return principal;
+                return false;
+            
+            return true;
         }
 
         public async Task<IdentityResult> RevokeRefreshTokenAsync(User user)
@@ -108,7 +112,7 @@ namespace Application.Services
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Jti, id),
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Audience),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Iss, _jwtOptions.Issuer),

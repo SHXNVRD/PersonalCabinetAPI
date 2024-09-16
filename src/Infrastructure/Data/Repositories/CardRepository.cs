@@ -45,5 +45,25 @@ namespace Infrastructure.Data.Repositories
 
             return activatedCards != 0;
         }
+
+        public async Task<bool> DeactivateAsync(int number)
+        {
+            int deactivatedCards = await _context.Cards
+                .Where(c => c.Number == number)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(c => c.IsActivated, false));
+                    
+            await _context.SaveChangesAsync();
+
+            return deactivatedCards != 0;
+        }
+
+        public async Task<Card?> FindByUserIdAsync(long id)
+        {
+            return await _context.Cards
+                .AsNoTracking()
+                .Include(c => c.BonusSystem)
+                .FirstOrDefaultAsync(c => c.UserId == id);
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -27,25 +28,25 @@ namespace Application.Users.Commands.RefreshToken
 
         public async Task<Result<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            var emailClaim = _tokenService.GetPrincipal(request.AccessToken)
-                                .Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email);
+            var user = await _userManager.FindByIdAsync(request.UserId);
+                        
+            if (user == null)
+                return Result.Fail($"User with specified id not found");
 
-            var user =  await _userManager.FindByEmailAsync(emailClaim.Value);
-            
             if (!await _tokenService.VerifyUserRefreshTokenAsync(user, request.RefreshToken))
                 return Result.Fail("Invalid refresh token");
 
             var revokeResult = await _tokenService.RevokeRefreshTokenAsync(user);
 
             if (!revokeResult.Succeeded)
-                return Result.Fail("Failed to refresh the token");
+                return Result.Fail("Failed to refresh token");
 
-            var newToken = await _tokenService.GenerateTokenAsync(user);
+            var newAccessToken = await _tokenService.GenerateTokenAsync(user);
             var newRefreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
 
             return Result.Ok(new AuthResponse
             {
-                Token = newToken,
+                Token = newAccessToken,
                 RefreshToken = newRefreshToken,
                 TokenType = _tokenService.TokenType,
                 ExpiresIn = _tokenService.AccessTokenExpiresInSeconds

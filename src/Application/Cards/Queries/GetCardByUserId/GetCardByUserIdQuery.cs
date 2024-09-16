@@ -8,5 +8,5 @@ using MediatR;
 
 namespace Application.Cards.Queries
 {
-    public record GetCardByIdQuery(long Id) : IRequest<Result<CardResponse>>;
+    public record GetCardByUserIdQuery(string Id) : IRequest<Result<CardResponse>>;
 }

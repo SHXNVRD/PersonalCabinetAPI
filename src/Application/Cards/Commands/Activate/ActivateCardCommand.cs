@@ -6,10 +6,10 @@ using Application.DTOs;
 using FluentResults;
 using MediatR;
 
-namespace Application.Cards.Commands
+namespace Application.Cards.Commands.Activate
 {
     public record ActivateCardCommand(
-        string UserEmail,
+        string UserId,
         int CardNumber,
         string CardCode) : IRequest<Result<CardActivatedResponse>>;
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Extensions
 {
@@ -19,12 +20,30 @@ namespace Application.Extensions
             if (result.Succeeded)
                 return fluentResult;
             
-            foreach (var error in result.Errors)
-            {
-                fluentResult.WithError(new Error(error.Description));
-            }
+            var errors = result.Errors.Select(e => new Error(e.Description));
+            fluentResult.WithErrors(errors);
 
             return fluentResult;
+        }
+
+        public static NotFoundObjectResult ToNotFoundResult(this ResultBase result)
+        {
+            if (result.IsSuccess)
+                throw new Exception($"Result {result} must be failed");
+
+            var errors = result.Errors.Select(e => e.Message);        
+
+            return new NotFoundObjectResult(errors);
+        }
+
+        public static UnauthorizedObjectResult ToUnauthorizedResult(this ResultBase result)
+        {
+            if (result.IsSuccess)
+                throw new Exception($"Result {result} must be failed");
+
+            var errors = result.Errors.Select(e => e.Message);        
+
+            return new UnauthorizedObjectResult(errors);
         }
     }
 }

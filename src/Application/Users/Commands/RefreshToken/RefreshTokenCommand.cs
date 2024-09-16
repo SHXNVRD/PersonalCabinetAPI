@@ -9,6 +9,6 @@ using MediatR;
 namespace Application.Users.Commands.RefreshToken
 {
     public record RefreshTokenCommand(
-        string AccessToken,
+        string UserId,
         string RefreshToken) : IRequest<Result<AuthResponse>>; 
 }

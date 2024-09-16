@@ -6,7 +6,7 @@ using Domain.Models;
 using FluentResults;
 using MediatR;
 
-namespace Application.Users.Commands.Revoke
+namespace Application.Users.Commands.RevokeToken
 {
-    public record RevokeCommand(string UserEmail) : IRequest<Result>;
+    public record RevokeTokenCommand(string AccessToken) : IRequest<Result>;
 }

@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Requests;
 using Application.Cards.Commands;
+using Application.Cards.Commands.Activate;
+using Application.Cards.Commands.Deactivate;
 using Application.Cards.Queries;
 using Application.DTOs;
+using Application.Extensions;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
@@ -14,7 +19,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [Route("api/[controller]/[action]")]
-    [Authorize]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -25,34 +29,72 @@ namespace API.Controllers
             _mediatR = mediatR;
         }
 
-        [HttpPost]
+        [HttpPut]
+        [Authorize]
         [ActionName("activate")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardCommand request)
+        public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardRequest request)
         {
-            var result = await _mediatR.Send(request);
+            var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized("Access token does not contain user id");
+            
+            var command = new ActivateCardCommand(
+                UserId: userId,
+                CardNumber: request.CardNumber,
+                CardCode: request.CardCode
+            );
+            
+            var result = await _mediatR.Send(command);
 
             return result.ToActionResult();
         }
 
         [HttpGet]
+        [Authorize]
         [ActionName("get")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CardResponse>> GetById([FromQuery] GetCardByIdQuery request)
+        public async Task<ActionResult<CardResponse>> Get()
+        {
+            var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId == null)
+                return Unauthorized("Access token does not contain user id");
+            
+            var command = new GetCardByUserIdQuery(
+                Id: userId
+            );
+
+            var result = await _mediatR.Send(command);
+
+            if (result.IsFailed)
+                return result.ToNotFoundResult();
+
+            return result.ToActionResult();
+        }
+
+        [HttpPut]
+        [ActionName("deactivate")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> Deactivate([FromBody] DeactivateCardCommand request)
         {
             var result = await _mediatR.Send(request);
 
             if (result.IsFailed)
-                return NotFound(result.Errors);
+                return result.ToNotFoundResult();
 
-            return result.ToActionResult();
+            return NoContent();
         }
     }
 }

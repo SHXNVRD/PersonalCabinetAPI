@@ -20,22 +20,20 @@ namespace API.Middlewares
             Exception exception,
             CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
+            _logger.LogError(exception, "An unhandled exception has occurred while executing the request: {Message}", exception.Message);
 
-            await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+            return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
             {
                 HttpContext = httpContext,
+                Exception = exception,
                 ProblemDetails =
                 {
-                    Title = "Server error",
-                    Type = exception.GetType().Name
-                },
-                Exception = exception
+                    Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1",
+                    Title = "Internal server error",
+                    Detail = exception.Message,
+                    Instance = httpContext.Request.Path.Value
+                }
             });
-
-            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            return true;
         }
     }
 }

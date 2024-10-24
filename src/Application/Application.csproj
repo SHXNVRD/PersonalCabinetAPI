@@ -7,9 +7,17 @@
   <ItemGroup>
     <PackageReference Include="FluentResults" Version="3.16.0" />
     <PackageReference Include="FluentValidation" Version="11.9.2" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.9.2" />
     <PackageReference Include="MediatR" Version="12.4.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="SharpGrip.FluentValidation.AutoValidation.Mvc" Version="1.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SharpGrip.FluentValidation.AutoValidation.Mvc">
+      <HintPath>..\..\..\..\.nuget\packages\sharpgrip.fluentvalidation.autovalidation.mvc\1.4.0\lib\net8.0\SharpGrip.FluentValidation.AutoValidation.Mvc.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <PropertyGroup>

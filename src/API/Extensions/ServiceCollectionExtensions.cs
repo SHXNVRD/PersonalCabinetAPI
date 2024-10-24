@@ -1,18 +1,19 @@
 using System.Text;
 using Application.Options;
+using Domain.Models;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace API.Extensions
 {
-    public static class AuthenticationExtensions
+    public static class ServiceCollectionExtensions
     {
-        public static WebApplicationBuilder ConfigureJwtAuthentication(this WebApplicationBuilder builder)
+        public static IServiceCollection ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            var services = builder.Services;
-
-            var jwtOptions = builder.Configuration
+            var jwtOptions = configuration
                 .GetSection(nameof(JwtOptions))
                 .Get<JwtOptions>() ?? throw new Exception();
 
@@ -41,20 +42,18 @@ namespace API.Extensions
                     };
                 });
 
-            return builder;
+            return services;
         }
 
-        public static WebApplicationBuilder ConfigureSwagger(this WebApplicationBuilder builder)
+        public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
-            var services = builder.Services;
-
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo {Title = "Personal Cabinet API", Version = "v1"});
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
-                    Description = "Enter the Bearer Authorization string as following: `Bearer Generated-JWT-Token`",
+                    Description = "Enter the Bearer Authorization token",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
                     BearerFormat = "Jwt",
@@ -79,7 +78,28 @@ namespace API.Extensions
                 });
             });
 
-            return builder;
+            return services;
+        }
+
+        public static IServiceCollection ConfigureIdentity(this IServiceCollection services)
+        {
+            services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromDays(90);
+            });
+            
+            services
+                .AddIdentity<User, IdentityRole<long>>(options =>
+                {
+                    options.User.RequireUniqueEmail = true;
+                    options.Password.RequiredLength = 8;
+                })
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders()
+                .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
+               
+
+            return services;
         }
     }
 }

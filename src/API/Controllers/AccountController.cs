@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using API.Extensions;
 using API.Requests;
-using Application.DTOs;
 using Application.Extensions;
 using Application.Users.Commands;
 using Application.Users.Commands.Login;
 using Application.Users.Commands.RefreshToken;
 using Application.Users.Commands.Registration;
-using Application.Users.Commands.RevokeToken;
+using Application.Users.DTOs;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Application.Users.Commands.Revoke;
+    
 namespace API.Controllers
 {
     [ApiController]
@@ -93,7 +93,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> Revoke([FromBody] RevokeTokenCommand request)
+        public async Task<ActionResult> Revoke([FromBody] RevokeCommand request)
         {
             var result = await _mediatR.Send(request);
 

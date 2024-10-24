@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using API.Extensions;
 using Application.DTOs;
 using Application.Extensions;
+using Application.Users.DTOs;
 using Application.Users.Queries.GetById;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
@@ -28,6 +30,8 @@ namespace API.Controllers
 
         [HttpGet]
         [ActionName("get")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> Get()
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);

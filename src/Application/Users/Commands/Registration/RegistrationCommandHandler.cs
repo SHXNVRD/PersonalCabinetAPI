@@ -1,6 +1,8 @@
 using Application.DTOs;
 using Application.Extensions;
 using Application.Interfaces;
+using Application.Services;
+using Application.Users.DTOs;
 using Domain.Models;    
 using FluentResults;
 using MediatR;
@@ -10,10 +12,10 @@ namespace Application.Users.Commands.Registration
 {
     public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, Result<AuthResponse>>
     {
-        private readonly UserManager<User> _userManager;
+        private readonly AppUserManager _userManager;
         private readonly ITokenService _tokenService;
 
-        public RegistrationCommandHandler(UserManager<User> userManager, ITokenService tokenService)
+        public RegistrationCommandHandler(AppUserManager userManager, ITokenService tokenService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -23,19 +25,23 @@ namespace Application.Users.Commands.Registration
         {
             var user = request.ToEntity();
 
-            var userResult = await _userManager.CreateAsync(user, request.Password);
+            /*
+            if (!await _userManager.IsUniqueEmailAsync(request.Email))
+                return Result.Fail("User with specified email already exist");
+            */
 
+            if (!await _userManager.IsUniquePhoneAsync(request.PhoneNumber))
+                return Result.Fail("Specified phone number is already taken");
+            
+            var userResult = await _userManager.CreateAsync(user, request.Password);
+            
             if (!userResult.Succeeded)
-            {
                 return userResult.ToFluentResult<AuthResponse>();
-            }
 
             var roleResult = await _userManager.AddToRoleAsync(user, "user");    
 
             if (!roleResult.Succeeded)
-            {
                 return roleResult.ToFluentResult<AuthResponse>();
-            }
 
             return Result.Ok(new AuthResponse()
             {

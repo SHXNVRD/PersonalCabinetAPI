@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Users.Commands.Registration;
+using Application.Users.DTOs;
 using Domain.Models;
 
 namespace Application.Extensions

@@ -1,22 +1,19 @@
 using API.Extensions;
 using API.Middlewares;
-using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Options;
 using Application.Services;
-using Application.Users.Commands.Registration;
 using Domain.Models;
 using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Serilog;
 using Application.Behaviors;
+using Application.Users.DTOs;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
-using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -25,9 +22,11 @@ builder.Host.ConfigureSerilog();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
-
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {
     options.TokenLifespan = TimeSpan.FromDays(90);
@@ -40,6 +39,7 @@ builder.Services
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<AppDbContext>()
+    .AddUserManager<AppUserManager>()
     .AddDefaultTokenProviders()
     .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
 
@@ -49,31 +49,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();
 
-builder.ConfigureJwtAuthentication();
-builder.ConfigureSwagger();
+builder.Services.ConfigureJwtAuthentication(config);
+builder.Services.ConfigureSwagger();
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddProblemDetails();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddMediatR(config =>
+builder.Services.AddMediatR(cfg =>
 {
-    config.RegisterServicesFromAssemblyContaining<AuthResponse>();
-    config.AddOpenBehavior(typeof(RequestLoggningPipelineBehavior<,>));
+    cfg.RegisterServicesFromAssemblyContaining<AuthResponse>();
+    cfg.AddOpenBehavior(typeof(RequestLoggningPipelineBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();
-builder.Services.AddFluentValidationAutoValidation(config =>
+builder.Services.AddFluentValidationAutoValidation(cfg =>
 {
-    config.DisableBuiltInModelValidation = true;
+    cfg.DisableBuiltInModelValidation = true;
 });
 builder.Services.AddScoped<ICardRepository, CardRepository>();
-
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
-
+ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 app.UseSerilogRequestLogging();
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

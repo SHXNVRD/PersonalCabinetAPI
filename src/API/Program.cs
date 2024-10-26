@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Application.Behaviors;
+using Application.Interfaces.Services;
 using Application.Users.DTOs;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 

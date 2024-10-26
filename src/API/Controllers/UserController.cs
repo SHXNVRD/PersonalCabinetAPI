@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("users")]
     [Authorize]
     [ApiController]
     public class UserController : ControllerBase
@@ -28,11 +28,10 @@ namespace API.Controllers
             _mediatR = mediatR;
         }
 
-        [HttpGet]
-        [ActionName("get")]
+        [HttpGet("current")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserResponse>> Get()
+        public async Task<ActionResult<UserResponse>> GetCurrent()
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 

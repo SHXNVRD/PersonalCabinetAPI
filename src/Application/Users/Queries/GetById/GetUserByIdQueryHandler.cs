@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Extensions;
 using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Users.DTOs;
 using Domain.Models;
 using FluentResults;

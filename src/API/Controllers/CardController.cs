@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("cards")]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -26,9 +26,8 @@ namespace API.Controllers
             _mediatR = mediatR;
         }
 
-        [HttpPut]
+        [HttpPut("activation")]
         [Authorize]
-        [ActionName("activate")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -51,15 +50,14 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
-        [HttpGet]
+        [HttpGet("current")]
         [Authorize]
-        [ActionName("get")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CardResponse>> Get()
+        public async Task<ActionResult<CardResponse>> GetCurrent()
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -78,8 +76,7 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPut]
-        [ActionName("deactivate")]
+        [HttpPut("deactivation")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

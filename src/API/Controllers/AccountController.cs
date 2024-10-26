@@ -10,17 +10,16 @@ using Application.Users.Commands;
 using Application.Users.Commands.Login;
 using Application.Users.Commands.RefreshToken;
 using Application.Users.Commands.Registration;
+using Application.Users.Commands.RevokeRefreshToken;
 using Application.Users.DTOs;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Application.Users.Commands.Revoke;
-    
+
 namespace API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
     public class AccountController : ControllerBase
     {
         private readonly IMediator _mediatR;
@@ -30,8 +29,7 @@ namespace API.Controllers
             _mediatR = mediatR;
         }
 
-        [HttpPost]
-        [ActionName("reg")]
+        [HttpPost("auth/account")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -45,9 +43,8 @@ namespace API.Controllers
 
             return result.ToActionResult();
         }
-
-        [HttpPost]
-        [ActionName("login")]
+    
+        [HttpPost("auth/account/session")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -62,9 +59,8 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPost]
+        [HttpPost("tokens/refresh-token")]
         [Authorize]
-        [ActionName("refresh")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -86,16 +82,15 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
-        [HttpPut]
+        [HttpDelete("tokens/refresh-token/{userId}")]
         [Authorize]
-        [ActionName("revoke")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> Revoke([FromBody] RevokeCommand request)
+        public async Task<ActionResult> RevokeRefreshToken([FromRoute] string userId)
         {
-            var result = await _mediatR.Send(request);
+            var result = await _mediatR.Send(new RevokeRefreshTokenCommand(userId));
 
             return result.ToActionResult();
         }

@@ -115,7 +115,6 @@ namespace Application.Services
                 new Claim(JwtRegisteredClaimNames.Jti, id),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Audience),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Iss, _jwtOptions.Issuer),
             };
 

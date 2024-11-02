@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("users")]
+    [Route("api/v1/users")]
     [Authorize]
     [ApiController]
     public class UserController : ControllerBase
@@ -29,6 +29,8 @@ namespace API.Controllers
         }
 
         [HttpGet("current")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> GetCurrent()

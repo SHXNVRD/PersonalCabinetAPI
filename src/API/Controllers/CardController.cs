@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("cards")]
+    [Route("api/v1/cards")]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -52,7 +52,6 @@ namespace API.Controllers
 
         [HttpGet("current")]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -77,7 +76,7 @@ namespace API.Controllers
         }
 
         [HttpPut("deactivation")]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

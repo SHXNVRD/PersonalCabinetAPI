@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [Route("api/v1")]
     [ApiController]
     public class AccountController : ControllerBase
     {

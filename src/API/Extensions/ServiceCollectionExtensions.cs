@@ -1,5 +1,6 @@
 using System.Text;
 using Application.Options;
+using Application.Services;
 using Domain.Models;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,8 +17,6 @@ namespace API.Extensions
             var jwtOptions = configuration
                 .GetSection(nameof(JwtOptions))
                 .Get<JwtOptions>() ?? throw new Exception();
-
-            var basePath = AppContext.BaseDirectory;
 
             services.AddAuthentication(options =>
             {
@@ -95,9 +94,9 @@ namespace API.Extensions
                     options.Password.RequiredLength = 8;
                 })
                 .AddEntityFrameworkStores<AppDbContext>()
+                .AddUserManager<AppUserManager>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
-               
 
             return services;
         }

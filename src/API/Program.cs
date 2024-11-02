@@ -28,21 +28,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.Configure<JwtOptions>(config.GetSection("JwtOptions"));
-builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
-{
-    options.TokenLifespan = TimeSpan.FromDays(90);
-});
-
-builder.Services
-    .AddIdentity<User, IdentityRole<long>>(options =>
-    {
-        options.User.RequireUniqueEmail = true;
-        options.Password.RequiredLength = 8;
-    })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddUserManager<AppUserManager>()
-    .AddDefaultTokenProviders()
-    .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
+builder.Services.ConfigureIdentity();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(AppDbContext))));

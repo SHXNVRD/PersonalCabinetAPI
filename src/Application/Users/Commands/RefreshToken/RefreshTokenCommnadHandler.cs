@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Interfaces;
-using Application.Interfaces.Services;
+using Application.Interfaces.Token;
 using Application.Users.DTOs;
 using Domain.Models;
 using FluentResults;

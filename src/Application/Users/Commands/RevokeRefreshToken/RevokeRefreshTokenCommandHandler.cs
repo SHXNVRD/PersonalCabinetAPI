@@ -1,5 +1,5 @@
 using Application.Interfaces;
-using Application.Interfaces.Services;
+using Application.Interfaces.Token;
 using Domain.Models;
 using FluentResults;
 using MediatR;

@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Interfaces.Services
+namespace Application.Interfaces.Token
 {
     public interface ITokenService
     {

@@ -18,8 +18,6 @@ namespace API.Extensions
             if (result.IsSuccess)
                 throw new InvalidCastException($"Result must be failed");
     
-            var errors = result.Errors.Select(e => e.Message);
-
             var problem = new ProblemDetails
             {
                 Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.1",
@@ -27,8 +25,8 @@ namespace API.Extensions
                 Detail = "The request is invalid.",
                 Instance = _httpContextAccessor.HttpContext!.Request.Path.Value
             };
-
-            problem.Extensions.Add("errors", result.Errors.Select(e => e.Message));
+            var errors = result.Errors.Select(e => e.Message);
+            problem.Extensions.Add("errors", errors);
 
             return new BadRequestObjectResult(problem);
         }
@@ -38,8 +36,6 @@ namespace API.Extensions
             if (result.IsSuccess)
                 throw new InvalidCastException($"Result must be failed");
     
-            var errors = result.Errors.Select(e => e.Message);
-
             var problem = new ProblemDetails
             {
                 Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.4",
@@ -47,9 +43,9 @@ namespace API.Extensions
                 Detail = "Access to this resource is denied.",
                 Instance = _httpContextAccessor.HttpContext!.Request.Path.Value
             };
-
-            problem.Extensions.Add("errors", result.Errors.Select(e => e.Message));
-
+            var errors = result.Errors.Select(e => e.Message);
+            problem.Extensions.Add("errors", errors);
+            
             return new ObjectResult(problem) { StatusCode = StatusCodes.Status403Forbidden };
         }
         
@@ -57,8 +53,6 @@ namespace API.Extensions
         {
             if (result.IsSuccess)
                 throw new InvalidCastException($"Result must be failed");
-    
-            var errors = result.Errors.Select(e => e.Message);
 
             var problem = new ProblemDetails
             {
@@ -67,8 +61,8 @@ namespace API.Extensions
                 Detail = "The requested resource was not found.",
                 Instance = _httpContextAccessor.HttpContext!.Request.Path.Value
             };
-
-            problem.Extensions.Add("errors", result.Errors.Select(e => e.Message));
+            var errors = result.Errors.Select(e => e.Message);
+            problem.Extensions.Add("errors", errors);
 
             return new NotFoundObjectResult(problem);
         }
@@ -78,8 +72,6 @@ namespace API.Extensions
             if (result.IsSuccess)
                 throw new InvalidCastException($"Result must be failed");
             
-            var errors = result.Errors.Select(e => e.Message);
-
             var problem = new ProblemDetails
             {
                 Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.2",
@@ -87,10 +79,28 @@ namespace API.Extensions
                 Detail = "Failed to log in. Authorization is required.",
                 Instance = _httpContextAccessor.HttpContext!.Request.Path.Value
             };
-            
-            problem.Extensions.Add("errors", result.Errors.Select(e => e.Message));
+            var errors = result.Errors.Select(e => e.Message);
+            problem.Extensions.Add("errors", errors);
 
             return new UnauthorizedObjectResult(problem);
+        }
+
+        public static ConflictObjectResult ToConflictResult(this ResultBase result)
+        {
+            if (result.IsSuccess)
+                throw new InvalidCastException($"Result must be failed");
+            
+            var problem = new ProblemDetails
+            {
+                Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.5.10",
+                Title = "Conflict",
+                Detail = "Failed to create new resource.",
+                Instance = _httpContextAccessor.HttpContext!.Request.Path.Value
+            };
+            var errors = result.Errors.Select(e => e.Message);
+            problem.Extensions.Add("errors", errors);
+
+            return new ConflictObjectResult(problem);
         }
     }
 }

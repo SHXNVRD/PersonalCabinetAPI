@@ -1,8 +1,10 @@
+using System.Collections.Immutable;
 using System.Text;
 using Application.Options;
 using Application.Services;
 using Domain.Models;
 using Infrastructure.Data;
+using Infrastructure.Tokens.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -91,12 +93,20 @@ namespace API.Extensions
                 .AddIdentity<User, IdentityRole<long>>(options =>
                 {
                     options.User.RequireUniqueEmail = true;
+                    options.SignIn.RequireConfirmedEmail = true;
+                    options.Tokens.ProviderMap.Add(
+                        "EmailConfirmationTokenProvider",
+                        new TokenProviderDescriptor(typeof(EmailConfirmationTokenProvider<User>)));
+                    options.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
+                    
                     options.Password.RequiredLength = 8;
                 })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddUserManager<AppUserManager>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
+
+            services.AddTransient<EmailConfirmationTokenProvider<User>>();
 
             return services;
         }

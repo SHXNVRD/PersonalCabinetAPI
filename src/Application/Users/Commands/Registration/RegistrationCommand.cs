@@ -9,5 +9,5 @@ namespace Application.Users.Commands.Registration
         string UserName,
         string PhoneNumber,
         string Email,
-        string Password) : IRequest<Result<AuthResponse>>;
+        string Password) : IRequest<Result>;
 }

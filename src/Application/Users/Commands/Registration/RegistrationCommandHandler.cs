@@ -1,35 +1,37 @@
+using System.Security.Policy;
 using Application.DTOs;
+using Application.DTOs.Emails;
 using Application.Extensions;
 using Application.Interfaces;
-using Application.Interfaces.Services;
+using Application.Interfaces.Email;
+using Application.Interfaces.Token;
 using Application.Services;
 using Application.Users.DTOs;
 using Domain.Models;    
 using FluentResults;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Application.Users.Commands.Registration
 {
-    public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, Result<AuthResponse>>
+    public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, Result>
     {
         private readonly AppUserManager _userManager;
-        private readonly ITokenService _tokenService;
 
-        public RegistrationCommandHandler(AppUserManager userManager, ITokenService tokenService)
+        public RegistrationCommandHandler(AppUserManager userManager)
         {
             _userManager = userManager;
-            _tokenService = tokenService;
         }
 
-        public async Task<Result<AuthResponse>> Handle(RegistrationCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(RegistrationCommand request, CancellationToken cancellationToken)
         {
             var user = request.ToEntity();
 
-            /*
             if (!await _userManager.IsUniqueEmailAsync(request.Email))
                 return Result.Fail("User with specified email already exist");
-            */
 
             if (!await _userManager.IsUniquePhoneAsync(request.PhoneNumber))
                 return Result.Fail("Specified phone number is already taken");
@@ -37,20 +39,11 @@ namespace Application.Users.Commands.Registration
             var userResult = await _userManager.CreateAsync(user, request.Password);
             
             if (!userResult.Succeeded)
-                return userResult.ToFluentResult<AuthResponse>();
+                return userResult.ToFluentResult();
 
-            var roleResult = await _userManager.AddToRoleAsync(user, "user");    
+            var roleResult = await _userManager.AddToRoleAsync(user, "user");
 
-            if (!roleResult.Succeeded)
-                return roleResult.ToFluentResult<AuthResponse>();
-
-            return Result.Ok(new AuthResponse()
-            {
-                Token = await _tokenService.GenerateTokenAsync(user),
-                RefreshToken = await _tokenService.GenerateRefreshTokenAsync(user),
-                TokenType = _tokenService.TokenType,
-                ExpiresIn = _tokenService.AccessTokenExpiresInSeconds
-            });
+            return Result.OkIf(roleResult.Succeeded, "Failed to add role (user)");
         }
     }
 }

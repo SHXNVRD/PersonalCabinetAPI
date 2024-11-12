@@ -12,8 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Application.Behaviors;
-using Application.Interfaces.Services;
+using Application.Interfaces.Token;
 using Application.Users.DTOs;
+using Infrastructure.Extensions;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,8 @@ builder.Services.ConfigureIdentity();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(nameof(AppDbContext))));
 
+builder.Services.ConfigureEmail(config);
+
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();
 
@@ -46,7 +49,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<AuthResponse>();
-    cfg.AddOpenBehavior(typeof(RequestLoggningPipelineBehavior<,>));
+    cfg.AddOpenBehavior(typeof(RequestLoggningBehavior<,>));
 });
 
 builder.Services.AddValidatorsFromAssemblyContaining<AuthResponse>();

@@ -1,18 +1,15 @@
-using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Application.Interfaces;
 using Application.Interfaces.Token;
-using Application.Options;
 using Domain.Models;
+using Infrastructure.Services.Options;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Application.Services
+namespace Infrastructure.Services.Token
 {
     public class TokenService : ITokenService
     {
@@ -20,8 +17,8 @@ namespace Application.Services
         private readonly JwtOptions _jwtOptions;
         private readonly SigningCredentials _signingCredentials;
         private readonly UserManager<User> _userManager;
-        public int AccessTokenExpiresInSeconds { get => _jwtOptions.AccessTokenExpiresInSeconds; } 
-        public string TokenType { get => _jwtOptions.TokenType; }
+        public int AccessTokenExpiresInSeconds => _jwtOptions.AccessTokenExpiresInSeconds;
+        public string TokenType => _jwtOptions.TokenType;
         public TokenService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager)
         {
             _jwtOptions = jwtOptions.Value;

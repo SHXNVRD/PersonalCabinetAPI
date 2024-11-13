@@ -1,10 +1,9 @@
 using System.Text.RegularExpressions;
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
-using Microsoft.Extensions.Options;
 using RazorLight;
 
-namespace Infrastructure.Services.EmailServices
+namespace Infrastructure.Services.Email
 {
     public class RazorEmailTemplate : IEmailTemplate
     {

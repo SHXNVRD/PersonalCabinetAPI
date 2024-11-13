@@ -8,11 +8,16 @@ namespace API.Middlewares
     {
         private readonly IProblemDetailsService _problemDetailsService;
         private readonly ILogger<GlobalExceptionHandler> _logger;
+        private readonly IHostEnvironment _environment;
 
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IProblemDetailsService problemDetailsService)
+        public GlobalExceptionHandler(
+            ILogger<GlobalExceptionHandler> logger, 
+            IProblemDetailsService problemDetailsService, 
+            IHostEnvironment hostEnvironment)
         {
             _logger = logger;
             _problemDetailsService = problemDetailsService;
+            _environment = hostEnvironment;
         }
 
         public async ValueTask<bool> TryHandleAsync(
@@ -22,6 +27,10 @@ namespace API.Middlewares
         {
             _logger.LogError(exception, "An unhandled exception has occurred while executing the request: {Message}", exception.Message);
 
+            var detail = _environment.IsDevelopment() 
+                ? exception.Message
+                : "An internal server error has occurred.";
+            
             return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
             {
                 HttpContext = httpContext,
@@ -30,7 +39,7 @@ namespace API.Middlewares
                 {
                     Type = "https://datatracker.ietf.org/doc/html/rfc9110#section-15.6.1",
                     Title = "Internal server error",
-                    Detail = exception.Message,
+                    Detail = detail,
                     Instance = httpContext.Request.Path.Value
                 }
             });

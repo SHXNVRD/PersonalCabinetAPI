@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
+using Application.Helpers;
 using Application.Interfaces.Repositories;
 using Domain.Models;
 using FluentResults;
@@ -38,7 +39,7 @@ namespace Application.Cards.Commands.Activate
             if (card == null)
                 return Result.Fail($"Card with specified number not found");
 
-            var codeHash = await ComputeSha256HashAsync(request.CardCode);
+            var codeHash = await Hasher.ComputeSha256HashAsync(request.CardCode);
             var activated =  await _cardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
 
             if (!activated)
@@ -48,16 +49,6 @@ namespace Application.Cards.Commands.Activate
             {
                 ActivatedCardId = card.Id
             });
-        }
-
-        private async Task<string> ComputeSha256HashAsync(string rawData)
-        {
-            if (rawData == null)
-                throw new ArgumentNullException(nameof(rawData));
-
-            using SHA256 sha256 = SHA256.Create();
-            var bytes = await Task.Run(() => sha256.ComputeHash(Encoding.ASCII.GetBytes(rawData)));
-            return Convert.ToHexString(bytes);
         }
     }
 }

@@ -1,7 +1,7 @@
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
 
-namespace Infrastructure.Services.EmailServices
+namespace Infrastructure.Services.Email
 {
     public class EmailService : IEmailService
     {

@@ -6,7 +6,7 @@ using Serilog;
 
 namespace API.Extensions
 {
-    public static class SerilogExtensions
+    public static class HostBuilderExtensions
     {
         public static IHostBuilder ConfigureSerilog(this IHostBuilder host)
         {

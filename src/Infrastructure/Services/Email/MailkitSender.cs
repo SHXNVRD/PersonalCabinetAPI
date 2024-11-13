@@ -1,10 +1,11 @@
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
+using Infrastructure.Services.Options;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace Infrastructure.Services.EmailServices
+namespace Infrastructure.Services.Email
 {
     public class MailkitSender : IEmailSender
     {

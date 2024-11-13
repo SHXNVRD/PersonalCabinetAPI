@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Tokens.Providers
+namespace Infrastructure.Services.Token.Providers
 {
     public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
     {

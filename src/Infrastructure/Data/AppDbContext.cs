@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Domain.Models;
 using Infrastructure.Data.Configurations;
@@ -30,16 +31,7 @@ namespace Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
-            builder.ApplyConfiguration(new UserConfiguration());
-            builder.ApplyConfiguration(new StationConfiguration());
-            builder.ApplyConfiguration(new PurchaseConfiguration());
-            builder.ApplyConfiguration(new PurchaseItemConfiguration());
-            builder.ApplyConfiguration(new DiscountConfiguration());
-            builder.ApplyConfiguration(new CategoryConfiguration());
-            builder.ApplyConfiguration(new CardConfiguration());
-            builder.ApplyConfiguration(new BonusSystemConfiguration());
-            builder.ApplyConfiguration(new ProductConfiguration());
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

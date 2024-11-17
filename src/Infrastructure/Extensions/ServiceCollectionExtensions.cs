@@ -1,4 +1,5 @@
 using System.Text;
+using Application.Interfaces;
 using Application.Interfaces.Email;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Token;
@@ -30,7 +31,7 @@ namespace Infrastructure.Extensions
                 .ConfigureEmail(config)
                 .ConfigureIdentity()
                 .AddDatabase(config)
-                .AddRepositories();
+                .AddUnitOfWork();
             
             return services;
         }
@@ -103,9 +104,15 @@ namespace Infrastructure.Extensions
                     options.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
                     
                     options.Password.RequiredLength = 8;
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequireLowercase = true;
+                    options.Password.RequireNonAlphanumeric = true;
                 })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddUserManager<AppUserManager>()
+                .AddUserStore<AppUserStore>()
+                .AddRoleStore<AppRoleStore>()
                 .AddDefaultTokenProviders()
                 .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
 
@@ -122,10 +129,10 @@ namespace Infrastructure.Extensions
             return services;
         }
 
-        private static IServiceCollection AddRepositories(this IServiceCollection services)
+        private static IServiceCollection AddUnitOfWork(this IServiceCollection services)
         {
-            services.AddScoped<ICardRepository, CardRepository>();
-            
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             return services;
         }
     }

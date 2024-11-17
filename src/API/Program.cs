@@ -19,7 +19,7 @@ using Infrastructure.Services.Options;
 using Infrastructure.Services.Token;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IConfiguration config = builder.Configuration;
 IServiceCollection services = builder.Services;
 

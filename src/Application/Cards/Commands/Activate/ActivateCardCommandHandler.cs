@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Helpers;
+using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Domain.Models;
 using FluentResults;
@@ -19,12 +20,12 @@ namespace Application.Cards.Commands.Activate
     public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<CardActivatedResponse>>
     {
         private readonly UserManager<User> _userManager;
-        private readonly ICardRepository _cardRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ActivateCardCommandHandler(UserManager<User> userManager, ICardRepository cardRepository)
+        public ActivateCardCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
-            _cardRepository = cardRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<CardActivatedResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
@@ -34,17 +35,24 @@ namespace Application.Cards.Commands.Activate
             if (user == null)
                 return Result.Fail("User with specified id not found");
 
-            var card = await _cardRepository.FindByNumberAsync(request.CardNumber);
+            var card = await _unitOfWork.CardRepository.FindByNumberAsync(request.CardNumber);
 
             if (card == null)
                 return Result.Fail($"Card with specified number not found");
 
             var codeHash = await Hasher.ComputeSha256HashAsync(request.CardCode);
-            var activated =  await _cardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
+            var activated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
 
             if (!activated)
                 return Result.Fail($"Failed to activated card");
+
+            await _unitOfWork.SaveChangesAsync();
             
+            SaveChangesResult lastResult = _unitOfWork.LastSaveChangesResult;
+
+            if (!lastResult.IsOk)
+                return Result.Fail("lastResult.Exception!.Message");
+
             return Result.Ok(new CardActivatedResponse()
             {
                 ActivatedCardId = card.Id

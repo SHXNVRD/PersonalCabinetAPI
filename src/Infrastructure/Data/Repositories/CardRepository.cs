@@ -41,8 +41,6 @@ namespace Infrastructure.Data.Repositories
                     .SetProperty(c => c.ActivationDate, DateTime.UtcNow)
                     .SetProperty(c => c.IsActivated, true));
             
-            await _context.SaveChangesAsync();
-
             return activatedCards != 0;
         }
 
@@ -53,8 +51,6 @@ namespace Infrastructure.Data.Repositories
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.IsActivated, false));
                     
-            await _context.SaveChangesAsync();
-
             return deactivatedCards != 0;
         }
 

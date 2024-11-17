@@ -11,7 +11,7 @@ namespace Application.Behaviors
 {
     public sealed class RequestLoggningBehavior<TRequest, TResponse>
         : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : class
+        where TRequest : IRequest<TResponse>
         where TResponse : ResultBase
     {
         private readonly ILogger<RequestLoggningBehavior<TRequest, TResponse>> _logger;

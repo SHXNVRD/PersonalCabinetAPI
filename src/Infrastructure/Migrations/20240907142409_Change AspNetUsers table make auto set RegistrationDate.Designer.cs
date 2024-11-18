@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240907142409_Change AspNetUsers table: make auto set RegistrationDate")]
+    [Migration("20240907142409_Change AspNetUsers table make auto set RegistrationDate")]
     partial class ChangeAspNetUserstablemakeautosetRegistrationDate
     {
         /// <inheritdoc />

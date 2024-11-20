@@ -32,10 +32,10 @@ namespace Infrastructure.Data.Repositories
                 .SingleOrDefaultAsync(c => c.Number == number);
         }
 
-        public async Task<bool> ActivateAsync(long userId, long cardId, string cardCodeHash)
+        public async Task<bool> ActivateAsync(long userId, int number, string codeHash)
         {
             int activatedCards = await _context.Cards
-                .Where(c => c.Id == cardId && c.CodeHash == cardCodeHash)
+                .Where(c => c.Number == number && c.CodeHash == codeHash)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.UserId, userId)
                     .SetProperty(c => c.ActivationDate, DateTime.UtcNow)

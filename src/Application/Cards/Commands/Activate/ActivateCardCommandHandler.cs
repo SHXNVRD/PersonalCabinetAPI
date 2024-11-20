@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Cards.Commands.Activate
 {
-    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<CardActivatedResponse>>
+    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUnitOfWork _unitOfWork;
@@ -28,35 +28,24 @@ namespace Application.Cards.Commands.Activate
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<CardActivatedResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.UserId);
 
             if (user == null)
                 return Result.Fail("User with specified id not found");
-
-            var card = await _unitOfWork.CardRepository.FindByNumberAsync(request.CardNumber);
-
-            if (card == null)
-                return Result.Fail($"Card with specified number not found");
-
-            var codeHash = await Hasher.ComputeSha256HashAsync(request.CardCode);
-            var activated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, card.Id, codeHash);  
-
-            if (!activated)
-                return Result.Fail($"Failed to activated card");
-
-            await _unitOfWork.SaveChangesAsync();
             
-            SaveChangesResult lastResult = _unitOfWork.LastSaveChangesResult;
+            var codeHash = await Hasher.ComputeSha256HashAsync(request.CardCode);
+            var isActivated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, request.CardNumber, codeHash);  
 
-            if (!lastResult.IsOk)
-                return Result.Fail("lastResult.Exception!.Message");
+            if (!isActivated)
+                return Result.Fail($"Failed to activate card with number: {request.CardNumber}. Card not found");
 
-            return Result.Ok(new CardActivatedResponse()
-            {
-                ActivatedCardId = card.Id
-            });
+            var isChangesSaved = await _unitOfWork.SaveChangesAsync();
+
+            return Result.OkIf(
+                isChangesSaved,
+                $"Card with number: {request.CardNumber} was activated, but failed to save changes to the database");
         }
     }
 }

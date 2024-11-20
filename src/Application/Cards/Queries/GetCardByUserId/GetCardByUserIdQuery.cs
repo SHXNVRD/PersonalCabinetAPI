@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Application.DTOs;
 using FluentResults;
 using MediatR;
 
-namespace Application.Cards.Queries
+namespace Application.Cards.Queries.GetCardByUserId
 {
-    public record GetCardByUserIdQuery(string Id) : IRequest<Result<CardResponse>>;
+    public record GetCardByUserIdQuery(long UserId) : IRequest<Result<CardResponse>>;
 }

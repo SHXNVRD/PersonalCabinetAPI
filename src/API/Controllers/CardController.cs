@@ -5,6 +5,7 @@ using Application.Cards.Commands;
 using Application.Cards.Commands.Activate;
 using Application.Cards.Commands.Deactivate;
 using Application.Cards.Queries;
+using Application.Cards.Queries.GetCardByUserId;
 using Application.DTOs;
 using Application.Extensions;
 using FluentResults;
@@ -29,9 +30,10 @@ namespace API.Controllers
         [HttpPut("activation")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardRequest request)
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -47,7 +49,10 @@ namespace API.Controllers
             
             var result = await _mediatR.Send(command);
 
-            return result.ToActionResult();
+            if (result.IsFailed)
+                return result.ToNotFoundResult();
+
+            return NoContent();
         }
 
         [HttpGet("current")]
@@ -62,10 +67,11 @@ namespace API.Controllers
 
             if (userId == null)
                 return Unauthorized("Access token does not contain user id");
+
+            if (!long.TryParse(userId, out var parsedId))
+                return Unauthorized("User Id must be a digit");
             
-            var command = new GetCardByUserIdQuery(
-                Id: userId
-            );
+            var command = new GetCardByUserIdQuery(parsedId);
 
             var result = await _mediatR.Send(command);
 

@@ -4,6 +4,7 @@ using Application.Interfaces.Repositories;
 using Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data
 {
@@ -12,7 +13,7 @@ namespace Infrastructure.Data
         private bool _disposed;
         private ICardRepository? _cardRepository;
         private readonly AppDbContext _dbContext;
-        public SaveChangesResult LastSaveChangesResult { get; }
+        private readonly ILogger<UnitOfWork> _logger;
 
         public ICardRepository CardRepository
         {
@@ -24,10 +25,10 @@ namespace Infrastructure.Data
             }
         }
 
-        public UnitOfWork(AppDbContext dbContext)
+        public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger)
         {
             _dbContext = dbContext;
-            LastSaveChangesResult = new SaveChangesResult();
+            _logger = logger;
         }
 
         public Task<IDbContextTransaction> BeginTransactionAsync(bool useIfExists = false)
@@ -40,16 +41,17 @@ namespace Infrastructure.Data
             return useIfExists ? Task.FromResult(transaction) : _dbContext.Database.BeginTransactionAsync();
         }
 
-        public async Task<int> SaveChangesAsync()
+        public async Task<bool> SaveChangesAsync()
         {
             try
             {
-                return await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
+                return true;
             }
             catch (Exception exception)
             {
-                LastSaveChangesResult.Exception = exception;
-                return 0;
+                _logger.LogError(exception, "Exception has occurred while saving changes into database: {Exception}", exception.Message);
+                return false;
             }
         }
 

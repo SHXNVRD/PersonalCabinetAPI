@@ -11,7 +11,7 @@ namespace Application.Interfaces.Repositories
         Task<Card?> FindByNumberAsync(int number);
         Task<Card?> FindByIdAsync(long id);
         Task<Card?> FindByUserIdAsync(long id);
-        Task<bool> ActivateAsync(long userId, long cardId, string cardCodeHash);
+        Task<bool> ActivateAsync(long userId, int number, string codeHash);
         Task<bool> DeactivateAsync(int number);
     }
 }

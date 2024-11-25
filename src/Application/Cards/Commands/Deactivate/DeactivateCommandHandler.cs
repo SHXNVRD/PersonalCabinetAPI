@@ -15,7 +15,7 @@ namespace Application.Cards.Commands.Deactivate
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public DeactivateCommandHandler(IUnitOfWork unitOfWork)
+        public DeactivateCommandHandler(IUnitOfWork unitOfWork) 
         {
             _unitOfWork = unitOfWork;
         }

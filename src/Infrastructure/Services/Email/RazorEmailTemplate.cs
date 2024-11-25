@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
+using Infrastructure.RazorTemplates.EmailTemplates.Shared;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RazorLight;
 
 namespace Infrastructure.Services.Email
@@ -16,18 +18,8 @@ namespace Infrastructure.Services.Email
 
         public async Task<EmailBody> CompileAsync(string templateName, object model)
         {
-            var htmlContent = await _razorEngine.CompileRenderAsync(templateName + ".cshtml", model);
-            var plainTextContent = ExtractTextFromHtml(htmlContent);
-            
-            return new EmailBody(htmlContent, plainTextContent);
-        }
-
-        private string ExtractTextFromHtml(string html)
-        {
-            var text = Regex.Replace(html, "(<.*?>\\s*)+", " ");
-            text = Regex.Replace(text, @"\s+", " ").Trim();
-            
-            return text;
+            var html = await _razorEngine.CompileRenderAsync(templateName, model);
+            return new EmailBody(html, string.Empty);
         }
     }
 }

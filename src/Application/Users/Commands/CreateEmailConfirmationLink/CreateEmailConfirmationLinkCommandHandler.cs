@@ -35,16 +35,15 @@ namespace Application.Users.Commands.CreateEmailConfirmationLink
             
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
    
-            //([request.Email]) См. переопределение implict оператора EmailMessage
-            var message = new EmailMessage("Подтверждение регистрации", "EmailConfirmation", [request.Email]);
-            object model = new
-            {
-                ConfirmationLink = _linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext!, "ConfirmEmail", "Account", new { email = user.Email, token})
-            };
+            //([request.Email]) См. переопределение implicit оператора EmailAddress
+            var message = new EmailMessage("Подтверждение регистрации", "EmailConfirmationMonolith", [request.Email]);
 
-            var messageSented = await _emailService.SendAsync(message, model, cancellationToken);
+            string confirmationLink = _linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext!, "ConfirmEmail",
+                "Account", new { email = user.Email, token }, _httpContextAccessor.HttpContext!.Request.Scheme)!;
 
-            return Result.OkIf(messageSented, "Fail to sent confirmation link");
+            var isMessageSent = await _emailService.SendEmailConfirmationLinkAsync(message, confirmationLink, cancellationToken);
+
+            return Result.OkIf(isMessageSent, "Fail to sent confirmation link");
         }
     }
 }

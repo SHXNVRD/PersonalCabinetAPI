@@ -73,7 +73,11 @@ namespace Infrastructure.Extensions
             services.Configure<EmailOptions>(config.GetSection("EmailOptions"));
             
             var razorEngine = new RazorLightEngineBuilder()
-                .UseEmbeddedResourcesProject(typeof(EmailService).Assembly, config["EmailTemplateOptions:TemplatesDirectory"])
+                .UseOptions(new RazorLightOptions
+                {
+                    EnableDebugMode = true
+                })
+                .UseEmbeddedResourcesProject(typeof(EmailService).Assembly, "Infrastructure.RazorTemplates.EmailTemplates")
                 .UseMemoryCachingProvider()
                 .Build();
             

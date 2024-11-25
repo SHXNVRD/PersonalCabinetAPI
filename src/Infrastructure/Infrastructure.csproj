@@ -29,8 +29,17 @@
 
   <ItemGroup>
     <EmbeddedResource Include="EmailHtmlTemplates\*.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\EmailTemplates\EmailConfirmation.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\EmailTemplates\_Layout.cshtml" />
     <None Remove="EmailRazorTemplates\EmailConfirmation.cshtml" />
-    <EmbeddedResource Include="EmailRazorTemplates\EmailConfirmation.cshtml" />
+    <None Remove="RazorTemplates\Shared\_Layout.cshtml" />
+    <None Remove="RazorTemplates\EmailTemplates\EmailButton.cshtml" />
+    <None Remove="RazorTemplates\EmailTemplates\EmailConfirmationMonolith.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\EmailTemplates\EmailConfirmationMonolith.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helpers\" />
   </ItemGroup>
 
 </Project>

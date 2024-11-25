@@ -1,0 +1,26 @@
+@using Infrastructure.RazorTemplates.EmailTemplates.Shared
+@model EmailConfirmationViewModel
+@{ Layout = "_Layout.cshtml";}
+
+<div>
+    <h2 style="font-size: 24px; font-weight: 700;">Подтверждение почты</h2>
+    <br>
+    <p>
+        Здравствуйте, для подтверждения адреса электронной почты, пожалуйста, нажмите на кнопку ниже.
+    </p>
+    <div style="text-align: center; margin: 30px 0">
+        <a href="@Model.ConfirmationLink" style="background-color: #1a6fee; padding: 10px 18px; border-radius: 6px; color: white;">
+            Подтвердить E-mail
+        </a>
+    </div>
+    <p>
+        Если Вы не создавали учётную запись в нашей системе, игнорируйте это письмо.
+    </p>
+    <br>
+    <p>
+        С уважением,
+    </p>
+    <p>
+        Company name Team.
+    </p>
+</div>

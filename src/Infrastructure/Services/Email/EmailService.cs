@@ -1,5 +1,6 @@
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
+using Infrastructure.RazorTemplates.EmailTemplates.Shared;
 
 namespace Infrastructure.Services.Email
 {
@@ -14,10 +15,16 @@ namespace Infrastructure.Services.Email
             _emailTemplate = emailTemplate;
         }
 
-        public async Task<bool> SendAsync(EmailMessage message, object model, CancellationToken cancellationToken = default)
+        public async Task<bool> SendEmailConfirmationLinkAsync(EmailMessage message, string confirmationLink, CancellationToken cancellationToken = default)
+        {
+            EmailConfirmationViewModel model = new(confirmationLink);
+            return await SendAsync(message, model, cancellationToken);
+        }
+        
+        private async Task<bool> SendAsync(EmailMessage message, object model, CancellationToken cancellationToken = default)
         {
             EmailBody emailBody =  await _emailTemplate.CompileAsync(message.TemplateName, model);
-            var compiledMessage = new CompiledEmailMessage(message.Subject, emailBody, message.To,
+            CompiledEmailMessage compiledMessage = new(message.Subject, emailBody, message.To,
                 message.Cc, message.Bcc, message.Attachments);
             
             return await _emailSender.SendAsync(compiledMessage, cancellationToken);

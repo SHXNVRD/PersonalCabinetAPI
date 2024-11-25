@@ -4,6 +4,6 @@ namespace Application.Interfaces.Email
 {
     public interface IEmailService
     {
-        Task<bool> SendAsync(EmailMessage message, object model, CancellationToken cancellationToken = default);
+        Task<bool> SendEmailConfirmationLinkAsync(EmailMessage message, string confirmationLink, CancellationToken cancellationToken = default);
     }
 }

@@ -18,13 +18,8 @@ namespace Application.Services
             IdentityErrorDescriber errors,
             IServiceProvider services,
             ILogger<UserManager<User>> logger)
-            : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+            : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors,
+                services, logger)
         { }
-
-        public async Task<bool> IsUniqueEmailAsync (string email) =>
-            await FindByEmailAsync(email) == null;
-
-        public async Task<bool> IsUniquePhoneAsync(string phoneNumber) =>
-            await Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber) == null;
     }
 }

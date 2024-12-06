@@ -14,6 +14,7 @@ using Infrastructure.Services.Token;
 using Infrastructure.Services.Token.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +108,11 @@ namespace Infrastructure.Extensions
                         new TokenProviderDescriptor(typeof(EmailConfirmationTokenProvider<User>)));
                     options.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
                     
+                    options.Tokens.ProviderMap.Add(
+                        "PasswordResetToken",
+                        new TokenProviderDescriptor(typeof(PasswordResetTokenProvider<User>)));
+                    options.Tokens.PasswordResetTokenProvider = "PasswordResetToken";
+                    
                     options.Password.RequiredLength = 8;
                     options.Password.RequireDigit = true;
                     options.Password.RequireUppercase = true;
@@ -121,6 +127,7 @@ namespace Infrastructure.Extensions
                 .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
 
             services.AddTransient<EmailConfirmationTokenProvider<User>>();
+            services.AddTransient<PasswordResetTokenProvider<User>>();
 
             return services;
         }

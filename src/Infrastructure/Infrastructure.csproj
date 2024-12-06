@@ -30,6 +30,7 @@
   <ItemGroup>
     <EmbeddedResource Include="EmailHtmlTemplates\*.cshtml" />
     <EmbeddedResource Include="RazorTemplates\EmailTemplates\EmailConfirmation.cshtml" />
+    <EmbeddedResource Include="RazorTemplates\EmailTemplates\ResetPassword.cshtml" />
     <EmbeddedResource Include="RazorTemplates\EmailTemplates\_Layout.cshtml" />
     <None Remove="EmailRazorTemplates\EmailConfirmation.cshtml" />
     <None Remove="RazorTemplates\Shared\_Layout.cshtml" />

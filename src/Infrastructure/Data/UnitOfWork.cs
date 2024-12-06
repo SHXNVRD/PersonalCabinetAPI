@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Infrastructure.Data.Repositories;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace Infrastructure.Data
     {
         private bool _disposed;
         private ICardRepository? _cardRepository;
+        private IUserRepository? _userRepository;
         private readonly AppDbContext _dbContext;
         private readonly ILogger<UnitOfWork> _logger;
 
@@ -22,6 +24,16 @@ namespace Infrastructure.Data
                 if (_cardRepository == null)
                     _cardRepository = new CardRepository(_dbContext);
                 return _cardRepository;
+            }
+        }
+
+        public IUserRepository UserRepository
+        {
+            get
+            {
+                if (_userRepository == null)
+                    _userRepository = new UserRepository(_dbContext);
+                return _userRepository;
             }
         }
 

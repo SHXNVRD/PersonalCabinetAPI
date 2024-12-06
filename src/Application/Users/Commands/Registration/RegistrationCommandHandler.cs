@@ -29,12 +29,6 @@ namespace Application.Users.Commands.Registration
         public async Task<Result> Handle(RegistrationCommand request, CancellationToken cancellationToken)
         {
             var user = request.ToEntity();
-
-            if (!await _userManager.IsUniqueEmailAsync(request.Email))
-                return Result.Fail("User with specified email already exist");
-
-            if (!await _userManager.IsUniquePhoneAsync(request.PhoneNumber))
-                return Result.Fail("Specified phone number is already taken");
             
             var userResult = await _userManager.CreateAsync(user, request.Password);
             

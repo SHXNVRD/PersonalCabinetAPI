@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [Route("api/v1/users")]
-    [Authorize]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -41,6 +40,21 @@ namespace API.Controllers
                 return Unauthorized("Access token does not contain user id");
 
             var result = await _mediatR.Send(new GetUserByIdQuery(userId));
+
+            if (result.IsFailed)
+                return result.ToNotFoundResult();
+            
+            return result.ToActionResult();
+        }
+        
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<UserResponse>> GetById(string id)
+        {
+            var result = await _mediatR.Send(new GetUserByIdQuery(id));
 
             if (result.IsFailed)
                 return result.ToNotFoundResult();

@@ -6,6 +6,7 @@ using Application.Interfaces.Token;
 using Application.Services;
 using Domain.Models;
 using Infrastructure.Data;
+using Infrastructure.Data.IdentityValidators;
 using Infrastructure.Data.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Services.Email;
@@ -119,6 +120,7 @@ namespace Infrastructure.Extensions
                     options.Password.RequireLowercase = true;
                     options.Password.RequireNonAlphanumeric = true;
                 })
+                .AddUserValidator<UserPhoneNumberValidator<User>>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddUserManager<AppUserManager>()
                 .AddUserStore<AppUserStore>()

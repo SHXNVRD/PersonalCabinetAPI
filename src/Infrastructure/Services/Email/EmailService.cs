@@ -1,5 +1,6 @@
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
+using Application.Users.Commands.ResetPassword;
 using Infrastructure.RazorTemplates.EmailTemplates.Shared;
 
 namespace Infrastructure.Services.Email
@@ -19,6 +20,12 @@ namespace Infrastructure.Services.Email
         {
             EmailConfirmationViewModel model = new(confirmationLink);
             return await SendAsync(message, model, cancellationToken);
+        }
+
+        public async Task<bool> SendPasswordResetLinkAsync(EmailMessage message, string resetLink, CancellationToken cancellationToken = default)
+        {
+            ResetPasswordViewModel viewModel = new(resetLink);
+            return await SendAsync(message, viewModel, cancellationToken);
         }
         
         private async Task<bool> SendAsync(EmailMessage message, object model, CancellationToken cancellationToken = default)

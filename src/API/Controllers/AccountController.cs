@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using API.Extensions;
+using API.Extensions.RequestsExtensions;
 using API.Requests;
 using Application.DTOs.Emails;
 using Application.Extensions;
@@ -14,8 +15,11 @@ using Application.Users.Commands.EmailConfirmation;
 using Application.Users.Commands.Login;
 using Application.Users.Commands.RefreshToken;
 using Application.Users.Commands.Registration;
+using Application.Users.Commands.ResetPassword;
 using Application.Users.Commands.RevokeRefreshToken;
+using Application.Users.Commands.SendPasswordResetLink;
 using Application.Users.DTOs;
+using FluentResults;
 using FluentResults.Extensions.AspNetCore;
 using FluentValidation;
 using MediatR;
@@ -101,6 +105,38 @@ namespace API.Controllers
 
             if (result.IsFailed)
                 return result.ToConflictResult();
+
+            return NoContent();
+        }
+
+        [HttpPost("auth/account/password/reset")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+        {
+            var result = await _mediatR.Send(request.ToCommand());
+
+            if (result.IsFailed)
+                return result.ToNotFoundResult();
+
+            return result.ToActionResult();
+        }
+
+        [HttpPost("auth/account/password/reset-link")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> SendPasswordResetLink([FromBody] SendPasswordResetLinkRequest request)
+        {
+            var result = await _mediatR.Send(request.ToCommand());
+
+            if (result.IsFailed)
+                return result.ToNotFoundResult();
 
             return NoContent();
         }

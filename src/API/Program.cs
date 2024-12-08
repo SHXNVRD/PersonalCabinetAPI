@@ -17,6 +17,7 @@ using Application.Users.DTOs;
 using Infrastructure.Extensions;
 using Infrastructure.Services.Options;
 using Infrastructure.Services.Token;
+using Microsoft.AspNetCore.HttpOverrides;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -40,15 +41,22 @@ services
     .AddAuthorization()
     .AddAuthentication();
 
-builder.Services.AddHttpContextAccessor();
-
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "{RemoteIpAddress} {RequestHost} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (context, httpContext) =>
+    {
+        context.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress);
+        context.Set("RequestHost", httpContext.Request.Host);
+    };
+});
+
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())

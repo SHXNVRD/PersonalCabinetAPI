@@ -5,18 +5,17 @@ using System.Threading.Tasks;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Application.Behaviors
 {
-    public sealed class RequestLoggningBehavior<TRequest, TResponse>
+    public sealed class RequestLoggingBehavior<TRequest, TResponse>
         : IPipelineBehavior<TRequest, TResponse>
         where TRequest : IRequest<TResponse>
         where TResponse : ResultBase
     {
-        private readonly ILogger<RequestLoggningBehavior<TRequest, TResponse>> _logger;
+        private readonly ILogger<RequestLoggingBehavior<TRequest, TResponse>> _logger;
 
-        public RequestLoggningBehavior(ILogger<RequestLoggningBehavior<TRequest, TResponse>> logger)
+        public RequestLoggingBehavior(ILogger<RequestLoggingBehavior<TRequest, TResponse>> logger)
         {
             _logger = logger;
         }
@@ -28,27 +27,18 @@ namespace Application.Behaviors
         {
             var requestName = typeof(TRequest).Name;
 
-            _logger.LogInformation(
-                "Starting requrst {RequestName}, {DateTimeUtc}",
-                requestName,
-                DateTime.UtcNow);
+            _logger.LogInformation("Starting request {RequestName}", requestName);
             
             var result = await next();
 
             if (result.IsSuccess)
-            {
-                _logger.LogInformation(
-                    "Completed request {RequestName}, {DateTimeUtc}",
-                    requestName,
-                    DateTime.UtcNow);
-            }
+                _logger.LogInformation("Completed request {RequestName}", requestName);
             else
             {
-                _logger.LogInformation(
-                    "Request failure {RequestName}, {@Error}, {DateTimeUtc}",
+                _logger.LogError(
+                    "Request failure {RequestName}, {@Errors}",
                     requestName,
-                    result.Errors,
-                    DateTime.UtcNow);
+                    result.Errors);
             }
 
             return result;

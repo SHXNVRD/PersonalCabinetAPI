@@ -23,7 +23,7 @@ namespace Application.Extensions
             services.AddMediatR(config =>
             {
                 config.RegisterServicesFromAssemblyContaining<AuthResponse>();
-                config.AddOpenBehavior(typeof(RequestLoggningBehavior<,>));
+                config.AddOpenBehavior(typeof(RequestLoggingBehavior<,>));
             });
             
             return services;

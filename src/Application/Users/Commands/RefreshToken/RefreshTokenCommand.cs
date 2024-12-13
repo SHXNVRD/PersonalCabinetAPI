@@ -9,7 +9,9 @@ using MediatR;
 
 namespace Application.Users.Commands.RefreshToken
 {
-    public record RefreshTokenCommand(
-        string UserId,
-        string RefreshToken) : IRequest<Result<AuthResponse>>; 
+    public class RefreshTokenCommand : IRequest<Result<AuthResponse>>
+    {
+        public string UserId { get; set; }
+        public string RefreshToken { get; set; }
+    }
 }

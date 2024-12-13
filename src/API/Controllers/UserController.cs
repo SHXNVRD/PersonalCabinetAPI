@@ -39,7 +39,11 @@ namespace API.Controllers
             if (userId == null)
                 return Unauthorized("Access token does not contain user id");
 
-            var result = await _mediatR.Send(new GetUserByIdQuery(userId));
+            var command = new GetUserByIdQuery
+            {
+                Id = userId
+            };
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToNotFoundResult();
@@ -54,7 +58,11 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserResponse>> GetById(string id)
         {
-            var result = await _mediatR.Send(new GetUserByIdQuery(id));
+            var command = new GetUserByIdQuery
+            {
+                Id = id
+            };
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToNotFoundResult();

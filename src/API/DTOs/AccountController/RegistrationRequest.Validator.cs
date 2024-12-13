@@ -1,20 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Application.Users.Commands.Registration;
 using FluentValidation;
 
-namespace Application.Users.Commands.Login
+namespace API.DTOs.AccountController
 {
-    public class LoginCommandValidator : AbstractValidator<LoginCommand>
+    public class RegistrationRequestValidator : AbstractValidator<RegistrationRequest>
     {
-        public LoginCommandValidator()
+        public RegistrationRequestValidator()
         {
-            RuleFor(c => c.Email)
+            RuleFor(r => r.UserName)
+                .NotEmpty().WithMessage("User name cannot be empty");
+
+            RuleFor(r => r.Email)
                 .NotEmpty().WithMessage("Email address is required")
                 .EmailAddress().WithMessage("Invalid email address");
 
-            RuleFor(c => c.Password)
+            RuleFor(r => r.PhoneNumber)
+                .NotEmpty().WithMessage("Phone number is required")
+                .Length(10).WithMessage("Invalid phone number");
+
+             RuleFor(r => r.Password)
                 .NotEmpty().WithMessage("Your password cannot be empty")
                 .MinimumLength(8).WithMessage("Your password length must be at least 8.")
                 .MaximumLength(20).WithMessage("Your password length must not exceed 20.")

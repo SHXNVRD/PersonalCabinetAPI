@@ -1,3 +1,4 @@
+using Application.Cards.DTOs;
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -17,17 +18,17 @@ namespace Application.Cards.Queries.GetCardByUserId
 
         public async Task<Result<CardResponse>> Handle(GetCardByUserIdQuery request, CancellationToken cancellationToken)
         {
-            var card = await _unitOfWork.CardRepository.FindByUserIdAsync(request.UserId);
+            var card = await _unitOfWork.CardRepository.FindByUserIdAsync(request.Id);
 
             if (card == null)
-                return Result.Fail($"For user with Id {request.UserId} card not found");
+                return Result.Fail($"For user with Id {request.Id} card not found");
 
             return Result.Ok(new CardResponse
             {
                 Id = card.Id,
                 Number = card.Number,
                 IsActivated = card.IsActivated,
-                BonusSystemTitle = card.BonusSystem.Title,
+                BonusSystemTitle = card.BonusSystem!.Title,
                 DiscountPercent = card.BonusSystem.DiscountPercent
             });
         }

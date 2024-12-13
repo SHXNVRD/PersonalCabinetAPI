@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Models.Base;
 
 namespace Domain.Models
 {
-    public class BonusSystem
+    public class BonusSystem : Identity
     {
-        public long Id { get; set; }
-        public string Title { get; set; } = null!;
+        public required string Title { get; set; }
         public float DiscountPercent { get; set; }
-        public ICollection<Card>? Cards { get; set; }
+        public virtual ICollection<Card>? Cards { get; set; }
     }
 }

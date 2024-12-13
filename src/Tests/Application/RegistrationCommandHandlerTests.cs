@@ -34,7 +34,13 @@ public class RegistrationCommandHandlerTests
     public async Task Handle_ValidCommand_CreatesUserWithUserRole()
     {
         // Arrange
-        RegistrationCommand command = new("Ivan", "1234567890", "ivan@mail.com", "P@ssword228");
+        var command = new RegistrationCommand
+        {
+            UserName = "Ivan",
+            PhoneNumber = "1234567890",
+            Email = "ivan@mail.com",
+            Password = "P@ssword228"
+        };
         var userRole = "user";
 
         _userManagerMock

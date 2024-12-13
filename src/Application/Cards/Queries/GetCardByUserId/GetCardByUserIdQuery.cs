@@ -1,8 +1,12 @@
+using Application.Cards.DTOs;
 using Application.DTOs;
 using FluentResults;
 using MediatR;
 
 namespace Application.Cards.Queries.GetCardByUserId
 {
-    public record GetCardByUserIdQuery(long UserId) : IRequest<Result<CardResponse>>;
+    public class GetCardByUserIdQuery : IRequest<Result<CardResponse>>
+    {
+        public long Id { get; set; }
+    }
 }

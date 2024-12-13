@@ -1,28 +1,25 @@
 using Application.DTOs.Emails;
+using Application.Interfaces;
 using Application.Interfaces.Email;
 using Application.Services;
 using FluentResults;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Application.Users.Commands.CreateEmailConfirmationLink
 {
     public class CreateEmailConfirmationLinkCommandHandler : IRequestHandler<CreateEmailConfirmationLinkCommand, Result>
     {
         private readonly IEmailService _emailService;
-        private readonly LinkGenerator _linkGenerator;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILinkService _linkService;
         private readonly AppUserManager _userManager;
 
         public CreateEmailConfirmationLinkCommandHandler(
             IEmailService emailService, 
-            LinkGenerator linkGenerator, 
-            IHttpContextAccessor httpContextAccessor, AppUserManager userManager)
+            ILinkService linkService,
+            AppUserManager userManager)
         {
             _emailService = emailService;
-            _linkGenerator = linkGenerator;
-            _httpContextAccessor = httpContextAccessor;
+            _linkService = linkService;
             _userManager = userManager;
         }
 
@@ -38,8 +35,10 @@ namespace Application.Users.Commands.CreateEmailConfirmationLink
             //([request.Email]) См. переопределение implicit оператора EmailAddress
             var message = new EmailMessage("Подтверждение регистрации", "EmailConfirmationMonolith", [request.Email]);
 
-            string confirmationLink = _linkGenerator.GetUriByAction(_httpContextAccessor.HttpContext!, "ConfirmEmail",
-                "Account", new { email = user.Email, token }, _httpContextAccessor.HttpContext!.Request.Scheme)!;
+            string confirmationLink = _linkService.GetUriByAction(
+                "ConfirmEmail",
+                "Account", 
+                new { email = user.Email, token })!;
 
             var isMessageSent = await _emailService.SendEmailConfirmationLinkAsync(message, confirmationLink, cancellationToken);
 

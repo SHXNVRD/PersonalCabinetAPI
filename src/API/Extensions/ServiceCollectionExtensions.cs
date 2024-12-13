@@ -1,10 +1,25 @@
+using API.Services;
+using Application.Interfaces;
+using Application.Users.DTOs;
+using FluentValidation;
 using Microsoft.OpenApi.Models;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 namespace API.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
+        public static IServiceCollection AddApi(this IServiceCollection services)
+        {
+            services
+                .ConfigureFluentValidation()
+                .ConfigureSwagger()
+                .AddScoped<ILinkService, LinkService>();
+
+            return services;
+        }
+        
+        private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
             services.AddSwaggerGen(options =>
             {
@@ -37,6 +52,17 @@ namespace API.Extensions
                 });
             });
 
+            return services;
+        }
+        
+        public static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
+        {
+            services.AddValidatorsFromAssemblyContaining<AuthResponse>();
+            services.AddFluentValidationAutoValidation(config =>
+            {
+                config.DisableBuiltInModelValidation = true;
+            });
+            
             return services;
         }
     }

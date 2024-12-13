@@ -3,21 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Models;
+using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class ProductConfiguration : IEntityTypeConfiguration<Product>
+    public class ProductConfiguration : IdentityConfigurationBase<Product>
     {
-        public void Configure(EntityTypeBuilder<Product> builder)
-        {
-            builder.HasKey(p => p.Id);
-
-            builder
-                .Property(p => p.Id)
-                .UseIdentityColumn();
-        }
+        protected override void AddCustomConfiguration(EntityTypeBuilder<Product> builder)
+        { }
     }
 }

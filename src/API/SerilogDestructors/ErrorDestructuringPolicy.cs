@@ -3,7 +3,7 @@ using FluentResults;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace API.SerilogDestructuring;
+namespace API.SerilogDestructors;
 
 public class ErrorDestructuringPolicy : IDestructuringPolicy
 {

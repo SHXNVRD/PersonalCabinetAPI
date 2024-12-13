@@ -1,6 +1,7 @@
+﻿using Application.Users.Commands.EmailConfirmation;
 using FluentValidation;
 
-namespace Application.Users.Commands.EmailConfirmation
+namespace API.DTOs.AccountController
 {
     public class EmailConfirmationCommandValidator : AbstractValidator<EmailConfirmationCommand>
     {

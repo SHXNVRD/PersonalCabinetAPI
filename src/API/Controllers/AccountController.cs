@@ -1,27 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
+using API.DTOs.AccountController;
 using API.Extensions;
-using API.Extensions.RequestsExtensions;
-using API.Requests;
-using Application.DTOs.Emails;
-using Application.Extensions;
-using Application.Interfaces.Email;
-using Application.Users.Commands;
-using Application.Users.Commands.CreateEmailConfirmationLink;
 using Application.Users.Commands.EmailConfirmation;
-using Application.Users.Commands.Login;
-using Application.Users.Commands.RefreshToken;
-using Application.Users.Commands.Registration;
-using Application.Users.Commands.ResetPassword;
 using Application.Users.Commands.RevokeRefreshToken;
-using Application.Users.Commands.SendPasswordResetLink;
 using Application.Users.DTOs;
-using FluentResults;
 using FluentResults.Extensions.AspNetCore;
-using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -45,9 +28,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthResponse>> Registration([FromBody] RegistrationCommand request)
+        public async Task<ActionResult<AuthResponse>> Registration([FromBody] RegistrationRequest request)
         {
-            var result = await _mediatR.Send(request);
+            var command = RegistrationMapper.ToCommand(request);
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToConflictResult();
@@ -60,9 +44,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginCommand request)
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
-            var result = await _mediatR.Send(request);
+            var command = LoginMapper.ToCommand(request);
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                return result.ToUnauthorizedResult();
@@ -78,7 +63,12 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token)
         {
-            var command = new EmailConfirmationCommand(email, token);
+            var command = new EmailConfirmationCommand
+            {
+                Email = email,
+                Token = token
+            };
+            
             var validator = new EmailConfirmationCommandValidator();
             var validationResult = await validator.ValidateAsync(command);
 
@@ -99,9 +89,10 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> CreateEmailConfirmationLink([FromBody] CreateEmailConfirmationLinkCommand request)
+        public async Task<ActionResult> CreateEmailConfirmationLink([FromBody] CreateEmailConfirmationLinkRequest request)
         {
-            var result = await _mediatR.Send(request);
+            var command = CreateEmailConfirmationLinkMapper.ToCommand(request);
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToConflictResult();
@@ -117,7 +108,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
         {
-            var result = await _mediatR.Send(request.ToCommand());
+            var command = ResetPasswordMapper.ToCommand(request);
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToNotFoundResult();
@@ -133,7 +125,8 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> SendPasswordResetLink([FromBody] SendPasswordResetLinkRequest request)
         {
-            var result = await _mediatR.Send(request.ToCommand());
+            var command = SendPasswordResetLinkMapper.ToCommand(request);
+            var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
                 return result.ToNotFoundResult();
@@ -147,17 +140,15 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefershTokenRequest request)
+        public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshTokenRequest request)
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
                 return Unauthorized("Access token does not contain user id");
-            
-            var command = new RefreshTokenCommand(
-                UserId: userId,
-                RefreshToken: request.RefreshToken
-            );
+
+            var command = RefreshTokenMapper.ToCommand(request);
+            command.UserId = userId;
             
             var result = await _mediatR.Send(command);
             
@@ -172,7 +163,12 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> RevokeRefreshToken([FromRoute] string userId)
         {
-            var result = await _mediatR.Send(new RevokeRefreshTokenCommand(userId));
+            var command = new RevokeRefreshTokenCommand
+            {
+                UserId = userId
+            };
+            
+            var result = await _mediatR.Send(command);
 
             return result.ToActionResult();
         }

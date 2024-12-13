@@ -3,5 +3,8 @@ using MediatR;
 
 namespace Application.Users.Commands.RevokeRefreshToken
 {
-    public record RevokeRefreshTokenCommand(string UserId) : IRequest<Result>;
+    public class RevokeRefreshTokenCommand : IRequest<Result>
+    {
+        public string UserId { get; set; }
+    }
 }

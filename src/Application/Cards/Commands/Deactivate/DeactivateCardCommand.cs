@@ -7,5 +7,8 @@ using MediatR;
 
 namespace Application.Cards.Commands.Deactivate
 {
-    public record DeactivateCardCommand(int CardNumber) : IRequest<Result>;
+    public class DeactivateCardCommand : IRequest<Result>
+    {
+        public int CardNumber { get; set; }
+    }
 }

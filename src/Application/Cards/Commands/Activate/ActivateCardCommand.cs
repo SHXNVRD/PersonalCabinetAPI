@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using FluentResults;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Application.Cards.Commands.Activate
 {
-    public record ActivateCardCommand(
-        string UserId,
-        int CardNumber,
-        string CardCode) : IRequest<Result>;
+    public class ActivateCardCommand : IRequest<Result>
+    {
+        public string UserId { get; set; }
+        public int CardNumber { get; set; }
+        public string CardCode { get; set; }
+    }
 }

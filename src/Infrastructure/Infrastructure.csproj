@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);MAPPERLY_ABSTRACTIONS_SCOPE_RUNTIME</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />

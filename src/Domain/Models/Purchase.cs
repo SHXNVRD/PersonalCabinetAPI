@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Models.Base;
 
 namespace Domain.Models
 {
-    public class Purchase
+    public class Purchase : Identity
     {
-        public long Id { get; set; }
         public long StationId { get; set; }
-        public Station? Station { get; set; }
+        public virtual Station? Station { get; set; }
         public long? CardId { get; set; }
-        public Card? Card { get; set; }
-        public ICollection<PurchaseItem> PurchaseItems { get; set; } = [];
-        public Discount? Discount { get; set; }
-        public DateTime Date { get; set; }
+        public virtual Card? Card { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItems { get; set; } = [];
+        public virtual Discount? Discount { get; set; }
+        public DateTime CreatedAt { get; set; }
         public decimal Total { get; set; }
     }
 }

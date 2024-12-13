@@ -25,25 +25,27 @@ IConfiguration config = builder.Configuration;
 IServiceCollection services = builder.Services;
 
 builder.Host.ConfigureSerilog();
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddProblemDetails();
-builder.Services.ConfigureSwagger();
+services.AddControllers();
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+services.AddProblemDetails();
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+services.AddExceptionHandler<GlobalExceptionHandler>();
+services.ConfigureFluentValidation();
 
 services
     .AddInfrastructure(config)
-    .AddApplication();
+    .AddApplication()
+    .AddApi();
+
 
 services
     .AddAuthorization()
     .AddAuthentication();
 
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
+services.AddRouting(options => options.LowercaseUrls = true);
 
-builder.Services.AddHttpContextAccessor();
+services.AddHttpContextAccessor();
 
 var app = builder.Build();
 ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());

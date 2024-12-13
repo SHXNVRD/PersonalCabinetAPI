@@ -9,5 +9,8 @@ using MediatR;
 
 namespace Application.Users.Queries.GetById
 {
-    public record GetUserByIdQuery(string Id) : IRequest<Result<UserResponse>>; 
+    public class GetUserByIdQuery : IRequest<Result<UserResponse>>
+    {
+        public string Id { get; set; }
+    }
 }

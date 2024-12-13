@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Models;
+using Riok.Mapperly.Abstractions;
 
 namespace Application.Users.DTOs
 {
@@ -9,7 +11,7 @@ namespace Application.Users.DTOs
     {
         public long Id { get; set; }
         public string Name { get; set; } = null!;
-        public DateTime? DateOfBirth { get; set; }
+        public DateOnly? BirthDate { get; set; }
         public string PhoneNumber { get; set; } = null!;
         public string Email { get; set; } = null!;
     }

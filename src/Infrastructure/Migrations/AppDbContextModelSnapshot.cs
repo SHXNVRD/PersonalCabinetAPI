@@ -50,7 +50,7 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("ActivationDate")
+                    b.Property<DateTime?>("ActivatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("BonusSystemId")
@@ -166,7 +166,7 @@ namespace Infrastructure.Migrations
                     b.Property<long?>("CardId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -247,12 +247,12 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -284,10 +284,10 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("RegistrationDate")
+                    b.Property<DateTime>("RegisteredAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasDefaultValueSql("now() at time zone 'utc'");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

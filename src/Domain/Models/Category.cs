@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Domain.Models.Base;
 
 namespace Domain.Models
 {
-    public class Category
+    public class Category : Identity
     {
-        public long Id { get; set; }
-        public string Title { get; set; } = null!;
-        public ICollection<Product>? Products { get; set; }
+        public required string Title { get; set; }
+        public virtual ICollection<Product>? Products { get; set; }
     }
 }

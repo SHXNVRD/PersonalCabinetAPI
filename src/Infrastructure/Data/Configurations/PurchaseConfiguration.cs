@@ -3,25 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Models;
+using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
+    public class PurchaseConfiguration : IdentityConfigurationBase<Purchase>
     {
-        public void Configure(EntityTypeBuilder<Purchase> builder)
+        protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
         {
-            builder.HasKey(p => p.Id);
-
-            builder 
-                .Property(p => p.Id)
-                .UseIdentityColumn();
-            
             builder
                 .HasOne(p => p.Station)
                 .WithMany(s => s.Purchases)
-                .HasForeignKey(p => p.StationId);
+                .HasForeignKey(p => p.StationId)
+                .IsRequired();
 
             builder
                 .HasMany(p => p.PurchaseItems)
@@ -30,7 +26,7 @@ namespace Infrastructure.Data.Configurations
                 .IsRequired();
 
             builder
-                .Property(p => p.Date)
+                .Property(p => p.CreatedAt)
                 .HasDefaultValueSql("NOW()");
         }
     }

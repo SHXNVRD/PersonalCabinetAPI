@@ -11,6 +11,6 @@ namespace Application.Cards.DTOs
         public bool IsActivated { get; set; }
         public int Number { get; set; }
         public float DiscountPercent { get; set; }
-        public string BonusSystemTitle { get; set; } = null!;
+        public required string BonusSystemTitle { get; set; }
     }
 }

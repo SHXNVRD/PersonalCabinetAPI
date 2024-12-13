@@ -1,31 +1,28 @@
 ﻿using Application.DTOs.Emails;
+using Application.Interfaces;
 using Application.Interfaces.Email;
 using Application.Services;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing;
 
 namespace Application.Users.Commands.SendPasswordResetLink;
 
 public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordResetLinkCommand, Result>
 {
     private readonly IEmailService _emailService;
-    private readonly LinkGenerator _linkGenerator;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILinkService _linkService;
     private readonly AppUserManager _userManager;
 
     public SendPasswordResetLinkCommandHandler(
         AppUserManager userManager,
         IEmailService emailService,
-        LinkGenerator linkGenerator, 
-        IHttpContextAccessor httpContextAccessor)
+        ILinkService linkService)
     {
         _userManager = userManager;
         _emailService = emailService;
-        _linkGenerator = linkGenerator;
-        _httpContextAccessor = httpContextAccessor;
+        _linkService = linkService;
     }
 
     public async Task<Result> Handle(SendPasswordResetLinkCommand request, CancellationToken cancellationToken)
@@ -36,8 +33,7 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var resetPasswordLink = _linkGenerator.GetUriByAction(
-            _httpContextAccessor.HttpContext!,
+        var resetPasswordLink = _linkService.GetUriByAction(
             "ResetPassword",
             "Account",
             new { email = user.Email, token });

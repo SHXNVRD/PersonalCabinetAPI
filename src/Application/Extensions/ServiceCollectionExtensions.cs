@@ -1,9 +1,7 @@
 using Application.Behaviors;
 using Application.Users;
 using Application.Users.DTOs;
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 namespace Application.Extensions
 {
@@ -12,8 +10,7 @@ namespace Application.Extensions
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services
-                .ConfigureMediatR()
-                .ConfigureFluentValidation();
+                .ConfigureMediatR();
 
             return services;
         }
@@ -24,17 +21,6 @@ namespace Application.Extensions
             {
                 config.RegisterServicesFromAssemblyContaining<AuthResponse>();
                 config.AddOpenBehavior(typeof(RequestLoggingBehavior<,>));
-            });
-            
-            return services;
-        }
-
-        private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
-        {
-            services.AddValidatorsFromAssemblyContaining<AuthResponse>();
-            services.AddFluentValidationAutoValidation(config =>
-            {
-                config.DisableBuiltInModelValidation = true;
             });
             
             return services;

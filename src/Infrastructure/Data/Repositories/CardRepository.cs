@@ -38,7 +38,7 @@ namespace Infrastructure.Data.Repositories
                 .Where(c => c.Number == number && c.CodeHash == codeHash)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.UserId, userId)
-                    .SetProperty(c => c.ActivationDate, DateTime.UtcNow)
+                    .SetProperty(c => c.ActivatedAt, DateTime.UtcNow)
                     .SetProperty(c => c.IsActivated, true));
             
             return activatedCards != 0;

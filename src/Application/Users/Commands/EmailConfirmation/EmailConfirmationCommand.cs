@@ -3,7 +3,9 @@ using MediatR;
 
 namespace Application.Users.Commands.EmailConfirmation
 {
-    public record EmailConfirmationCommand(
-        string Email,
-        string Token) : IRequest<Result>;
+    public class EmailConfirmationCommand : IRequest<Result>
+    {
+        public string Email { get; set; }
+        public string Token { get; set; }
+    }
 }

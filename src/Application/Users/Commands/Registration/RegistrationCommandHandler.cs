@@ -12,8 +12,6 @@ using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 
 namespace Application.Users.Commands.Registration
 {

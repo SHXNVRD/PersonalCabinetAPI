@@ -3,21 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Models;
+using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class DiscountConfiguration : IEntityTypeConfiguration<Discount>
+    public class DiscountConfiguration : IdentityConfigurationBase<Discount>
     {
-        public void Configure(EntityTypeBuilder<Discount> builder)
+        protected override void AddCustomConfiguration(EntityTypeBuilder<Discount> builder)
         {
-            builder.HasKey(d => d.Id);
-
-            builder
-                .Property(d => d.Id)
-                .UseIdentityColumn();
-
             builder
                 .HasOne(d => d.Purchase)
                 .WithOne(p => p.Discount)

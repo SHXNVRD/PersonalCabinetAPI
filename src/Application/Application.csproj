@@ -13,13 +13,7 @@
     <PackageReference Include="MediatR" Version="12.4.0" />
     <PackageReference Include="Riok.Mapperly" Version="4.0.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="SharpGrip.FluentValidation.AutoValidation.Mvc">
-      <HintPath>..\..\..\..\.nuget\packages\sharpgrip.fluentvalidation.autovalidation.mvc\1.4.0\lib\net8.0\SharpGrip.FluentValidation.AutoValidation.Mvc.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
+  
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

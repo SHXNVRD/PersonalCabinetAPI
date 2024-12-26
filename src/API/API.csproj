@@ -2,13 +2,14 @@
   
   <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
   
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+  </PropertyGroup> 
 
   <ItemGroup>
     <PackageReference Include="FluentResults.Extensions.AspNetCore" Version="0.1.0" />
@@ -37,6 +38,12 @@
     <Compile Update="**\*Validator.cs">
       <DependentUpon>$([System.String]::Copy(%(Filename)).Replace('.Validator', '.cs'))</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
   </ItemGroup>
   
 </Project>

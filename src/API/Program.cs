@@ -51,7 +51,7 @@ var app = builder.Build();
 ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 app.UseSerilogRequestLogging(options =>
 {
-    options.MessageTemplate = "{RemoteIpAddress} {RequestHost} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.MessageTemplate = "Remote ip: {RemoteIpAddress} {RequestHost} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
     options.EnrichDiagnosticContext = (context, httpContext) =>
     {
         context.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress);
@@ -65,6 +65,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.ApplyMigrations();
+}
+else
+{
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();

@@ -14,7 +14,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "src\API\API.csproj", "{BDA99522-B4D3-4B9F-A555-FA708766A6F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.csproj", "{FBA603E3-4CD3-49FC-A291-EC00AA44B52C}"
-EndProjecte
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{913AB224-2C02-44EB-BC46-C44AEDEB9A29}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		.env = .env
+		docker-compose.dev.yml = docker-compose.dev.yml
+	EndProjectSection
+EndProject
+e
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

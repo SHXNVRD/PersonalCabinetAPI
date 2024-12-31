@@ -29,9 +29,11 @@ namespace Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
         {
             services
-                .ConfigureJwtAuthentication(config)
                 .ConfigureEmail(config)
                 .ConfigureIdentity()
+                // Вызов ConfigureJwtAuthentication должен быть после ConfigureIdentity для возврата 401 статус-кода
+                // вместо редиректа на страницу входа, вызванным дефолтными настройками cookie identity
+                .ConfigureJwtAuthentication(config)
                 .AddDatabase(config)
                 .AddUnitOfWork();
             

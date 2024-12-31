@@ -28,7 +28,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthResponse>> Registration([FromBody] RegistrationRequest request)
+        public async Task<ActionResult> Registration([FromBody] RegistrationRequest request)
         {
             var command = RegistrationMapper.ToCommand(request);
             var result = await _mediatR.Send(command);
@@ -87,7 +87,7 @@ namespace API.Controllers
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> CreateEmailConfirmationLink([FromBody] CreateEmailConfirmationLinkRequest request)
         {
@@ -97,7 +97,7 @@ namespace API.Controllers
             if (result.IsFailed)
                 return result.ToConflictResult();
 
-            return NoContent();
+            return result.ToActionResult();
         }
 
         [HttpPost("auth/account/password/reset")]

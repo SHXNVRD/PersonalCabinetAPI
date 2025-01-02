@@ -1,3 +1,4 @@
+using System.Text;
 using API.Extensions;
 using API.Middlewares;
 using Application.Interfaces;
@@ -46,6 +47,8 @@ services
 services.AddRouting(options => options.LowercaseUrls = true);
 
 services.AddHttpContextAccessor();
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
 ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());

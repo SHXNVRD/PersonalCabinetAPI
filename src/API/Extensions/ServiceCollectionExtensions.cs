@@ -1,3 +1,4 @@
+using API.Abstractions;
 using API.Services;
 using Application.Interfaces;
 using Application.Users.DTOs;
@@ -14,7 +15,9 @@ namespace API.Extensions
             services
                 .ConfigureFluentValidation()
                 .ConfigureSwagger()
-                .AddScoped<ILinkService, LinkService>();
+                .AddScoped<ILinkService, LinkService>()
+                .AddSingleton<ITcpServer, TcpServer>()
+                .AddHostedService<TcpHostedService>();
 
             return services;
         }

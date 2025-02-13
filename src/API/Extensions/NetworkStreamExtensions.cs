@@ -9,8 +9,9 @@ public static class NetworkStreamExtensions
         if (timeout == null)
             return;
         
-        int originalReadTimeout = stream.ReadTimeout;
+        var originalReadTimeout = stream.ReadTimeout;
         stream.ReadTimeout = (int)timeout.Value.TotalMilliseconds;
+        // Не читаем, но ждём поступления данных в течении timeout
         _ = stream.Read(Array.Empty<byte>(), 0, 0);
         stream.ReadTimeout = originalReadTimeout;
     }
@@ -23,13 +24,12 @@ public static class NetworkStreamExtensions
     )
     {
         stream.ReadTimeout = (int?)readTimeout?.TotalMilliseconds ?? stream.ReadTimeout;
+        // если в течение стартового таймаута данные не поступят, будет выброшен SocketException
         stream.WaitForData(startTimeout);
-        var writer = new MemoryStream();
+        using var writer = new MemoryStream();
         var buffer = new byte[bufferSize];
-        
         int bytesRead;
-        stream.WaitForData(startTimeout);
-            
+        
         while (stream.DataAvailable && (bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
         {
             writer.Write(buffer, 0, bytesRead);

@@ -1,5 +1,6 @@
 using API.Abstractions;
 using API.Services;
+using API.Services.Tcp;
 using Application.Interfaces;
 using Application.Users.DTOs;
 using FluentValidation;
@@ -10,14 +11,13 @@ namespace API.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApi(this IServiceCollection services)
+        public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
         {
             services
                 .ConfigureFluentValidation()
                 .ConfigureSwagger()
                 .AddScoped<ILinkService, LinkService>()
-                .AddSingleton<ITcpServer, TcpServer>()
-                .AddHostedService<TcpHostedService>();
+                .ConfigureTcp(config);
 
             return services;
         }
@@ -58,7 +58,7 @@ namespace API.Extensions
             return services;
         }
         
-        public static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
+        private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
         {
             services.AddValidatorsFromAssemblyContaining<AuthResponse>();
             services.AddFluentValidationAutoValidation(config =>
@@ -66,6 +66,16 @@ namespace API.Extensions
                 config.DisableBuiltInModelValidation = true;
             });
             
+            return services;
+        }
+
+        private static IServiceCollection ConfigureTcp(this IServiceCollection services, IConfiguration config)
+        {
+            services
+                .Configure<TcpOptions>(config.GetSection("TcpOptions"))
+                .AddSingleton<ITcpServer, TcpServer>()
+                .AddHostedService<TcpHostedService>();
+
             return services;
         }
     }

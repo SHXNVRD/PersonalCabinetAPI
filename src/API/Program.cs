@@ -32,12 +32,11 @@ services.AddSwaggerGen();
 services.AddProblemDetails();
 
 services.AddExceptionHandler<GlobalExceptionHandler>();
-services.ConfigureFluentValidation();
 
 services
     .AddInfrastructure(config)
     .AddApplication()
-    .AddApi();
+    .AddApi(config);
 
 
 services

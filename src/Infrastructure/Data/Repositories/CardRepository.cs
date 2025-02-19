@@ -17,25 +17,24 @@ namespace Infrastructure.Data.Repositories
             _context = context;
         }
 
-        public async Task<Card?> FindByIdAsync(long id)
+        public Task<Card?> FindByIdAsync(long id)
         {
-            return await _context.Cards
+            return _context.Cards
                 .AsNoTracking()
-                .Include(c => c.BonusSystem)
                 .SingleOrDefaultAsync(c => c.Id == id);
         }
         
-        public async Task<Card?> FindByNumberAsync(int number)
+        public Task<Card?> FindByNumberAsync(int number)
         {
-            return await _context.Cards
+            return _context.Cards
                 .AsNoTracking()
                 .SingleOrDefaultAsync(c => c.Number == number);
         }
 
-        public async Task<bool> ActivateAsync(long userId, int number, string codeHash)
+        public async Task<bool> ActivateAsync(long userId, int number, string pinCodeHash)
         {
             int activatedCards = await _context.Cards
-                .Where(c => c.Number == number && c.CodeHash == codeHash)
+                .Where(c => c.Number == number && c.PinCodeHash == pinCodeHash)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(c => c.UserId, userId)
                     .SetProperty(c => c.ActivatedAt, DateTime.UtcNow)
@@ -54,11 +53,10 @@ namespace Infrastructure.Data.Repositories
             return deactivatedCards != 0;
         }
 
-        public async Task<Card?> FindByUserIdAsync(long id)
+        public Task<Card?> FindByUserIdAsync(long id)
         {
-            return await _context.Cards
+            return _context.Cards
                 .AsNoTracking()
-                .Include(c => c.BonusSystem)
                 .FirstOrDefaultAsync(c => c.UserId == id);
         }
     }

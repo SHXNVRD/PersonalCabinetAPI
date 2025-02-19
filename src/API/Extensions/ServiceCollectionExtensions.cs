@@ -1,7 +1,10 @@
 using API.Abstractions;
 using API.Services;
 using API.Services.Tcp;
+using API.Services.Tcp.Behaviors;
+using API.Services.Tcp.CommandHandlers;
 using Application.Interfaces;
+using Application.Tcp;
 using Application.Users.DTOs;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
@@ -73,6 +76,9 @@ namespace API.Extensions
         {
             services
                 .Configure<TcpOptions>(config.GetSection("TcpOptions"))
+                .AddScoped<ITcpCommandHandler, PingTcpCommandHandler>()
+                .AddScoped<ITcpCommandHandler, CloseShiftTcpCommandHandler>()
+                .AddScoped<ITcpPipelineBehavior, TcpRequestsLoggingPipelineBehavior>()
                 .AddSingleton<ITcpServer, TcpServer>()
                 .AddHostedService<TcpHostedService>();
 

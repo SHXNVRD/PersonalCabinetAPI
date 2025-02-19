@@ -28,8 +28,7 @@ namespace Application.Cards.Queries.GetCardByUserId
                 Id = card.Id,
                 Number = card.Number,
                 IsActivated = card.IsActivated,
-                BonusSystemTitle = card.BonusSystem!.Title,
-                DiscountPercent = card.BonusSystem.DiscountPercent
+                Balance = card.Balance
             });
         }
     }

@@ -13,6 +13,6 @@ namespace Application.Cards.Commands.Activate
     {
         public string UserId { get; set; }
         public int CardNumber { get; set; }
-        public string CardCode { get; set; }
+        public string CardPinCode { get; set; }
     }
 }

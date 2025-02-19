@@ -5,8 +5,9 @@ ENV UID=1010 HOME=/home/appuser
 RUN useradd -u $UID -U -m appuser
 USER ${UID}
 WORKDIR $HOME
-EXPOSE 8081
+EXPOSE 8082
 EXPOSE 8080
+EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
 ARG BUILD_CONFIGURATION=Release

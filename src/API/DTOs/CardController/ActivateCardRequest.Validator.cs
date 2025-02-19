@@ -7,9 +7,9 @@ namespace API.DTOs.CardController
     {
         public ActivateCardRequestValidator()
         {
-            RuleFor(r => r.CardCode)
-                .NotEmpty().WithMessage("Card code is required")
-                .Length(6).WithMessage("Invalid card code");
+            RuleFor(r => r.CardPinCode)
+                .NotEmpty().WithMessage("Card pin code is required")
+                .Length(4).WithMessage("Invalid card code");
 
             RuleFor(r => r.CardNumber)
                 .NotEmpty().WithMessage("Card number is required");

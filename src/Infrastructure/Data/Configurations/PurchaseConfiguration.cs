@@ -26,6 +26,18 @@ namespace Infrastructure.Data.Configurations
                 .IsRequired();
 
             builder
+                .HasOne(p => p.Check)
+                .WithOne(c => c.Purchase)
+                .HasForeignKey<Check>(c => c.PurchaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .HasOne(p => p.Refund)
+                .WithOne(r => r.Purchase)
+                .HasForeignKey<Refund>(r => r.PurchaseId)
+                .IsRequired();
+
+            builder
                 .Property(p => p.CreatedAt)
                 .HasDefaultValueSql("NOW()");
         }

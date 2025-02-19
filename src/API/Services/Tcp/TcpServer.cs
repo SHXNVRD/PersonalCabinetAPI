@@ -6,6 +6,7 @@ using System.Xml;
 using System.Xml.Linq;
 using API.Abstractions;
 using API.Extensions;
+using Application.Tcp;
 using MediatR;
 using Microsoft.Extensions.Options;
 
@@ -14,22 +15,39 @@ namespace API.Services.Tcp;
 public class TcpServer : ITcpServer
 {
     private readonly TcpListener _tcpListener;
+    private Dictionary<string, TcpHandlerPipeline> _handlerPipelines;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<TcpServer> _logger;
     private readonly TcpOptions _options;
 
     private readonly TimeSpan _startTimeout;
     private readonly TimeSpan _readTimeout;
-
-    private const string CmdPing = "2000";
+    
+    
     public TcpServer(
         ILogger<TcpServer> logger, 
-        IOptions<TcpOptions> options)
+        IOptions<TcpOptions> options,
+        IServiceProvider serviceProvider,
+        IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
         _options = options.Value;
+        _serviceScopeFactory = serviceScopeFactory;
+        
         _tcpListener = new TcpListener(IPAddress.Parse(_options.Host), _options.Port);
         _startTimeout = TimeSpan.FromMilliseconds(_options.StartTimeout);
         _readTimeout = TimeSpan.FromMilliseconds(_options.ReadTimeout);
+        
+        InitScopedServices();
+    }
+
+    private void InitScopedServices()
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var handlers = scope.ServiceProvider.GetServices<ITcpCommandHandler>();
+        _handlerPipelines = handlers.ToDictionary(
+            h => h.RequestCode,
+            h => new TcpHandlerPipeline(h, scope.ServiceProvider.GetServices<ITcpPipelineBehavior>()));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -40,16 +58,8 @@ public class TcpServer : ITcpServer
         while (!cancellationToken.IsCancellationRequested)
         {
             var tcpClient = await _tcpListener.AcceptTcpClientAsync(cancellationToken);
-            _ = Task.Run(() => MeasureTimeAsync(() => HandleClientAsync(tcpClient)), cancellationToken);
+            _ = Task.Run(() => HandleClientAsync(tcpClient), cancellationToken);
         }
-    }
-
-    private async Task MeasureTimeAsync(Func<Task> func)
-    {
-        var watch = Stopwatch.StartNew();
-        await func.Invoke();
-        watch.Stop();
-        _logger.LogInformation("Tcp request executed in {Time} ms", watch.ElapsedMilliseconds);
     }
     
     private async Task HandleClientAsync(TcpClient tcpClient)
@@ -57,8 +67,7 @@ public class TcpServer : ITcpServer
         var remoteHost = ((IPEndPoint)tcpClient.Client.RemoteEndPoint!).Address.ToString();
         var remotePort = ((IPEndPoint)tcpClient.Client.RemoteEndPoint!).Port.ToString();
         _logger.LogInformation(
-            "Remote device with address: {ClientAddress} has connected", 
-            $"{remoteHost}:{remotePort}");
+            "Remote device with address: {ClientAddress} has connected", $"{remoteHost}:{remotePort}");
         
         try
         {
@@ -71,26 +80,32 @@ public class TcpServer : ITcpServer
                 .Element("DP")
                 ?.Element("R")
                 ?.Element("ROW")
-                ?.Attribute("cmdtype");
+                ?.Attribute("cmdtype")
+                ?.Value;
 
-            if (cmdType == null)
+            if (string.IsNullOrEmpty(cmdType))
             {
                 _logger.LogError("Received xml must contain \"cmdtype\" attribute");
                 return;
             }
-
-            switch (cmdType.Value)
+            
+            if (_handlerPipelines.TryGetValue(cmdType, out var pipeline))
             {
-                case CmdPing:
-                    await SendPingAsync(stream);
-                    break;
+                var response = await pipeline.ExecuteAsync(xml);
+                await SendAsync(stream, response);
+            }
+            else
+            {
+                _logger.LogError("Unsupported request code, attribute cmdtype was {requestCode}", cmdType);
             }
         }
         catch (IOException ioe) when (ioe.InnerException is SocketException soe)
         {
+            // Протокол пострен на таймаутах. Истечение таймаута - триггер для закрытия соединения
+            // Истечение таймаута означает корректное завершение обмена сообщениями
             if (soe.SocketErrorCode != SocketError.TimedOut)
                 _logger.LogError(ioe, "Exception has occurred while executing the tcp request: {Message}", ioe.Message);
-            _logger.LogError("Timeout, reason: {Message}", soe.Message);
+            _logger.LogInformation("Connection closed, reason: timeout expired");
         }
         catch (Exception e)
         {
@@ -105,41 +120,9 @@ public class TcpServer : ITcpServer
         }
     }
 
-    private Task SendPingAsync(NetworkStream writer, CancellationToken cancellationToken = default)
-    {
-        var response = new XDocument(
-            new XElement("DP",
-                new XElement("M",
-                    new XElement("S",
-                        new XAttribute("serv1", _options.Host),
-                        new XAttribute("portf1", _options.Port),
-                        new XAttribute("porte1", _options.Port),
-                        new XAttribute("serv2", _options.Host),
-                        new XAttribute("portf2", _options.Port),
-                        new XAttribute("porte2", _options.Port))),
-                new XElement("R",
-                    new XElement("ROW",
-                        new XAttribute("kod_otvet_xml", "0"),
-                        new XAttribute("test_mes", "Тестовый чек#13;#10; Строка 2 #13;#10;"),
-                        new XAttribute("pingtime", "60"), // заменить на реальное время
-                        new XAttribute("get_settings", "0"),
-                        new XAttribute("to_ping", "2"),
-                        new XAttribute("to_cmd", "30"),
-                        new XAttribute("q", "0"),
-                        new XAttribute("s1", _options.Host),
-                        new XAttribute("s2", _options.Host),
-                        new XAttribute("p1", _options.Port),
-                        new XAttribute("p2", _options.Port),
-                        new XAttribute("p1e", _options.Port),
-                        new XAttribute("p2e", _options.Port)))));
-
-        return SendAsync(writer, response, cancellationToken);
-    }
-
     private async Task SendAsync(NetworkStream writer, XDocument response, CancellationToken cancellationToken = default)
     {
         var buffer = await response.ToByteArrayAsync(Encoding.GetEncoding(1251), cancellationToken);
-        Console.WriteLine(Encoding.GetEncoding(1251).GetString(buffer));
         await writer.WriteAsync(buffer, cancellationToken);
         await writer.FlushAsync(cancellationToken);
     }

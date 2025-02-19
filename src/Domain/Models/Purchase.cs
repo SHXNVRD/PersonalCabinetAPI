@@ -12,8 +12,9 @@ namespace Domain.Models
         public virtual Station? Station { get; set; }
         public long? CardId { get; set; }
         public virtual Card? Card { get; set; }
+        public virtual Refund? Refund { get; set; }
+        public virtual Check? Check { get; set; }
         public virtual ICollection<PurchaseItem> PurchaseItems { get; set; } = [];
-        public virtual Discount? Discount { get; set; }
         public DateTime CreatedAt { get; set; }
         public decimal Total { get; set; }
     }

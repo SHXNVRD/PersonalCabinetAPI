@@ -15,5 +15,6 @@ namespace Domain.Models
         public int Quantity { get; set; }
         public string? Description { get; set; }
         public virtual ICollection<PurchaseItem>? PurchaseItems { get; set; }
+        public virtual ICollection<RefundItem>? RefundItems { get; set; }
     }
 }

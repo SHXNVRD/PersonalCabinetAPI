@@ -17,9 +17,10 @@ namespace Infrastructure.Data
     {
         public override DbSet<User> Users { get; set; }
         public DbSet<Card> Cards { get; set; }
-        public DbSet<BonusSystem> BonusSystems { get; set; }
+        public DbSet<Check> Checks { get; set; }
+        public DbSet<Refund> Refunds { get; set; }
+        public DbSet<RefundItem> RefundItems { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Discount> Discounts { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
@@ -33,17 +34,6 @@ namespace Infrastructure.Data
         {
             base.OnModelCreating(builder);
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-        }
-    }
-    
-    public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
-    {
-        public AppDbContext CreateDbContext(string[] args)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql("Host=perscab.db;Port=5432;Database=perscabdb;Username=postgres;Password=postgres;Include Error Detail=true");
-
-            return new AppDbContext(optionsBuilder.Options);
         }
     }
 }

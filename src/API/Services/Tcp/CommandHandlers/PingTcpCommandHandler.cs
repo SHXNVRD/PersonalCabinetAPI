@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using Application.Tcp;
+using FluentResults;
 using Microsoft.Extensions.Options;
 
 namespace API.Services.Tcp.CommandHandlers;
@@ -13,9 +14,9 @@ public class PingTcpCommandHandler : ITcpCommandHandler
     {
         _tcpOptions = tcpOptions.Value;
     }
-    public Task<XDocument> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
+    public Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
     {
-        var response = new XDocument(
+        var result = new XDocument(
             new XElement("DP",
                 new XElement("M",
                     new XElement("S",
@@ -41,6 +42,6 @@ public class PingTcpCommandHandler : ITcpCommandHandler
                         new XAttribute("p1e", _tcpOptions.Port),
                         new XAttribute("p2e", _tcpOptions.Port)))));
 
-        return Task.FromResult(response);
+        return Task.FromResult(Result.Ok(result));
     }
 }

@@ -12,10 +12,32 @@ namespace Infrastructure.Data
     public sealed class UnitOfWork : IUnitOfWork
     {
         private bool _disposed;
+        private IPurchaseRepository? _purchaseRepository;
+        private IProductRepository? _productRepository;
         private ICardRepository? _cardRepository;
         private IUserRepository? _userRepository;
         private readonly AppDbContext _dbContext;
         private readonly ILogger<UnitOfWork> _logger;
+
+        public IPurchaseRepository PurchaseRepository
+        {
+            get
+            {
+                if (_purchaseRepository == null)
+                    return _purchaseRepository = new PurchaseRepository(_dbContext);
+                return _purchaseRepository;
+            }
+        }
+
+        public IProductRepository ProductRepository
+        {
+            get
+            {
+                if (_productRepository == null)
+                    _productRepository = new ProductRepository(_dbContext);
+                return _productRepository;
+            }
+        }
 
         public ICardRepository CardRepository
         {
@@ -43,14 +65,14 @@ namespace Infrastructure.Data
             _logger = logger;
         }
 
-        public Task<IDbContextTransaction> BeginTransactionAsync(bool useIfExists = false)
+        public async Task<IDbContextTransaction> BeginTransactionAsync(bool useIfExists = false)
         {
             var transaction = _dbContext.Database.CurrentTransaction;
             
             if (transaction == null)
-                return _dbContext.Database.BeginTransactionAsync();
+                return await _dbContext.Database.BeginTransactionAsync();
             
-            return useIfExists ? Task.FromResult(transaction) : _dbContext.Database.BeginTransactionAsync();
+            return useIfExists ? await Task.FromResult(transaction) : await _dbContext.Database.BeginTransactionAsync();
         }
 
         public async Task<bool> SaveChangesAsync()

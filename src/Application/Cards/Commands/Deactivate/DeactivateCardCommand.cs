@@ -9,6 +9,6 @@ namespace Application.Cards.Commands.Deactivate
 {
     public class DeactivateCardCommand : IRequest<Result>
     {
-        public int CardNumber { get; set; }
+        public string CardNumber { get; set; }
     }
 }

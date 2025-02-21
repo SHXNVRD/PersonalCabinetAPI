@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using Application.Tcp;
+using FluentResults;
 
 namespace API.Services.Tcp;
 
@@ -16,12 +17,12 @@ public class TcpHandlerPipeline
         _behaviors = behaviors;
     }
 
-    public Task<XDocument> ExecuteAsync(
+    public Task<Result<XDocument>> ExecuteAsync(
         XDocument request, 
         CancellationToken cancellationToken = default
     )
     {
-        Func<XDocument, CancellationToken, Task<XDocument>> pipeline = 
+        Func<XDocument, CancellationToken, Task<Result<XDocument>>> pipeline = 
             (req, cToken) => _handler.HandleAsync(req, cToken);
         
         foreach (var behavior in _behaviors.Reverse())

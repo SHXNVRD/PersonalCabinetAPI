@@ -6,17 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data.Repositories;
 
-public class UserRepository : IUserRepository
+public class ProductRepository : IProductRepository
 {
     private readonly AppDbContext _context;
 
-    public UserRepository(AppDbContext context)
+    public ProductRepository(AppDbContext context)
     {
         _context = context;
     }
 
-    public async Task<User?> GetByPhoneNumber(string phone, TrackingType trackingType) =>
-        await _context.Users
+    public async Task<Product?> FindById(long id, TrackingType trackingType)
+        => await _context.Products
             .SetTracking(trackingType)
-            .FirstOrDefaultAsync(u => u.PhoneNumber == phone);
+            .SingleOrDefaultAsync(p => p.Id == id);
 }

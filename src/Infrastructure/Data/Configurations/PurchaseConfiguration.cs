@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Domain.Models;
 using Infrastructure.Data.Configurations.Base;
@@ -13,12 +14,9 @@ namespace Infrastructure.Data.Configurations
     {
         protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
         {
-            builder
-                .HasOne(p => p.Station)
-                .WithMany(s => s.Purchases)
-                .HasForeignKey(p => p.StationId)
-                .IsRequired();
-
+            Expression<Func<DateTime, DateTime>> convertToUtc = dateTime =>
+                dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            
             builder
                 .HasMany(p => p.PurchaseItems)
                 .WithOne(pi => pi.Purchase)
@@ -39,7 +37,12 @@ namespace Infrastructure.Data.Configurations
 
             builder
                 .Property(p => p.CreatedAt)
-                .HasDefaultValueSql("NOW()");
+                .HasConversion(convertToUtc, convertToUtc)
+                .IsRequired();
+            
+            builder
+                .Property(p => p.CreatedAt)
+                .HasDefaultValueSql("now()");
         }
     }
 }

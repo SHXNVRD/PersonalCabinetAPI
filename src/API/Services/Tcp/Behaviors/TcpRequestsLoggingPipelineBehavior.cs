@@ -3,6 +3,7 @@ using System.Text;
 using System.Xml.Linq;
 using API.Extensions;
 using Application.Tcp;
+using FluentResults;
 
 namespace API.Services.Tcp.Behaviors;
 
@@ -16,29 +17,39 @@ public class TcpRequestsLoggingPipelineBehavior : ITcpPipelineBehavior
         _logger = logger;
     }
 
-    public async Task<XDocument> HandleAsync(
+    public async Task<Result<XDocument>> HandleAsync(
         XDocument request,
-        Func<XDocument, CancellationToken, Task<XDocument>> next,
+        Func<XDocument, CancellationToken, Task<Result<XDocument>>> next,
         CancellationToken cancellationToken
     )
     {
-        _logger.LogInformation("Tcp request with code {RequestCode} starting ", 
-            request.Root?.Element("R")?.Element("ROW")?.Attribute("cmdtype")?.Value);
-        
-        var buffer = await request.ToByteArrayAsync(Encoding.GetEncoding(1251));
-        var requestString = Encoding.GetEncoding(1251).GetString(buffer);
-        
-        _logger.LogInformation("Request: {Request}", requestString);
+        var requestCode = request
+            .Descendants("ROW")
+            .First()
+            .Attribute("cmdtype")
+            !.Value;
+
+        _logger.LogInformation("Starting Tcp request with code {RequestCode}", requestCode);
         
         _stopwatch.Start();
-        var response = await next(request, cancellationToken);
+        var result = await next(request, cancellationToken);
         _stopwatch.Stop();
-        
-        _logger.LogInformation("Tcp request with code {RequestCode} finished in {ExecutingTime} ms", 
-            request.Root?.Element("R")?.Element("ROW")?.Attribute("cmdtype")?.Value,
-            _stopwatch.ElapsedMilliseconds);
+
+        if (result.IsSuccess)
+        {
+            _logger.LogInformation("Tcp request with code {RequestCode} successfully completed in {ExecutingTime} ms",
+                requestCode,
+                _stopwatch.ElapsedMilliseconds);
+        }
+        else
+        {
+            _logger.LogError("Tcp request with code {RequestCode} failure {@Errors} in {ExecutingTime} ms,",
+                requestCode,
+                result.Errors,
+                _stopwatch.ElapsedMilliseconds);
+        }
         
         _stopwatch.Reset();
-        return response;
+        return result;
     }
 }

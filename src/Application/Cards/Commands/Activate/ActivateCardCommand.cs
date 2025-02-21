@@ -12,7 +12,7 @@ namespace Application.Cards.Commands.Activate
     public class ActivateCardCommand : IRequest<Result>
     {
         public string UserId { get; set; }
-        public int CardNumber { get; set; }
+        public string CardNumber { get; set; }
         public string CardPinCode { get; set; }
     }
 }

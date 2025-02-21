@@ -15,7 +15,6 @@ namespace API.Services.Tcp;
 public class TcpServer : ITcpServer
 {
     private readonly TcpListener _tcpListener;
-    private Dictionary<string, TcpHandlerPipeline> _handlerPipelines;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<TcpServer> _logger;
     private readonly TcpOptions _options;
@@ -37,17 +36,6 @@ public class TcpServer : ITcpServer
         _tcpListener = new TcpListener(IPAddress.Parse(_options.Host), _options.Port);
         _startTimeout = TimeSpan.FromMilliseconds(_options.StartTimeout);
         _readTimeout = TimeSpan.FromMilliseconds(_options.ReadTimeout);
-        
-        InitScopedServices();
-    }
-
-    private void InitScopedServices()
-    {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var handlers = scope.ServiceProvider.GetServices<ITcpCommandHandler>();
-        _handlerPipelines = handlers.ToDictionary(
-            h => h.RequestCode,
-            h => new TcpHandlerPipeline(h, scope.ServiceProvider.GetServices<ITcpPipelineBehavior>()));
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -69,6 +57,12 @@ public class TcpServer : ITcpServer
         _logger.LogInformation(
             "Remote device with address: {ClientAddress} has connected", $"{remoteHost}:{remotePort}");
         
+        using var scope = _serviceScopeFactory.CreateScope();
+        var handlers = scope.ServiceProvider.GetServices<ITcpCommandHandler>();
+        var handlerPipelines = handlers.ToDictionary(
+            h => h.RequestCode,
+            h => new TcpHandlerPipeline(h, scope.ServiceProvider.GetServices<ITcpPipelineBehavior>()));
+        
         try
         {
             var stream = tcpClient.GetStream();
@@ -83,16 +77,20 @@ public class TcpServer : ITcpServer
                 ?.Attribute("cmdtype")
                 ?.Value;
 
-            if (string.IsNullOrEmpty(cmdType))
+            if (string.IsNullOrWhiteSpace(cmdType))
             {
                 _logger.LogError("Received xml must contain \"cmdtype\" attribute");
                 return;
             }
             
-            if (_handlerPipelines.TryGetValue(cmdType, out var pipeline))
+            if (handlerPipelines.TryGetValue(cmdType, out var pipeline))
             {
                 var response = await pipeline.ExecuteAsync(xml);
-                await SendAsync(stream, response);
+
+                if (response.IsFailed)
+                    return;
+                
+                await SendAsync(stream, response.Value);
             }
             else
             {

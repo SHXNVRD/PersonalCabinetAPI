@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using Application.Tcp;
+using FluentResults;
 using Microsoft.Extensions.Options;
 
 namespace API.Services.Tcp.CommandHandlers;
@@ -14,9 +15,9 @@ public class CloseShiftTcpCommandHandler : ITcpCommandHandler
     {
         _tcpOptions = tcpOptions.Value;
     }
-    public async Task<XDocument> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
+    public Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
     {
-        var response = new XDocument(
+        var result = new XDocument(
             new XElement("DP",
                 new XElement("M",
                     new XElement("S",
@@ -36,6 +37,6 @@ public class CloseShiftTcpCommandHandler : ITcpCommandHandler
                         new XAttribute("kod_otvet_xml", "0"),
                         new XAttribute("checksrc", "**** Закрытие смены ****&#13;&#10;****** Svoy.Club ******")))));
 
-        return await Task.FromResult(response);
+        return Task.FromResult(Result.Ok(result));
     }
 }

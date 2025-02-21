@@ -1,9 +1,10 @@
 ﻿using System.Xml.Linq;
+using FluentResults;
 
 namespace Application.Tcp;
 
 public interface ITcpCommandHandler
 {
     string RequestCode { get; }
-    Task<XDocument> HandleAsync(XDocument request, CancellationToken cancellationToken = default);
+    Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default);
 }

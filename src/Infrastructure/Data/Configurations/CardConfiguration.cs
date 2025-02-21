@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Domain.Models;
 using Infrastructure.Data.Configurations.Base;
@@ -22,6 +23,11 @@ namespace Infrastructure.Data.Configurations
                 .HasMany(c => c.Purchases)
                 .WithOne(p => p.Card)
                 .HasForeignKey(p => p.CardId);
+
+            builder
+                .Property(c => c.Number)
+                .HasMaxLength(12)
+                .IsFixedLength();
         }
     }
 }

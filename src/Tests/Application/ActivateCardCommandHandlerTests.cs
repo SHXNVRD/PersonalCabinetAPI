@@ -36,7 +36,7 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
+            CardNumber = "456",
             CardPinCode = "secret-code"
         };
 
@@ -68,7 +68,7 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
+            CardNumber = "456",
             CardPinCode = "secret-code"
         };
 
@@ -89,7 +89,7 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
+            CardNumber = "456",
             CardPinCode = "secret-code"
         };
 

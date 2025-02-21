@@ -78,6 +78,7 @@ namespace API.Extensions
                 .Configure<TcpOptions>(config.GetSection("TcpOptions"))
                 .AddScoped<ITcpCommandHandler, PingTcpCommandHandler>()
                 .AddScoped<ITcpCommandHandler, CloseShiftTcpCommandHandler>()
+                .AddScoped<ITcpCommandHandler, CreatePurchaseTcpCommandHandler>()
                 .AddScoped<ITcpPipelineBehavior, TcpRequestsLoggingPipelineBehavior>()
                 .AddSingleton<ITcpServer, TcpServer>()
                 .AddHostedService<TcpHostedService>();

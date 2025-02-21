@@ -1,12 +1,13 @@
 ﻿using System.Xml.Linq;
+using FluentResults;
 
 namespace Application.Tcp;
 
 public interface ITcpPipelineBehavior
 {
-    Task<XDocument> HandleAsync(
+    Task<Result<XDocument>> HandleAsync(
         XDocument request,
-        Func<XDocument, CancellationToken, Task<XDocument>> next,
+        Func<XDocument, CancellationToken, Task<Result<XDocument>>> next,
         CancellationToken cancellationToken = default
     );
 }

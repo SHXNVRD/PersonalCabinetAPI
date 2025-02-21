@@ -19,6 +19,17 @@ public class UserPhoneNumberValidator<TUser> : IUserValidator<TUser>
     {
         List<IdentityError> errors = [];
 
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber))
+        {
+            errors.Add(new IdentityError
+            {
+                Code = "InvalidPhone",
+                Description = "Invalid phone number."
+            });
+
+            return IdentityResult.Failed(errors.ToArray());
+        }
+
         var owner = await _unitOfWork.UserRepository.GetByPhoneNumber(user.PhoneNumber);
 
         if (owner != null && owner.Id != user.Id)
@@ -28,7 +39,7 @@ public class UserPhoneNumberValidator<TUser> : IUserValidator<TUser>
                 Description = $"Phone number {user.PhoneNumber} is already taken."
             });
         
-        return errors?.Count > 0
+        return errors.Count > 0
             ? IdentityResult.Failed(errors.ToArray())
             : IdentityResult.Success;
     }

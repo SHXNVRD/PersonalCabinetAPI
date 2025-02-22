@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.dev.yml = docker-compose.dev.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tcp", "src\Tcp\Tcp.csproj", "{6E5B8081-090F-4926-A187-256040F3AEE2}"
+EndProject
 e
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,10 @@ Global
 		{FBA603E3-4CD3-49FC-A291-EC00AA44B52C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBA603E3-4CD3-49FC-A291-EC00AA44B52C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBA603E3-4CD3-49FC-A291-EC00AA44B52C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E5B8081-090F-4926-A187-256040F3AEE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E5B8081-090F-4926-A187-256040F3AEE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E5B8081-090F-4926-A187-256040F3AEE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E5B8081-090F-4926-A187-256040F3AEE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +65,7 @@ Global
 		{9573F2D1-4372-4A7E-859F-BCE70D173934} = {85A81995-2F9E-43C8-9037-417313EFE5B8}
 		{BDA99522-B4D3-4B9F-A555-FA708766A6F6} = {85A81995-2F9E-43C8-9037-417313EFE5B8}
 		{FBA603E3-4CD3-49FC-A291-EC00AA44B52C} = {85A81995-2F9E-43C8-9037-417313EFE5B8}
+		{6E5B8081-090F-4926-A187-256040F3AEE2} = {85A81995-2F9E-43C8-9037-417313EFE5B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE1EEB1E-E4AD-445D-95D6-6D7F2DA2A407}

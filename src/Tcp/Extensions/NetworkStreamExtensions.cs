@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace API.Extensions;
+namespace Tcp.Extensions;
 
 public static class NetworkStreamExtensions
 {

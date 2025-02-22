@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
 using FluentResults;
 
-namespace Application.Tcp;
+namespace Tcp.Abstractions;
 
 public interface ITcpPipelineBehavior
 {

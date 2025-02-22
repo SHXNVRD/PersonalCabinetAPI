@@ -1,6 +1,4 @@
-﻿using System.Runtime.Serialization;
-
-namespace API.Services.Tcp;
+﻿namespace Tcp;
 
 public static class TcpRequests
 {

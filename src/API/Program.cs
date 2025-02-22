@@ -1,25 +1,11 @@
 using System.Text;
 using API.Extensions;
+using API.HostedServices;
 using API.Middlewares;
-using Application.Interfaces;
-using Application.Interfaces.Repositories;
-using Application.Services;
-using Domain.Models;
-using FluentValidation;
-using Infrastructure.Data;
-using Infrastructure.Data.Repositories;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Application.Behaviors;
 using Application.Extensions;
-using Application.Interfaces.Token;
-using Application.Users.DTOs;
 using Infrastructure.Extensions;
-using Infrastructure.Services.Options;
-using Infrastructure.Services.Token;
-using Microsoft.AspNetCore.HttpOverrides;
-using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using Tcp.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IConfiguration config = builder.Configuration;
@@ -36,8 +22,8 @@ services.AddExceptionHandler<GlobalExceptionHandler>();
 services
     .AddInfrastructure(config)
     .AddApplication()
-    .AddApi(config);
-
+    .AddApi(config)
+    .AddTcp(config).AddHostedService<TcpHostedService>();
 
 services
     .AddAuthorization()

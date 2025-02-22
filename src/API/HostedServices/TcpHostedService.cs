@@ -1,6 +1,6 @@
-﻿using API.Abstractions;
+﻿using Tcp.Abstractions;
 
-namespace API.Services.Tcp;
+namespace API.HostedServices;
 
 public class TcpHostedService : BackgroundService
 {

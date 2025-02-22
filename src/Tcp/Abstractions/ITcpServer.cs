@@ -1,4 +1,4 @@
-﻿namespace API.Abstractions;
+﻿namespace Tcp.Abstractions;
 
 public interface ITcpServer
 {

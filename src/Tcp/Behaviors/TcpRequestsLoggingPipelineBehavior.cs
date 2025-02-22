@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Text;
 using System.Xml.Linq;
-using API.Extensions;
-using Application.Tcp;
 using FluentResults;
+using Microsoft.Extensions.Logging;
+using Tcp.Abstractions;
 
-namespace API.Services.Tcp.Behaviors;
+namespace Tcp.Behaviors;
 
 public class TcpRequestsLoggingPipelineBehavior : ITcpPipelineBehavior
 {

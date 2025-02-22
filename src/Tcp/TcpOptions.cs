@@ -1,4 +1,4 @@
-﻿namespace API.Services.Tcp;
+﻿namespace Tcp;
 
 public class TcpOptions
 {

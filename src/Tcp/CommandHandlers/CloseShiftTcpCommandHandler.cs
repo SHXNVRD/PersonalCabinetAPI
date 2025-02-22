@@ -1,9 +1,9 @@
 ﻿using System.Xml.Linq;
-using Application.Tcp;
 using FluentResults;
 using Microsoft.Extensions.Options;
+using Tcp.Abstractions;
 
-namespace API.Services.Tcp.CommandHandlers;
+namespace Tcp.CommandHandlers;
 
 public class CloseShiftTcpCommandHandler : ITcpCommandHandler
 {

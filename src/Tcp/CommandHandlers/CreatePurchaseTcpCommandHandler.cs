@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 using Application.Purchases.Commands;
-using Application.Tcp;
 using FluentResults;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Tcp.Abstractions;
 
-namespace API.Services.Tcp.CommandHandlers;
+namespace Tcp.CommandHandlers;
 
 public class CreatePurchaseTcpCommandHandler : ITcpCommandHandler
 {

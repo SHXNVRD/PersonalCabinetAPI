@@ -1,8 +1,8 @@
 ﻿using System.Xml.Linq;
-using Application.Tcp;
 using FluentResults;
+using Tcp.Abstractions;
 
-namespace API.Services.Tcp;
+namespace Tcp;
 
 public class TcpHandlerPipeline
 {

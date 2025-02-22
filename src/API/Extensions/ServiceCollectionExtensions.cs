@@ -1,14 +1,14 @@
-using API.Abstractions;
+using API.HostedServices;
 using API.Services;
-using API.Services.Tcp;
-using API.Services.Tcp.Behaviors;
-using API.Services.Tcp.CommandHandlers;
 using Application.Interfaces;
-using Application.Tcp;
 using Application.Users.DTOs;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using Tcp;
+using Tcp.Abstractions;
+using Tcp.Behaviors;
+using Tcp.CommandHandlers;
 
 namespace API.Extensions
 {
@@ -19,8 +19,7 @@ namespace API.Extensions
             services
                 .ConfigureFluentValidation()
                 .ConfigureSwagger()
-                .AddScoped<ILinkService, LinkService>()
-                .ConfigureTcp(config);
+                .AddScoped<ILinkService, LinkService>();
 
             return services;
         }
@@ -69,20 +68,6 @@ namespace API.Extensions
                 config.DisableBuiltInModelValidation = true;
             });
             
-            return services;
-        }
-
-        private static IServiceCollection ConfigureTcp(this IServiceCollection services, IConfiguration config)
-        {
-            services
-                .Configure<TcpOptions>(config.GetSection("TcpOptions"))
-                .AddScoped<ITcpCommandHandler, PingTcpCommandHandler>()
-                .AddScoped<ITcpCommandHandler, CloseShiftTcpCommandHandler>()
-                .AddScoped<ITcpCommandHandler, CreatePurchaseTcpCommandHandler>()
-                .AddScoped<ITcpPipelineBehavior, TcpRequestsLoggingPipelineBehavior>()
-                .AddSingleton<ITcpServer, TcpServer>()
-                .AddHostedService<TcpHostedService>();
-
             return services;
         }
     }

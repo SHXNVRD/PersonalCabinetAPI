@@ -1,16 +1,14 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Xml;
 using System.Xml.Linq;
-using API.Abstractions;
-using API.Extensions;
-using Application.Tcp;
-using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Tcp.Abstractions;
+using Tcp.Extensions;
 
-namespace API.Services.Tcp;
+namespace Tcp;
 
 public class TcpServer : ITcpServer
 {

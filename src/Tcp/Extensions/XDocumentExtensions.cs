@@ -2,7 +2,7 @@
 using System.Xml;
 using System.Xml.Linq;
 
-namespace API.Extensions;
+namespace Tcp.Extensions;
 
 public static class XDocumentExtensions
 {

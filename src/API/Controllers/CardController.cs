@@ -9,6 +9,7 @@ using Application.Cards.DTOs;
 using Application.Cards.Queries;
 using Application.Cards.Queries.GetCardByUserId;
 using Application.DTOs;
+using Application.Errors;
 using Application.Extensions;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
@@ -39,9 +40,11 @@ namespace API.Controllers
         public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardRequest request)
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+
             if (userId == null)
-                return Unauthorized("Access token does not contain user id");
+                return Result
+                    .Fail(new UnauthorizedError("Access token does not contain user id"))
+                    .ToObjectResult();
 
             var command = ActivateCardMapper.ToCommand(request);
             command.UserId = userId;
@@ -49,7 +52,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
 
             return result.ToActionResult();
         }
@@ -65,10 +68,14 @@ namespace API.Controllers
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
-                return Unauthorized("Access token does not contain user id");
+                return Result
+                    .Fail(new UnauthorizedError("Access token does not contain user id"))
+                    .ToObjectResult();
 
             if (!long.TryParse(userId, out var parsedId))
-                return Unauthorized("User Id must be a digit");
+                return Result
+                    .Fail(new UnauthorizedError("Failed to parse user id"))
+                    .ToObjectResult();
 
             var command = new GetCardByUserIdQuery
             {
@@ -78,7 +85,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
 
             return result.ToActionResult();
         }
@@ -94,7 +101,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
 
             return NoContent();
         }

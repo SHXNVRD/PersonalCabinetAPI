@@ -4,33 +4,34 @@ using Tcp.Abstractions;
 
 namespace Tcp;
 
-public class TcpHandlerPipeline
+public class TcpHandlerPipeline<TRequest>
+    where TRequest : ITcpRequest
 {
-    private readonly IEnumerable<ITcpPipelineBehavior> _behaviors;
-    private readonly ITcpCommandHandler _handler;
+    private readonly IEnumerable<ITcpPipelineBehavior<TRequest>> _behaviors;
+    private readonly ITcpRequestHandler<TRequest> _handler;
 
     public TcpHandlerPipeline(
-        ITcpCommandHandler handler,
-        IEnumerable<ITcpPipelineBehavior> behaviors)
+        ITcpRequestHandler<TRequest> handler,
+        IEnumerable<ITcpPipelineBehavior<TRequest>> behaviors)
     {
         _handler = handler;
         _behaviors = behaviors;
     }
 
-    public Task<Result<XDocument>> ExecuteAsync(
-        XDocument request, 
-        CancellationToken cancellationToken = default
+    public async Task<Result<XDocument>> ExecuteAsync(
+        TRequest command, 
+        CancellationToken cancellationToken
     )
     {
-        Func<XDocument, CancellationToken, Task<Result<XDocument>>> pipeline = 
-            (req, cToken) => _handler.HandleAsync(req, cToken);
+        Func<TRequest, CancellationToken, Task<Result<XDocument>>> pipeline = 
+            (req, ct) => _handler.HandleAsync(req, ct);
         
         foreach (var behavior in _behaviors.Reverse())
         {
             var next = pipeline;
-            pipeline = (req, cToken) => behavior.HandleAsync(req, next, cToken);
+            pipeline = (req, ct) => behavior.HandleAsync(req, next, ct);
         }
 
-        return pipeline(request, cancellationToken);
+        return await pipeline(command, cancellationToken);
     }
 }

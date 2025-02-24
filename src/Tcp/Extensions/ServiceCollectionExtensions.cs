@@ -2,7 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Tcp.Abstractions;
 using Tcp.Behaviors;
-using Tcp.CommandHandlers;
+using Tcp.DTOs.CloseShift;
+using Tcp.DTOs.CreatePurchase;
+using Tcp.DTOs.Ping;
+using Tcp.RequestHandlers;
 
 namespace Tcp.Extensions;
 
@@ -12,10 +15,10 @@ public static class ServiceCollectionExtensions
     {
         services
             .Configure<TcpOptions>(config.GetSection(nameof(TcpOptions)))
-            .AddScoped<ITcpCommandHandler, PingTcpCommandHandler>()
-            .AddScoped<ITcpCommandHandler, CloseShiftTcpCommandHandler>()
-            .AddScoped<ITcpCommandHandler, CreatePurchaseTcpCommandHandler>()
-            .AddScoped<ITcpPipelineBehavior, TcpRequestsLoggingPipelineBehavior>()
+            .AddScoped<ITcpRequestHandler<PingTcpRequest>, PingTcpRequestHandler>()
+            .AddScoped<ITcpRequestHandler<CloseShiftTcpRequest>, CloseShiftTcpRequestHandler>()
+            .AddScoped<ITcpRequestHandler<CreatePurchaseTcpRequest>, CreatePurchaseTcpRequestHandler>()
+            .AddScoped(typeof(ITcpPipelineBehavior<>), typeof(TcpRequestsLoggingPipelineBehavior<>))
             .AddSingleton<ITcpServer, TcpServer>();
 
         return services;

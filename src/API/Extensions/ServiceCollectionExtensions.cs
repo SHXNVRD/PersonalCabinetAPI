@@ -8,7 +8,6 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using Tcp;
 using Tcp.Abstractions;
 using Tcp.Behaviors;
-using Tcp.CommandHandlers;
 
 namespace API.Extensions
 {

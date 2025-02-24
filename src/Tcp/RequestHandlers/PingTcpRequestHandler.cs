@@ -2,19 +2,19 @@
 using FluentResults;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.DTOs.Ping;
 
-namespace Tcp.CommandHandlers;
+namespace Tcp.RequestHandlers;
 
-public class PingTcpCommandHandler : ITcpCommandHandler
+public class PingTcpRequestHandler: ITcpRequestHandler<PingTcpRequest>
 {
     private readonly TcpOptions _tcpOptions;
-    public string RequestCode => TcpRequests.Ping;
-
-    public PingTcpCommandHandler(IOptions<TcpOptions> tcpOptions)
+    
+    public PingTcpRequestHandler(IOptions<TcpOptions> tcpOptions)
     {
         _tcpOptions = tcpOptions.Value;
     }
-    public Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
+    public Task<Result<XDocument>> HandleAsync(PingTcpRequest request, CancellationToken cancellationToken = default)
     {
         var result = new XDocument(
             new XElement("DP",

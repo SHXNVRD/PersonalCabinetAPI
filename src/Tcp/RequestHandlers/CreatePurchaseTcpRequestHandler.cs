@@ -6,39 +6,34 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.DTOs.CreatePurchase;
 
-namespace Tcp.CommandHandlers;
+namespace Tcp.RequestHandlers;
 
-public class CreatePurchaseTcpCommandHandler : ITcpCommandHandler
+public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchaseTcpRequest>
 {
     private readonly IMediator _mediator;
     private readonly TcpOptions _tcpOptions;
     private readonly ILogger<CreatePurchaseCommand> _logger;
 
-    public CreatePurchaseTcpCommandHandler(IMediator mediator, IOptions<TcpOptions> options, ILogger<CreatePurchaseCommand> logger)
+    public CreatePurchaseTcpRequestHandler(IMediator mediator, IOptions<TcpOptions> options, ILogger<CreatePurchaseCommand> logger)
     {
         _mediator = mediator;
         _logger = logger;
         _tcpOptions = options.Value;
     }
 
-    public string RequestCode => TcpRequests.CreatePurchase;
-    public async Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
+    public async Task<Result<XDocument>> HandleAsync(CreatePurchaseTcpRequest request, CancellationToken cancellationToken = default)
     {
-        var element = request
-            .Descendants("ROW")
-            .First();
-
-        var cardNumber = element.Attribute("cardno")!.Value;
-        var productQuantity = (int)double.Parse(element.Attribute("kol")!.Value, CultureInfo.InvariantCulture);
+        var requestBody = request.R.Row;
         
         CreatePurchaseCommand command = new()
         {
-            ProductId = int.Parse(element.Attribute("usluga")!.Value),
-            CardNumber = cardNumber,
-            Quantity = productQuantity,
-            CreatedAt = DateTime.Parse(element.Attribute("dt")!.Value, DateTimeFormatInfo.InvariantInfo),
-            PinCode = element.Attribute("pin")!.Value
+            ProductId = requestBody.ProductId,
+            CardNumber = requestBody.CardNumber,
+            Quantity = requestBody.Quantity,
+            CreatedAt = DateTime.Parse(requestBody.Date, DateTimeFormatInfo.InvariantInfo),
+            PinCode = requestBody.CardPinCode
         };
 
         var result = await _mediator.Send(command, cancellationToken);
@@ -55,16 +50,16 @@ public class CreatePurchaseTcpCommandHandler : ITcpCommandHandler
                            "#13;#10; Красноармейск" +
                            "#13;#10; ул. 1 Мая,  5" +
                            "#13;#10;*************************" +
-                           $"#13;#10;   {element.Attribute("dt")!.Value}   " +
+                           $"#13;#10;   {requestBody.Date}   " +
                            "#13;#10;ТО .................28140" +
                            "#13;#10;ЭмитТО ..............0010" +
-                           $"#13;#10;Карта № .....{cardNumber}" +
+                           $"#13;#10;Карта № .....{requestBody.CardNumber}" +
                            $"#13;#10;Чек № ..................{result.Value.CheckId}" +
                            $"#13;#10;Баланс ............{result.Value.CardBalance}" +
                            "#13;#10;*************************" +
-                           $"#13;#10;{result.Value.ProductName} (Деб.)========{productQuantity}" +
-                           $"#13;#10;Цена :{element.Attribute("cena")!.Value}" +
-                           $"#13;#10;Сумма :{element.Attribute("summa")!.Value}" +
+                           $"#13;#10;{result.Value.ProductName} (Деб.)========{requestBody.Quantity}" +
+                           $"#13;#10;Цена :{requestBody.ProductPrice}" +
+                           $"#13;#10;Сумма :{requestBody.Total}" +
                            "#13;#10;Добро пожаловать!" +
                            "#13;#10;***********MPay**********" +
                            "#13;#10;*************************" +

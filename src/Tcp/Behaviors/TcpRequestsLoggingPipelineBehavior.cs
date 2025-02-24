@@ -6,29 +6,26 @@ using Tcp.Abstractions;
 
 namespace Tcp.Behaviors;
 
-public class TcpRequestsLoggingPipelineBehavior : ITcpPipelineBehavior
+public class TcpRequestsLoggingPipelineBehavior<TRequest>
+    : ITcpPipelineBehavior<TRequest> where TRequest : ITcpRequest
 {
-    private readonly ILogger<TcpRequestsLoggingPipelineBehavior> _logger;
+    private readonly ILogger<TcpRequestsLoggingPipelineBehavior<TRequest>> _logger;
     private readonly Stopwatch _stopwatch = new();
 
-    public TcpRequestsLoggingPipelineBehavior(ILogger<TcpRequestsLoggingPipelineBehavior> logger)
+    public TcpRequestsLoggingPipelineBehavior(ILogger<TcpRequestsLoggingPipelineBehavior<TRequest>> logger)
     {
         _logger = logger;
     }
 
     public async Task<Result<XDocument>> HandleAsync(
-        XDocument request,
-        Func<XDocument, CancellationToken, Task<Result<XDocument>>> next,
+        TRequest request,
+        Func<TRequest, CancellationToken, Task<Result<XDocument>>> next,
         CancellationToken cancellationToken
     )
     {
-        var requestCode = request
-            .Descendants("ROW")
-            .First()
-            .Attribute("cmdtype")
-            !.Value;
-
-        _logger.LogInformation("Starting Tcp request with code {RequestCode}", requestCode);
+        var requestName = request.GetType().Name;
+        
+        _logger.LogInformation("Starting tcp request {RequestName}", requestName);
         
         _stopwatch.Start();
         var result = await next(request, cancellationToken);
@@ -36,14 +33,12 @@ public class TcpRequestsLoggingPipelineBehavior : ITcpPipelineBehavior
 
         if (result.IsSuccess)
         {
-            _logger.LogInformation("Tcp request with code {RequestCode} successfully completed in {ExecutingTime} ms",
-                requestCode,
+            _logger.LogInformation("Completed tcp request in {ExecutingTime} ms",
                 _stopwatch.ElapsedMilliseconds);
         }
         else
         {
-            _logger.LogError("Tcp request with code {RequestCode} failure {@Errors} in {ExecutingTime} ms,",
-                requestCode,
+            _logger.LogError("Tcp request failure {@Errors} in {ExecutingTime} ms,",
                 result.Errors,
                 _stopwatch.ElapsedMilliseconds);
         }

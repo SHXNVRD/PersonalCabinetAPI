@@ -1,11 +1,19 @@
 ﻿using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml.Linq;
+using System.Xml.Serialization;
+using FluentResults;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.DTOs.CloseShift;
+using Tcp.DTOs.CreatePurchase;
+using Tcp.DTOs.Ping;
+using Tcp.DTOs.Refund;
 using Tcp.Extensions;
 
 namespace Tcp;
@@ -13,13 +21,13 @@ namespace Tcp;
 public class TcpServer : ITcpServer
 {
     private readonly TcpListener _tcpListener;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger<TcpServer> _logger;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly TcpOptions _options;
 
     private readonly TimeSpan _startTimeout;
     private readonly TimeSpan _readTimeout;
-    
     
     public TcpServer(
         ILogger<TcpServer> logger, 
@@ -28,8 +36,9 @@ public class TcpServer : ITcpServer
         IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
-        _options = options.Value;
+        _serviceProvider = serviceProvider;
         _serviceScopeFactory = serviceScopeFactory;
+        _options = options.Value;
         
         _tcpListener = new TcpListener(IPAddress.Parse(_options.Host), _options.Port);
         _startTimeout = TimeSpan.FromMilliseconds(_options.StartTimeout);
@@ -44,56 +53,57 @@ public class TcpServer : ITcpServer
         while (!cancellationToken.IsCancellationRequested)
         {
             var tcpClient = await _tcpListener.AcceptTcpClientAsync(cancellationToken);
-            _ = Task.Run(() => HandleClientAsync(tcpClient), cancellationToken);
+            _ = Task.Run(() => HandleClientAsync(tcpClient, cancellationToken), cancellationToken);
         }
     }
     
-    private async Task HandleClientAsync(TcpClient tcpClient)
+    private async Task HandleClientAsync(TcpClient tcpClient, CancellationToken cancellationToken = default)
     {
         var remoteHost = ((IPEndPoint)tcpClient.Client.RemoteEndPoint!).Address.ToString();
         var remotePort = ((IPEndPoint)tcpClient.Client.RemoteEndPoint!).Port.ToString();
         _logger.LogInformation(
             "Remote device with address: {ClientAddress} has connected", $"{remoteHost}:{remotePort}");
         
-        using var scope = _serviceScopeFactory.CreateScope();
-        var handlers = scope.ServiceProvider.GetServices<ITcpCommandHandler>();
-        var handlerPipelines = handlers.ToDictionary(
-            h => h.RequestCode,
-            h => new TcpHandlerPipeline(h, scope.ServiceProvider.GetServices<ITcpPipelineBehavior>()));
-        
         try
         {
             var stream = tcpClient.GetStream();
-            var xml = await stream
-                .ReadUntilTimeout(_startTimeout, _readTimeout)
-                .ToXDocumentAsync();
+            var buffer = stream.ReadUntilTimeout(_startTimeout, _readTimeout);
+            var cmdType = Encoding
+                .GetEncoding(1251)
+                .GetString(buffer)
+                .GetBetweenOrDefault("cmdtype=\"", "\"");
             
-            var cmdType = xml
-                .Element("DP")
-                ?.Element("R")
-                ?.Element("ROW")
-                ?.Attribute("cmdtype")
-                ?.Value;
-
             if (string.IsNullOrWhiteSpace(cmdType))
             {
                 _logger.LogError("Received xml must contain \"cmdtype\" attribute");
                 return;
             }
-            
-            if (handlerPipelines.TryGetValue(cmdType, out var pipeline))
-            {
-                var response = await pipeline.ExecuteAsync(xml);
 
-                if (response.IsFailed)
-                    return;
-                
-                await SendAsync(stream, response.Value);
-            }
-            else
+            var request = ParseRequest(cmdType, buffer);
+
+            if (request == null)
             {
-                _logger.LogError("Unsupported request code, attribute cmdtype was {requestCode}", cmdType);
+                _logger.LogError("Failed to deserialize received xml");
+                return;
             }
+            
+            using var scope = _serviceScopeFactory.CreateScope();
+            var scopedProvider = scope.ServiceProvider;
+            
+            var requestType = request!.GetType();
+            var pipelineType = typeof(TcpHandlerPipeline<>).MakeGenericType(requestType);
+            var pipeline = Activator.CreateInstance(
+                pipelineType,
+                scopedProvider.GetService(typeof(ITcpRequestHandler<>).MakeGenericType(requestType)),
+                scopedProvider.GetServices(typeof(ITcpPipelineBehavior<>).MakeGenericType(requestType))
+            );
+            var executeMethod = pipelineType.GetMethod("ExecuteAsync");
+            var response = await (Task<Result<XDocument>>)executeMethod.Invoke(pipeline, new object[] { request, cancellationToken });
+            
+            if (response.IsFailed)
+                return;
+                
+            await SendAsync(stream, response.Value);
         }
         catch (IOException ioe) when (ioe.InnerException is SocketException soe)
         {
@@ -121,5 +131,25 @@ public class TcpServer : ITcpServer
         var buffer = await response.ToByteArrayAsync(Encoding.GetEncoding(1251), cancellationToken);
         await writer.WriteAsync(buffer, cancellationToken);
         await writer.FlushAsync(cancellationToken);
+    }
+    
+    private static ITcpRequest? ParseRequest(string cmdType, byte[] buffer)
+        => cmdType switch
+        {
+            TcpRequests.Ping => Deserialize<PingTcpRequest>(buffer),
+            TcpRequests.CreatePurchase => Deserialize<CreatePurchaseTcpRequest>(buffer),
+            TcpRequests.Refund => Deserialize<RefundTcpRequest>(buffer),
+            TcpRequests.CloseShift => Deserialize<CloseShiftTcpRequest>(buffer),
+            _ => throw new ArgumentOutOfRangeException(nameof(cmdType))
+        };
+
+    private static T? Deserialize<T>(byte[] buffer)
+    {
+        using var stream = new MemoryStream(buffer);
+        var serializer = new XmlSerializer(typeof(T));
+        if (serializer.Deserialize(stream) is T deserialized)
+            return deserialized;
+
+        return default;
     }
 }

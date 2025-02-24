@@ -2,20 +2,20 @@
 using FluentResults;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.DTOs.CloseShift;
 
-namespace Tcp.CommandHandlers;
+namespace Tcp.RequestHandlers;
 
-public class CloseShiftTcpCommandHandler : ITcpCommandHandler
+public class CloseShiftTcpRequestHandler : ITcpRequestHandler<CloseShiftTcpRequest>
 {
     private readonly TcpOptions _tcpOptions;
 
-    public string RequestCode => TcpRequests.CloseShift;
-    
-    public CloseShiftTcpCommandHandler(IOptions<TcpOptions> tcpOptions)
+    public CloseShiftTcpRequestHandler(IOptions<TcpOptions> tcpOptions)
     {
         _tcpOptions = tcpOptions.Value;
     }
-    public Task<Result<XDocument>> HandleAsync(XDocument request, CancellationToken cancellationToken = default)
+    
+    public Task<Result<XDocument>> HandleAsync(CloseShiftTcpRequest request, CancellationToken cancellationToken = default)
     {
         var result = new XDocument(
             new XElement("DP",

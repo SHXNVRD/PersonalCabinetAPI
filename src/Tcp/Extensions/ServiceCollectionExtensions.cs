@@ -5,6 +5,7 @@ using Tcp.Behaviors;
 using Tcp.DTOs.CloseShift;
 using Tcp.DTOs.CreatePurchase;
 using Tcp.DTOs.Ping;
+using Tcp.DTOs.Refund;
 using Tcp.RequestHandlers;
 
 namespace Tcp.Extensions;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
             .AddScoped<ITcpRequestHandler<PingTcpRequest>, PingTcpRequestHandler>()
             .AddScoped<ITcpRequestHandler<CloseShiftTcpRequest>, CloseShiftTcpRequestHandler>()
             .AddScoped<ITcpRequestHandler<CreatePurchaseTcpRequest>, CreatePurchaseTcpRequestHandler>()
+            .AddScoped<ITcpRequestHandler<RefundTcpRequest>, RefundTcpRequestHandler>()
             .AddScoped(typeof(ITcpPipelineBehavior<>), typeof(TcpRequestsLoggingPipelineBehavior<>))
             .AddSingleton<ITcpServer, TcpServer>();
 

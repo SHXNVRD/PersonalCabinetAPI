@@ -11,8 +11,9 @@ namespace Domain.Models
         public long PurchaseId { get; set; }
         public virtual Purchase? Purchase { get; set; }
         public long ProductId { get; set; }
-        public virtual required Product Product { get; set; }
+        public virtual Product? Product { get; set; }
         public required int Quantity { get; set; }
-        public decimal Total => Quantity * Product.Price;
+        public required decimal ProductPriceAtPurchase { get; set; }
+        public decimal Total => Quantity * ProductPriceAtPurchase;
     }
 }

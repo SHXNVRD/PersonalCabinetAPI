@@ -44,7 +44,7 @@ public class RefundRow : RowBase
     public string ProductPrice { get; set; }
 
     [XmlAttribute("kol")]
-    public int Quantity { get; set; }
+    public string Quantity { get; set; }
 
     [XmlAttribute("summa")]
     public string Total { get; set; }

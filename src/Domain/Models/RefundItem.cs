@@ -9,5 +9,6 @@ public class RefundItem : Identity
     public long ProductId { get; set; }
     public virtual Product? Product { get; set; }
     public required int Quantity { get; set; }
-    public decimal Total { get; set; }
+    public required decimal ProductPriceAtRefund { get; set; }
+    public decimal Total => ProductPriceAtRefund * Quantity;
 }

@@ -22,6 +22,7 @@ namespace Infrastructure.Data
         public DbSet<RefundItem> RefundItems { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductPriceHistory> ProductPriceHistories { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
 

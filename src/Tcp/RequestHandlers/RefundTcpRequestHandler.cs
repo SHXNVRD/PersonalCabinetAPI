@@ -1,42 +1,54 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-using Application.Purchases.Commands;
+using Application.Interfaces;
+using Application.Refunds.Commands;
 using FluentResults;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.CreatePurchase;
+using Tcp.DTOs.Refund;
 
 namespace Tcp.RequestHandlers;
 
-public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchaseTcpRequest>
+public class RefundTcpRequestHandler : ITcpRequestHandler<RefundTcpRequest>
 {
     private readonly IMediator _mediator;
     private readonly TcpOptions _tcpOptions;
-    private readonly ILogger<CreatePurchaseCommand> _logger;
 
-    public CreatePurchaseTcpRequestHandler(IMediator mediator, IOptions<TcpOptions> options, ILogger<CreatePurchaseCommand> logger)
+    public RefundTcpRequestHandler(IMediator mediator, IOptions<TcpOptions> tcpOptions)
     {
         _mediator = mediator;
-        _logger = logger;
-        _tcpOptions = options.Value;
+        _tcpOptions = tcpOptions.Value;
     }
 
-    public async Task<Result<XDocument>> HandleAsync(CreatePurchaseTcpRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<XDocument>> HandleAsync(RefundTcpRequest request, CancellationToken cancellationToken = default)
     {
         var requestBody = request.R.Row;
-        
-        CreatePurchaseCommand command = new()
-        {
-            ProductId = requestBody.ProductId,
-            CardNumber = requestBody.CardNumber,
-            Quantity = (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture),
-            CreatedAt = DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss",DateTimeFormatInfo.InvariantInfo),
-            PinCode = requestBody.CardPinCode
-        };
 
-        var result = await _mediator.Send(command, cancellationToken);
+        if (!DateTime.TryParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out DateTime parsedDate))
+            return Result.Fail("Failed to parse refund date");
+
+        if (!decimal.TryParse(requestBody.ProductPrice, CultureInfo.InvariantCulture, out decimal parsedPrice))
+            return Result.Fail("Failed to parse product price");
+
+        if (!decimal.TryParse(requestBody.Quantity, CultureInfo.InvariantCulture, out decimal parsedQuantity))
+            return Result.Fail("Failed to parse product quantity");
+        
+        if (!decimal.TryParse(requestBody.Total, CultureInfo.InvariantCulture, out decimal parsedTotal))
+            return Result.Fail("Failed to parse product total price");
+        
+        CreateRefundCommand command = new()
+        {
+            RefundedAt = parsedDate,
+            CardNumber = requestBody.CardNumber,
+            CardPinCode = requestBody.CardPinCode,
+            ProductId = requestBody.ProductId,
+            ProductPrice = parsedPrice,
+            Quantity = (int)parsedQuantity,
+            Total = parsedTotal
+        };
+        
+         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailed)
             return Result.Fail(result.Errors);
@@ -57,9 +69,9 @@ public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchase
                            $"#13;#10;Чек № ..................{result.Value.CheckId}" +
                            $"#13;#10;Баланс ............{result.Value.CardBalance}" +
                            "#13;#10;*************************" +
-                           $"#13;#10;{result.Value.ProductName} (Деб.)========{requestBody.Quantity}" +
+                           $"#13;#10;{result.Value.ProductName} (Возв.)========-{requestBody.Quantity}" +
                            $"#13;#10;Цена :{requestBody.ProductPrice}" +
-                           $"#13;#10;Сумма :{requestBody.Total}" +
+                           $"#13;#10;Сумма :-{requestBody.Total}" +
                            "#13;#10;Добро пожаловать!" +
                            "#13;#10;***********MPay**********" +
                            "#13;#10;*************************" +

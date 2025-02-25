@@ -45,8 +45,8 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
             {
                 new()
                 {
+                    ProductPriceAtPurchase = product.Price,
                     ProductId = product.Id,
-                    Product = product,
                     Quantity = request.Quantity
                 }
             }

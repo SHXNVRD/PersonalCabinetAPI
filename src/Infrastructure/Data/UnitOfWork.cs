@@ -13,6 +13,7 @@ namespace Infrastructure.Data
     {
         private bool _disposed;
         private IPurchaseRepository? _purchaseRepository;
+        private IRefundRepository? _refundRepository;
         private IProductRepository? _productRepository;
         private ICardRepository? _cardRepository;
         private IUserRepository? _userRepository;
@@ -26,6 +27,16 @@ namespace Infrastructure.Data
                 if (_purchaseRepository == null)
                     return _purchaseRepository = new PurchaseRepository(_dbContext);
                 return _purchaseRepository;
+            }
+        }
+
+        public IRefundRepository RefundRepository
+        {
+            get
+            {
+                if (_refundRepository == null)
+                    return _refundRepository = new RefundRepository(_dbContext);
+                return _refundRepository;
             }
         }
 

@@ -14,7 +14,7 @@ namespace Application.Behaviors
         where TResponse : ResultBase
     {
         private readonly ILogger<RequestLoggingBehavior<TRequest, TResponse>> _logger;
-
+    
         public RequestLoggingBehavior(ILogger<RequestLoggingBehavior<TRequest, TResponse>> logger)
         {
             _logger = logger;

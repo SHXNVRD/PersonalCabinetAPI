@@ -9,8 +9,7 @@ namespace Application.Cards.DTOs
     {
         public long Id { get; set; }
         public bool IsActivated { get; set; }
-        public int Number { get; set; }
-        public float DiscountPercent { get; set; }
-        public required string BonusSystemTitle { get; set; }
+        public string Number { get; set; }
+        public decimal Balance { get; set; }
     }
 }

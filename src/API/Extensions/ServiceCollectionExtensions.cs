@@ -1,15 +1,19 @@
+using API.HostedServices;
 using API.Services;
 using Application.Interfaces;
 using Application.Users.DTOs;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using Tcp;
+using Tcp.Abstractions;
+using Tcp.Behaviors;
 
 namespace API.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApi(this IServiceCollection services)
+        public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
         {
             services
                 .ConfigureFluentValidation()
@@ -55,7 +59,7 @@ namespace API.Extensions
             return services;
         }
         
-        public static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
+        private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
         {
             services.AddValidatorsFromAssemblyContaining<AuthResponse>();
             services.AddFluentValidationAutoValidation(config =>

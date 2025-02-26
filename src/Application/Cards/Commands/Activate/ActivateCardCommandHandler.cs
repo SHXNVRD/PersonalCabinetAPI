@@ -35,8 +35,8 @@ namespace Application.Cards.Commands.Activate
             if (user == null)
                 return Result.Fail("User with specified id not found");
             
-            var codeHash = await Hasher.ComputeSha256HashAsync(request.CardCode);
-            var isActivated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, request.CardNumber, codeHash);  
+            var pinCodeHash = await Hasher.ComputeSha256HashAsync(request.CardPinCode);
+            var isActivated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, request.CardNumber, pinCodeHash);  
 
             if (!isActivated)
                 return Result.Fail($"Failed to activate card with number: {request.CardNumber}. Card not found");

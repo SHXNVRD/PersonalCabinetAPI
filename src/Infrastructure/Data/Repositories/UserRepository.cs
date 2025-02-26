@@ -1,5 +1,7 @@
-﻿using Application.Interfaces.Repositories;
+﻿using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Domain.Models;
+using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data.Repositories;
@@ -13,6 +15,8 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User> GetByPhoneNumber(string phone) =>
-        await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phone);
+    public async Task<User?> GetByPhoneNumber(string phone, TrackingType trackingType) =>
+        await _context.Users
+            .SetTracking(trackingType)
+            .FirstOrDefaultAsync(u => u.PhoneNumber == phone);
 }

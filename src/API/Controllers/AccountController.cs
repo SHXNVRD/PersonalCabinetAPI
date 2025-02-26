@@ -1,13 +1,16 @@
 using System.Security.Claims;
 using API.DTOs.AccountController;
 using API.Extensions;
+using Application.Errors;
 using Application.Users.Commands.EmailConfirmation;
 using Application.Users.Commands.RevokeRefreshToken;
 using Application.Users.DTOs;
+using FluentResults;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharpGrip.FluentValidation.AutoValidation.Shared.Extensions;
 
 namespace API.Controllers
@@ -34,7 +37,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToConflictResult();
+                return result.ToObjectResult();
             
             return result.ToActionResult();
         }
@@ -50,7 +53,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-               return result.ToUnauthorizedResult();
+               return result.ToObjectResult();
 
             return result.ToActionResult();
         }
@@ -78,7 +81,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToConflictResult();
+                return result.ToObjectResult();
                     
             return result.ToActionResult();
         }
@@ -95,7 +98,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToConflictResult();
+                return result.ToObjectResult();
 
             return result.ToActionResult();
         }
@@ -112,7 +115,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
 
             return result.ToActionResult();
         }
@@ -129,7 +132,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
 
             return NoContent();
         }
@@ -145,12 +148,17 @@ namespace API.Controllers
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
-                return Unauthorized("Access token does not contain user id");
+                return Result
+                    .Fail(new UnauthorizedError("Access token does not contain user id"))
+                    .ToObjectResult();
 
             var command = RefreshTokenMapper.ToCommand(request);
             command.UserId = userId;
             
             var result = await _mediatR.Send(command);
+
+            if (result.IsFailed)
+                return result.ToObjectResult();
             
             return result.ToActionResult();
         }
@@ -169,6 +177,9 @@ namespace API.Controllers
             };
             
             var result = await _mediatR.Send(command);
+
+            if (result.IsFailed)
+                return result.ToObjectResult();
 
             return result.ToActionResult();
         }

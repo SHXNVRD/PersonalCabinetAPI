@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Extensions;
 using Application.DTOs;
+using Application.Errors;
 using Application.Extensions;
 using Application.Users.DTOs;
 using Application.Users.Queries.GetById;
@@ -37,7 +38,9 @@ namespace API.Controllers
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
-                return Unauthorized("Access token does not contain user id");
+                return Result
+                    .Fail(new UnauthorizedError("Access token does not contain user id"))
+                    .ToObjectResult();
 
             var command = new GetUserByIdQuery
             {
@@ -46,7 +49,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
             
             return result.ToActionResult();
         }
@@ -65,7 +68,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToNotFoundResult();
+                return result.ToObjectResult();
             
             return result.ToActionResult();
         }

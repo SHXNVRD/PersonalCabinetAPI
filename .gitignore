@@ -415,6 +415,7 @@ FodyWeavers.xsd
 **/.idea/**/*.iml
 **/.idea/**/contentModel.xml
 **/.idea/**/modules.xml
+*.DotSettings*
 
 [Pp]ackages/
 Thumbs.db

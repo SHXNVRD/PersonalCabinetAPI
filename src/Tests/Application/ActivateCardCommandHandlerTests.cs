@@ -36,8 +36,8 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
-            CardCode = "secret-code"
+            CardNumber = "456",
+            CardPinCode = "secret-code"
         };
 
         var user = new User { Id = 123 };
@@ -68,8 +68,8 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
-            CardCode = "secret-code"
+            CardNumber = "456",
+            CardPinCode = "secret-code"
         };
 
         _userManagerMock.Setup(u => u.FindByIdAsync(command.UserId))
@@ -89,8 +89,8 @@ public class ActivateCardCommandHandlerTests
         var command = new ActivateCardCommand
         {
             UserId = "123",
-            CardNumber = 456,
-            CardCode = "secret-code"
+            CardNumber = "456",
+            CardPinCode = "secret-code"
         };
 
         var user = new User { Id = 123 };

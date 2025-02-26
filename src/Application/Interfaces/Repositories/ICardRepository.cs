@@ -8,10 +8,10 @@ namespace Application.Interfaces.Repositories
 {
     public interface ICardRepository
     {
-        Task<Card?> FindByNumberAsync(int number);
-        Task<Card?> FindByIdAsync(long id);
-        Task<Card?> FindByUserIdAsync(long id);
-        Task<bool> ActivateAsync(long userId, int number, string codeHash);
-        Task<bool> DeactivateAsync(int number);
+        Task<Card?> FindByNumberAsync(string number, TrackingType trackingType = TrackingType.NoTracking);
+        Task<Card?> FindByIdAsync(long id, TrackingType trackingType = TrackingType.NoTracking);
+        Task<Card?> FindByUserIdAsync(long id, TrackingType trackingType = TrackingType.NoTracking);
+        Task<bool> ActivateAsync(long userId, string number, string pinCodeHash);
+        Task<bool> DeactivateAsync(string number);
     }
 }

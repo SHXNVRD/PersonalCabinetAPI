@@ -13,6 +13,12 @@ namespace Infrastructure.Data.Configurations
     public class ProductConfiguration : IdentityConfigurationBase<Product>
     {
         protected override void AddCustomConfiguration(EntityTypeBuilder<Product> builder)
-        { }
+        {
+            builder
+                .HasMany(p => p.RefundItems)
+                .WithOne(ri => ri.Product)
+                .HasForeignKey(ri => ri.ProductId)
+                .IsRequired();
+        }
     }
 }

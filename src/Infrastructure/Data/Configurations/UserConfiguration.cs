@@ -23,7 +23,7 @@ namespace Infrastructure.Data.Configurations
             
             builder
                 .Property(u => u.RegisteredAt)
-                .HasDefaultValueSql("now() at time zone 'utc'");
+                .HasDefaultValueSql("now()");
 
             builder
                 .HasMany(u => u.Cards)

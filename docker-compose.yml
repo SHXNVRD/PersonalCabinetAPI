@@ -1,6 +1,6 @@
 ﻿services:
   perscab.api:
-    image : ${DOCKER_REGISRTY}/perscabapi:dev
+    image : ${DOCKER_REGISTRY}/perscabapi:dev
     container_name: perscab.api
     restart: no
     env_file:

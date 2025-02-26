@@ -22,26 +22,6 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Models.BonusSystem", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("Id"));
-
-                    b.Property<float>("DiscountPercent")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BonusSystems");
-                });
-
             modelBuilder.Entity("Domain.Models.Card", b =>
                 {
                     b.Property<long>("Id")
@@ -53,27 +33,28 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("ActivatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("BonusSystemId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("CodeHash")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("numeric");
 
                     b.Property<bool>("IsActivated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("Number")
-                        .HasColumnType("integer");
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character(12)")
+                        .IsFixedLength();
+
+                    b.Property<string>("PinCodeHash")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<long?>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BonusSystemId");
 
                     b.HasIndex("UserId");
 
@@ -97,7 +78,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("Domain.Models.Discount", b =>
+            modelBuilder.Entity("Domain.Models.Check", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,23 +86,26 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
-                    b.Property<long>("CardId")
+                    b.Property<long?>("PurchaseId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("PurchaseId")
+                    b.Property<long?>("RefundId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardId");
-
                     b.HasIndex("PurchaseId")
                         .IsUnique();
 
-                    b.ToTable("Discounts");
+                    b.HasIndex("RefundId")
+                        .IsUnique();
+
+                    b.ToTable("Checks");
                 });
 
             modelBuilder.Entity("Domain.Models.Product", b =>
@@ -138,9 +122,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -153,6 +134,33 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Domain.Models.ProductPriceHistory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("ChangedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "ChangedAt")
+                        .IsDescending(false, true);
+
+                    b.ToTable("ProductPriceHistories");
                 });
 
             modelBuilder.Entity("Domain.Models.Purchase", b =>
@@ -169,19 +177,11 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<long>("StationId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
+                        .HasDefaultValueSql("now()");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CardId");
-
-                    b.HasIndex("StationId");
 
                     b.ToTable("Purchases");
                 });
@@ -197,14 +197,14 @@ namespace Infrastructure.Migrations
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
+                    b.Property<decimal>("ProductPriceAtPurchase")
+                        .HasColumnType("numeric");
+
                     b.Property<long>("PurchaseId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
@@ -215,7 +215,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("PurchaseItems");
                 });
 
-            modelBuilder.Entity("Domain.Models.Station", b =>
+            modelBuilder.Entity("Domain.Models.Refund", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -223,17 +223,49 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("PurchaseId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Stations");
+                    b.HasIndex("PurchaseId")
+                        .IsUnique();
+
+                    b.ToTable("Refunds");
+                });
+
+            modelBuilder.Entity("Domain.Models.RefundItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ProductPriceAtRefund")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("RefundId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("RefundId");
+
+                    b.ToTable("RefundItems");
                 });
 
             modelBuilder.Entity("Domain.Models.User", b =>
@@ -287,7 +319,7 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("RegisteredAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now() at time zone 'utc'");
+                        .HasDefaultValueSql("now()");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -445,38 +477,28 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Card", b =>
                 {
-                    b.HasOne("Domain.Models.BonusSystem", "BonusSystem")
-                        .WithMany("Cards")
-                        .HasForeignKey("BonusSystemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Models.User", "User")
                         .WithMany("Cards")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("BonusSystem");
-
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Models.Discount", b =>
+            modelBuilder.Entity("Domain.Models.Check", b =>
                 {
-                    b.HasOne("Domain.Models.Card", "Card")
-                        .WithMany("Discounts")
-                        .HasForeignKey("CardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Domain.Models.Purchase", "Purchase")
-                        .WithOne("Discount")
-                        .HasForeignKey("Domain.Models.Discount", "PurchaseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithOne("Check")
+                        .HasForeignKey("Domain.Models.Check", "PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Card");
+                    b.HasOne("Domain.Models.Refund", "Refund")
+                        .WithOne("Check")
+                        .HasForeignKey("Domain.Models.Check", "RefundId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Purchase");
+
+                    b.Navigation("Refund");
                 });
 
             modelBuilder.Entity("Domain.Models.Product", b =>
@@ -490,21 +512,24 @@ namespace Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Domain.Models.ProductPriceHistory", b =>
+                {
+                    b.HasOne("Domain.Models.Product", "Product")
+                        .WithMany("ProductPriceHistories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Domain.Models.Purchase", b =>
                 {
                     b.HasOne("Domain.Models.Card", "Card")
                         .WithMany("Purchases")
                         .HasForeignKey("CardId");
 
-                    b.HasOne("Domain.Models.Station", "Station")
-                        .WithMany("Purchases")
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Card");
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("Domain.Models.PurchaseItem", b =>
@@ -524,6 +549,36 @@ namespace Infrastructure.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Purchase");
+                });
+
+            modelBuilder.Entity("Domain.Models.Refund", b =>
+                {
+                    b.HasOne("Domain.Models.Purchase", "Purchase")
+                        .WithOne("Refund")
+                        .HasForeignKey("Domain.Models.Refund", "PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Purchase");
+                });
+
+            modelBuilder.Entity("Domain.Models.RefundItem", b =>
+                {
+                    b.HasOne("Domain.Models.Product", "Product")
+                        .WithMany("RefundItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Models.Refund", "Refund")
+                        .WithMany("RefundItems")
+                        .HasForeignKey("RefundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Refund");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
@@ -577,15 +632,8 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Models.BonusSystem", b =>
-                {
-                    b.Navigation("Cards");
-                });
-
             modelBuilder.Entity("Domain.Models.Card", b =>
                 {
-                    b.Navigation("Discounts");
-
                     b.Navigation("Purchases");
                 });
 
@@ -596,19 +644,27 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Product", b =>
                 {
+                    b.Navigation("ProductPriceHistories");
+
                     b.Navigation("PurchaseItems");
+
+                    b.Navigation("RefundItems");
                 });
 
             modelBuilder.Entity("Domain.Models.Purchase", b =>
                 {
-                    b.Navigation("Discount");
+                    b.Navigation("Check");
 
                     b.Navigation("PurchaseItems");
+
+                    b.Navigation("Refund");
                 });
 
-            modelBuilder.Entity("Domain.Models.Station", b =>
+            modelBuilder.Entity("Domain.Models.Refund", b =>
                 {
-                    b.Navigation("Purchases");
+                    b.Navigation("Check");
+
+                    b.Navigation("RefundItems");
                 });
 
             modelBuilder.Entity("Domain.Models.User", b =>

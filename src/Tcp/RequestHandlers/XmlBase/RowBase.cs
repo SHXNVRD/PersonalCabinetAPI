@@ -1,7 +1,7 @@
 ﻿using System.Xml.Serialization;
-using Tcp.DTOs.Ping;
+using Tcp.RequestHandlers.Ping;
 
-namespace Tcp.DTOs.Base;
+namespace Tcp.RequestHandlers.XmlBase;
 
 [XmlInclude(typeof(PingRow))]
 public class RowBase

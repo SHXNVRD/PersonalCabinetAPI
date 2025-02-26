@@ -1,8 +1,8 @@
 ﻿using System.Xml.Serialization;
 using Tcp.Abstractions;
-using Tcp.DTOs.Base;
+using Tcp.RequestHandlers.XmlBase;
 
-namespace Tcp.DTOs.Ping;
+namespace Tcp.RequestHandlers.Ping;
 
 [XmlRoot("DP")]
 public class PingTcpRequest : ITcpRequest

@@ -1,14 +1,12 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
-using Application.Interfaces;
 using Application.Refunds.Commands;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.Refund;
 
-namespace Tcp.RequestHandlers;
+namespace Tcp.RequestHandlers.Refund;
 
 public class RefundTcpRequestHandler : ITcpRequestHandler<RefundTcpRequest>
 {

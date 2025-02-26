@@ -1,8 +1,8 @@
 ﻿using System.Xml.Serialization;
 using Tcp.Abstractions;
-using Tcp.DTOs.Base;
+using Tcp.RequestHandlers.XmlBase;
 
-namespace Tcp.DTOs.CloseShift;
+namespace Tcp.RequestHandlers.CloseShift;
 
 [XmlRoot("DP")]
 public class CloseShiftTcpRequest : ITcpRequest

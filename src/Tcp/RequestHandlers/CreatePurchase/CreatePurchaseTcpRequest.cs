@@ -1,8 +1,8 @@
 ﻿using System.Xml.Serialization;
 using Tcp.Abstractions;
-using Tcp.DTOs.Base;
+using Tcp.RequestHandlers.XmlBase;
 
-namespace Tcp.DTOs.CreatePurchase;
+namespace Tcp.RequestHandlers.CreatePurchase;
 
 [XmlRoot("DP")]
 public class CreatePurchaseTcpRequest : ITcpRequest

@@ -4,7 +4,7 @@ using FluentResults;
 namespace Tcp.Abstractions;
 
 public interface ITcpPipelineBehavior<TRequest>
-    where TRequest : notnull
+    where TRequest : ITcpRequest
 {
     Task<Result<XDocument>> HandleAsync(
         TRequest request,

@@ -2,11 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Tcp.Abstractions;
 using Tcp.Behaviors;
-using Tcp.DTOs.CloseShift;
-using Tcp.DTOs.CreatePurchase;
-using Tcp.DTOs.Ping;
-using Tcp.DTOs.Refund;
-using Tcp.RequestHandlers;
+using Tcp.RequestHandlers.CloseShift;
+using Tcp.RequestHandlers.CreatePurchase;
+using Tcp.RequestHandlers.Ping;
+using Tcp.RequestHandlers.Refund;
 
 namespace Tcp.Extensions;
 

@@ -1,8 +1,8 @@
 ﻿using System.Xml.Serialization;
 using Tcp.Abstractions;
-using Tcp.DTOs.Base;
+using Tcp.RequestHandlers.XmlBase;
 
-namespace Tcp.DTOs.Refund;
+namespace Tcp.RequestHandlers.Refund;
 
 [XmlRoot("DP")]
 public class RefundTcpRequest : ITcpRequest

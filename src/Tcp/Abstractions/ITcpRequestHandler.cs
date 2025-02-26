@@ -1,6 +1,5 @@
 ﻿using System.Xml.Linq;
 using FluentResults;
-using MediatR;
 
 namespace Tcp.Abstractions;
 

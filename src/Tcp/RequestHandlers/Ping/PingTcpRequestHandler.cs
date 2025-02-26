@@ -2,9 +2,8 @@
 using FluentResults;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.Ping;
 
-namespace Tcp.RequestHandlers;
+namespace Tcp.RequestHandlers.Ping;
 
 public class PingTcpRequestHandler: ITcpRequestHandler<PingTcpRequest>
 {

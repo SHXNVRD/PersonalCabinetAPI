@@ -2,9 +2,8 @@
 using FluentResults;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.CloseShift;
 
-namespace Tcp.RequestHandlers;
+namespace Tcp.RequestHandlers.CloseShift;
 
 public class CloseShiftTcpRequestHandler : ITcpRequestHandler<CloseShiftTcpRequest>
 {

@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Tcp.DTOs.Base;
+namespace Tcp.RequestHandlers.XmlBase;
 
 public class M
 {

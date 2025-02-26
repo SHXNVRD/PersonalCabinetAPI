@@ -6,9 +6,8 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.CreatePurchase;
 
-namespace Tcp.RequestHandlers;
+namespace Tcp.RequestHandlers.CreatePurchase;
 
 public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchaseTcpRequest>
 {

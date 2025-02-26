@@ -1,20 +1,18 @@
 ﻿using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using FluentResults;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
-using Tcp.DTOs.CloseShift;
-using Tcp.DTOs.CreatePurchase;
-using Tcp.DTOs.Ping;
-using Tcp.DTOs.Refund;
 using Tcp.Extensions;
+using Tcp.RequestHandlers.CloseShift;
+using Tcp.RequestHandlers.CreatePurchase;
+using Tcp.RequestHandlers.Ping;
+using Tcp.RequestHandlers.Refund;
 
 namespace Tcp;
 
@@ -22,7 +20,6 @@ public class TcpServer : ITcpServer
 {
     private readonly TcpListener _tcpListener;
     private readonly ILogger<TcpServer> _logger;
-    private readonly IServiceProvider _serviceProvider;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly TcpOptions _options;
 
@@ -32,11 +29,9 @@ public class TcpServer : ITcpServer
     public TcpServer(
         ILogger<TcpServer> logger, 
         IOptions<TcpOptions> options,
-        IServiceProvider serviceProvider,
         IServiceScopeFactory serviceScopeFactory)
     {
         _logger = logger;
-        _serviceProvider = serviceProvider;
         _serviceScopeFactory = serviceScopeFactory;
         _options = options.Value;
         
@@ -63,7 +58,7 @@ public class TcpServer : ITcpServer
         var remotePort = ((IPEndPoint)tcpClient.Client.RemoteEndPoint!).Port.ToString();
         _logger.LogInformation(
             "Remote device with address: {ClientAddress} has connected", $"{remoteHost}:{remotePort}");
-        
+
         try
         {
             var stream = tcpClient.GetStream();
@@ -72,12 +67,17 @@ public class TcpServer : ITcpServer
                 .GetEncoding(1251)
                 .GetString(buffer)
                 .GetBetweenOrDefault("cmdtype=\"", "\"");
-            
+
             if (string.IsNullOrWhiteSpace(cmdType))
             {
                 _logger.LogError("Received xml must contain \"cmdtype\" attribute");
                 return;
             }
+            
+            _logger.LogDebug("{Request}", 
+                Encoding
+                .GetEncoding(1251)
+                .GetString(buffer));
 
             var request = ParseRequest(cmdType, buffer);
 
@@ -129,6 +129,12 @@ public class TcpServer : ITcpServer
     private async Task SendAsync(NetworkStream writer, XDocument response, CancellationToken cancellationToken = default)
     {
         var buffer = await response.ToByteArrayAsync(Encoding.GetEncoding(1251), cancellationToken);
+        
+        _logger.LogDebug("{Response}", 
+            Encoding
+            .GetEncoding(1251)
+            .GetString(buffer));
+        
         await writer.WriteAsync(buffer, cancellationToken);
         await writer.FlushAsync(cancellationToken);
     }

@@ -25,7 +25,7 @@ namespace Application.Users.Commands.Login
 
         public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _userManager.FindByEmailAsync(request.Email);
 
             if (user == null)
                 return Result.Fail("Wrong password or email");

@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Application.Users.Commands.EmailConfirmation
 {
-    public class EmailConfirmationRequestHandler : IRequestHandler<EmailConfirmationCommand, Result>
+    public class EmailConfirmationCommandHandler : IRequestHandler<EmailConfirmationCommand, Result>
     {
         private readonly AppUserManager _userManager;
 
-        public EmailConfirmationRequestHandler(AppUserManager userManager)
+        public EmailConfirmationCommandHandler(AppUserManager userManager)
         {
             _userManager = userManager;
         }

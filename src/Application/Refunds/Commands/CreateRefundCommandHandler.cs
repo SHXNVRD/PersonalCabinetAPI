@@ -25,9 +25,6 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, R
             return Result.Fail($"Purchase with card number {request.CardNumber} was not found");
 
         var card = refundingPurchase.Card;
-        
-        if (await Hasher.ComputeSha256HashAsync(request.CardPinCode) != card!.PinCodeHash)
-            return Result.Fail("Incorrect card pin-code");
 
         // Возвращаем только первый продукт. В запросе на возврат приходят данные только об одном продукте
         var refundingPurchaseItem = refundingPurchase.PurchaseItems.First();

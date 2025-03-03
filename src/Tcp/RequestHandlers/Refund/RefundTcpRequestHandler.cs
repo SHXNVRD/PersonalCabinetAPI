@@ -39,7 +39,6 @@ public class RefundTcpRequestHandler : ITcpRequestHandler<RefundTcpRequest>
         {
             RefundedAt = parsedDate,
             CardNumber = requestBody.CardNumber,
-            CardPinCode = requestBody.CardPinCode,
             ProductId = requestBody.ProductId,
             ProductPrice = parsedPrice,
             Quantity = (int)parsedQuantity,

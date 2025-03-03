@@ -7,7 +7,6 @@ namespace Application.Refunds.Commands;
 public class CreateRefundCommand : IRequest<Result<CreateRefundResponse>>
 {
     public string CardNumber { get; set; }
-    public string CardPinCode { get; set; }
     public int ProductId { get; set; }
     public int Quantity { get; set; }
     public decimal ProductPrice { get; set; }

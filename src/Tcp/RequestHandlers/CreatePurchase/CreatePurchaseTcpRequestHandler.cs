@@ -13,12 +13,10 @@ public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchase
 {
     private readonly IMediator _mediator;
     private readonly TcpOptions _tcpOptions;
-    private readonly ILogger<CreatePurchaseCommand> _logger;
 
-    public CreatePurchaseTcpRequestHandler(IMediator mediator, IOptions<TcpOptions> options, ILogger<CreatePurchaseCommand> logger)
+    public CreatePurchaseTcpRequestHandler(IMediator mediator, IOptions<TcpOptions> options)
     {
         _mediator = mediator;
-        _logger = logger;
         _tcpOptions = options.Value;
     }
 

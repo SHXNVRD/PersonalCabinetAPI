@@ -1,48 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Domain.Models;
+using Domain.Aggregates.PurchaseAggregate;
 using Infrastructure.Data.Configurations.Base;
+using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class PurchaseConfiguration : IdentityConfigurationBase<Purchase>
+    public class PurchaseConfiguration : IdentityConfigurationBase<Purchase, Guid>
     {
         protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
         {
-            Expression<Func<DateTime, DateTime>> convertToUtc = dateTime =>
-                dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+            builder.ToTable("purchases");
             
             builder
+                .Navigation(p => p.PurchaseItems)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            builder
                 .HasMany(p => p.PurchaseItems)
-                .WithOne(pi => pi.Purchase)
-                .HasForeignKey(pi => pi.PurchaseId)
+                .WithOne()
+                .HasForeignKey("purchase_id")
+                .HasConstraintName("FK_purchase_item_purchase_id")
+                .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
+
+            builder
+                .HasOne<Refund>()
+                .WithOne()
+                .HasForeignKey<Refund>(r => r.PurchaseId)
+                .HasConstraintName("FK_refund_purchase_id")
+                .IsRequired(false);
 
             builder
                 .HasOne(p => p.Check)
-                .WithOne(c => c.Purchase)
-                .HasForeignKey<Check>(c => c.PurchaseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne()
+                .HasForeignKey("purchase_id")
+                .HasConstraintName("FK_check_purchase_id")
+                .IsRequired(false);
 
             builder
-                .HasOne(p => p.Refund)
-                .WithOne(r => r.Purchase)
-                .HasForeignKey<Refund>(r => r.PurchaseId)
+                .Property(p => p.CardId)
+                .HasColumnName("card_id")
                 .IsRequired();
 
             builder
                 .Property(p => p.CreatedAt)
-                .HasConversion(convertToUtc, convertToUtc)
+                .HasColumnName("created_at")
+                .HasConversion(new ToUtcValueConverter())
                 .IsRequired();
-            
-            builder
-                .Property(p => p.CreatedAt)
-                .HasDefaultValueSql("now()");
+
+            builder.Ignore(p => p.Total);
         }
     }
 }

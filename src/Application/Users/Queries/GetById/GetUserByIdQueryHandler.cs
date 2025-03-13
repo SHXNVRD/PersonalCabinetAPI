@@ -8,7 +8,7 @@ using Application.Extensions;
 using Application.Interfaces;
 using Application.Interfaces.Token;
 using Application.Users.DTOs;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

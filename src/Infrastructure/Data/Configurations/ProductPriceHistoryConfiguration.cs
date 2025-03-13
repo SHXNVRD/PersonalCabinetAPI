@@ -1,26 +1,26 @@
-﻿using Domain.Models;
+﻿using Domain.Aggregates.ProductAggregate;
 using Infrastructure.Data.Configurations.Base;
+using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class ProductPriceHistoryConfiguration : IdentityConfigurationBase<ProductPriceHistory>
+public class ProductPriceHistoryConfiguration : IdentityConfigurationBase<ProductPriceHistory, Guid>
 {
     protected override void AddCustomConfiguration(EntityTypeBuilder<ProductPriceHistory> builder)
     {
+        builder.ToTable("product_price_histories");
+        
         builder
-            .HasOne(pph => pph.Product)
-            .WithMany(p => p.ProductPriceHistories)
-            .HasForeignKey(pph => pph.ProductId);
-
-        builder
-            .Property(pph => pph.ChangedAt)
-            .HasDefaultValueSql("now()")
+            .Property(pph => pph.CreatedAt)
+            .HasColumnName("created_at")
+            .HasConversion(new ToUtcValueConverter())
             .IsRequired();
 
         builder
-            .HasIndex(pph => new {pph.ProductId, pph.ChangedAt})
-            .IsDescending(false, true);
+            .Property(pph => pph.Price)
+            .HasColumnName("price")
+            .IsRequired();
     }
 }

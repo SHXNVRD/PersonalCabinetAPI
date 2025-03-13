@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Shared;
 using FluentResults;
 
 namespace Application.Errors.Base;

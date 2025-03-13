@@ -1,5 +1,5 @@
 ﻿using Application.Interfaces;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Metadata;
 

@@ -1,22 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Domain.Models;
+using Domain.Aggregates.ProductAggregate;
 using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class CategoryConfiguration : IdentityConfigurationBase<Category>
+    public class CategoryConfiguration : IdentityConfigurationBase<Category, Guid>
     {
         protected override void AddCustomConfiguration(EntityTypeBuilder<Category> builder)
         {
+            builder.ToTable("categories");
+            
             builder
-                .HasMany(c => c.Products)
-                .WithOne(p => p.Category)
-                .HasForeignKey(p => p.CategoryId)
+                .Property(c => c.Title)
+                .HasColumnName("title")
                 .IsRequired();
         }
     }

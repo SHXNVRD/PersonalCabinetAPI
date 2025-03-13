@@ -1,7 +1,8 @@
-﻿using Application.Helpers;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Purchases.DTOs;
-using Domain.Models;
+using Domain.Aggregates;
+using Domain.Aggregates.PurchaseAggregate;
+using Domain.Helpers;
 using FluentResults;
 using MediatR;
 

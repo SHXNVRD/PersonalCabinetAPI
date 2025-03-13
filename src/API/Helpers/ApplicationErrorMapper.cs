@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Domain;
+using Domain.Shared;
 
 namespace API.Helpers;
 

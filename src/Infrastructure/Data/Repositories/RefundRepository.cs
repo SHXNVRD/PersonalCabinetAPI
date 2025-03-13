@@ -1,5 +1,5 @@
 ﻿using Application.Interfaces.Repositories;
-using Domain.Models;
+using Domain.Aggregates.PurchaseAggregate;
 
 namespace Infrastructure.Data.Repositories;
 

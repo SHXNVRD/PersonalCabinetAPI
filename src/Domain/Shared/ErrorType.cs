@@ -1,4 +1,4 @@
-﻿namespace Domain;
+﻿namespace Domain.Shared;
 
 public enum ErrorType
 {

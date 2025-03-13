@@ -3,7 +3,7 @@ using Application.Interfaces;
 using Application.Interfaces.Email;
 using Application.Services;
 using Application.Users.Commands.CreateEmailConfirmationLink;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Moq;
 using Microsoft.AspNetCore.Identity;
 

@@ -1,23 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Domain.Models;
+using Domain.Aggregates.PurchaseAggregate;
 using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public class PurchaseItemConfiguration : IdentityConfigurationBase<PurchaseItem>
+    public class PurchaseItemConfiguration : IdentityConfigurationBase<PurchaseItem, Guid>
     {
         protected override void AddCustomConfiguration(EntityTypeBuilder<PurchaseItem> builder)
         {
+            builder.ToTable("purchase_items");
+            
             builder
-                .HasOne(pi => pi.Product)
-                .WithMany(p => p.PurchaseItems)
-                .HasForeignKey(pi => pi.ProductId)
+                .Property(pi => pi.ProductPriceAtPurchase)
+                .HasColumnName("product_price_at_purchase")
                 .IsRequired();
+
+            builder.ComplexProperty(
+                pi => pi.Quantity,
+                pi => pi.Property(q => q.Value)
+                    .HasColumnName("quantity")
+                    .IsRequired());
+
+            builder.Ignore(pi => pi.Total);
         }
     }
 }

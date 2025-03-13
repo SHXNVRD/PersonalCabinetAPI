@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Application.Interfaces;
-using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Application.Interfaces.Repositories;
+using Domain.Aggregates.CardAggregate;
 using Infrastructure.Extensions;
 
 namespace Infrastructure.Data.Repositories

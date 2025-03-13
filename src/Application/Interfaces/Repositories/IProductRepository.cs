@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Domain.Aggregates;
+using Domain.Aggregates.ProductAggregate;
 
 namespace Application.Interfaces.Repositories;
 

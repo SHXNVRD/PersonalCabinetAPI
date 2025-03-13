@@ -1,6 +1,6 @@
 ﻿using Application.Services;
 using Application.Users.Commands.Registration;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 

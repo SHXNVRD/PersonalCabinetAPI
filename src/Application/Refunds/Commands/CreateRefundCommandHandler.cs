@@ -1,8 +1,7 @@
 ﻿using System.Numerics;
-using Application.Helpers;
 using Application.Interfaces;
 using Application.Refunds.DTOs;
-using Domain.Models;
+using Domain.Aggregates.PurchaseAggregate;
 using FluentResults;
 using MediatR;
 

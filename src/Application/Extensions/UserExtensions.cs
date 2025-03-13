@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Users.Commands.Registration;
 using Application.Users.DTOs;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 
 namespace Application.Extensions
 {

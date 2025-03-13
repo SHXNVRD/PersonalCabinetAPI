@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces.Token;
 using Application.Services;
 using Application.Users.Commands.Login;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

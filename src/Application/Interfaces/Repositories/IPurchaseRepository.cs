@@ -1,5 +1,6 @@
 ﻿using Application.Purchases.Commands;
-using Domain.Models;
+using Domain.Aggregates;
+using Domain.Aggregates.PurchaseAggregate;
 
 namespace Application.Interfaces.Repositories;
 

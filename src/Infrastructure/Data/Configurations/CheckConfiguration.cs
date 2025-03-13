@@ -1,25 +1,20 @@
-﻿using System.Linq.Expressions;
-using Domain.Models;
+﻿using Domain.Aggregates.PurchaseAggregate;
 using Infrastructure.Data.Configurations.Base;
+using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class CheckConfiguration : IdentityConfigurationBase<Check>
+public class CheckConfiguration : IdentityConfigurationBase<Check, long>
 {
     protected override void AddCustomConfiguration(EntityTypeBuilder<Check> builder)
     {
-        Expression<Func<DateTime, DateTime>> convertToUtc = dateTime =>
-            dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
-        builder
-            .Property(c => c.CreatedAt)
-            .HasConversion(convertToUtc, convertToUtc)
-            .IsRequired();
+        builder.ToTable("checks");
         
         builder
             .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("now()");
+            .HasColumnName("created_at")
+            .HasConversion(new ToUtcValueConverter());
     }
 }

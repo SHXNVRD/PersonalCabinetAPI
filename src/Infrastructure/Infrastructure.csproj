@@ -35,8 +35,4 @@
     <EmbeddedResource Include="RazorTemplates\EmailTemplates\*.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
-
 </Project>

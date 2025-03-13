@@ -1,5 +1,6 @@
 ﻿using Application.Errors.Base;
 using Domain;
+using Domain.Shared;
 
 namespace Application.Errors;
 

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Domain.Shared.Errors;
 using Result = FluentResults.Result;
 
 namespace Domain.Shared.ValueObjects;
@@ -12,7 +13,7 @@ public class Quantity : ValueObject
     public static FluentResults.Result<Quantity> Create(double value)
     {
         if (value < 0)
-            return Result.Fail("Quantity must be greater than or equals zero");
+            return Result.Fail(new InvalidData("Quantity must be greater than or equals zero"));
 
         return new Quantity(value);
     }

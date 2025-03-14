@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Domain.Helpers;
+using Domain.Shared.Errors;
 using Microsoft.Net.Http.Headers;
 using Result = FluentResults.Result;
 
@@ -11,22 +12,36 @@ public class CardPinHash : ValueObject
 
     private CardPinHash(string value) => Value = value;
 
-    public static async Task<FluentResults.Result<CardPinHash>> Create(string pin)
+    public static FluentResults.Result<CardPinHash> Create(string pin)
     {
         if (string.IsNullOrWhiteSpace(pin)) 
-            return Result.Fail($"{nameof(pin)} cannot be empty");
+            return Result.Fail(new InvalidData($"{nameof(pin)} cannot be empty"));
                         
         var trimmedPin = pin.Trim().Replace(" ", "");
         
         if (trimmedPin.Length != 4)
-            return Result.Fail("Card PIN must represent a four-digit number");
+            return Result.Fail(new InvalidData("Card PIN must represent a four-digit number"));
         if (!trimmedPin.All(char.IsDigit))
-            return Result.Fail("Card PIN must be a number");
+            return Result.Fail(new InvalidData("Card PIN must be a number"));
         
-        var hash = await Hasher.ComputeSha256HashAsync(trimmedPin);
+        var hash = Hasher.ComputeSha256Hash(trimmedPin);
 
         return new CardPinHash(hash.ToUpperInvariant());
     }
+    
+    public static bool operator ==(CardPinHash? a, CardPinHash? b)
+    {
+        if (a is null && b is null)
+            return true;
+
+        if (a is null || b is null)
+            return false;
+
+        return a.Value == b.Value;
+    }
+
+    public static bool operator !=(CardPinHash? a, CardPinHash? b)
+        => !(a == b);
     
     protected override IEnumerable<object> GetEqualityComponents()
     {

@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Application.Purchases.Commands;
-using Application.Purchases.DTOs;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -50,7 +49,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                 {
                     Quantity = _quantity,
                     CardNumber = _cardNumber,
-                    CardPinCode = _cardPin,
+                    CardPin = _cardPin,
                     Date = _date,
                     ProductId = _productId
                 }
@@ -64,7 +63,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                     c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) &&
                          c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
                          c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPinCode &&
+                         c.PinCode == requestBody.CardPin &&
                          c.ProductId == requestBody.ProductId), 
                 default))
             .ReturnsAsync(Result.Fail(It.IsAny<string>()));
@@ -80,7 +79,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                 c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) && 
                      c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) && 
                      c.CardNumber == requestBody.CardNumber &&
-                     c.PinCode == requestBody.CardPinCode &&
+                     c.PinCode == requestBody.CardPin &&
                      c.ProductId == requestBody.ProductId), 
                 default), 
             Times.Once);
@@ -98,7 +97,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                 {
                     Quantity = _quantity,
                     CardNumber = _cardNumber,
-                    CardPinCode = _cardPin,
+                    CardPin = _cardPin,
                     Date = _date,
                     ProductId = _productId,
                     ProductPrice = _productPrice,
@@ -121,7 +120,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                     c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) &&
                          c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
                          c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPinCode &&
+                         c.PinCode == requestBody.CardPin &&
                          c.ProductId == requestBody.ProductId), 
                 default))
             .ReturnsAsync(Result.Ok(mediatorResponse));
@@ -137,7 +136,7 @@ public class CreatePurchaseTcpRequestHandlerTests
                     c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) && 
                          c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) && 
                          c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPinCode &&
+                         c.PinCode == requestBody.CardPin &&
                          c.ProductId == requestBody.ProductId), 
                 default), 
             Times.Once);

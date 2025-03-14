@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Xml.Linq;
 using Application.Purchases.Commands;
+using Domain.Shared.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -23,15 +24,18 @@ public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchase
     public async Task<Result<XDocument>> HandleAsync(CreatePurchaseTcpRequest request, CancellationToken cancellationToken = default)
     {
         var requestBody = request.R.Row;
+
+        if (!double.TryParse(requestBody.Quantity, CultureInfo.InvariantCulture, out var quantity))
+            return Result.Fail(new InvalidData($"Invalid quantity of product: {requestBody.Quantity}"));
+        if (!decimal.TryParse(requestBody.ProductPrice, CultureInfo.InvariantCulture, out var price))
+            return Result.Fail(new InvalidData($"Invalid price of product: {requestBody.ProductPrice}"));
         
-        CreatePurchaseCommand command = new()
-        {
-            ProductId = requestBody.ProductId,
-            CardNumber = requestBody.CardNumber,
-            Quantity = (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture),
-            CreatedAt = DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss",DateTimeFormatInfo.InvariantInfo),
-            PinCode = requestBody.CardPinCode
-        };
+        CreatePurchaseCommand command = new(
+            requestBody.CardNumber, 
+            requestBody.CardPin, 
+            requestBody.ProductId,
+            price,
+            quantity);
 
         var result = await _mediator.Send(command, cancellationToken);
 

@@ -4,7 +4,6 @@ using API.Extensions;
 using API.DTOs;
 using Application.Cards.Commands;
 using Application.Cards.Commands.Activate;
-using Application.Cards.Commands.Deactivate;
 using Application.Cards.DTOs;
 using Application.Cards.Queries;
 using Application.Cards.Queries.GetCardByUserId;
@@ -37,7 +36,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardRequest request)
+        public async Task<ActionResult<ActivateCardResponse>> Activate([FromBody] ActivateCardRequest request)
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 

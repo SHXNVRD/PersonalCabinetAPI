@@ -29,7 +29,7 @@ namespace Application.Extensions
                 Name = user.UserName ?? string.Empty,
                 Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,
-                BirthDate = user.BirthDate
+                BirthDate = user.DayOfBirth
             };
         }
     }

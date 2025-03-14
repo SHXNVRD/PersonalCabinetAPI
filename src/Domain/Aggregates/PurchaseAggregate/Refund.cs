@@ -1,4 +1,5 @@
 ﻿using Domain.Aggregates.Base;
+using Domain.Shared.Errors;
 using FluentResults;
 
 namespace Domain.Aggregates.PurchaseAggregate;
@@ -31,9 +32,9 @@ public sealed class Refund : Identity<Guid>
     public static Result<Refund> Create(Guid cardId, Purchase purchase)
     {
         if (purchase == null)
-            return Result.Fail($"{nameof(purchase)} cannot be null");
+            return Result.Fail(new InvalidData($"{nameof(purchase)} cannot be null"));
         if (cardId == Guid.Empty)
-            return Result.Fail($"{nameof(cardId)} cannot be empty");
+            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
 
         var checkResult = Check.Create();
         if (checkResult.IsFailed)

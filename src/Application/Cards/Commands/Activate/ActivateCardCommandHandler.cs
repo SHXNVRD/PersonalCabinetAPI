@@ -1,51 +1,53 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Application.DTOs;
 using Application.Interfaces;
-using Application.Interfaces.Repositories;
-using Domain.Aggregates.UserAggregate;
-using Domain.Helpers;
+using Application.Services;
+using Domain.Shared.Errors;
+using Domain.Shared.ValueObjects;
 using FluentResults;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace Application.Cards.Commands.Activate
 {
-    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result>
+    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<ActivateCardResponse>>
     {
-        private readonly UserManager<User> _userManager;
+        private readonly AppUserManager _userManager;
         private readonly IUnitOfWork _unitOfWork;
 
-        public ActivateCardCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
+        public ActivateCardCommandHandler(AppUserManager userManager, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
+        public async Task<Result<ActivateCardResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var cardNumberResult = CardNumber.Create(request.CardNumber);
+            if (cardNumberResult.IsFailed)
+                return Result.Fail(cardNumberResult.Errors);
 
-            if (user == null)
-                return Result.Fail("User with specified id not found");
+            var card = await _unitOfWork.CardRepository.FindByNumberAsync(cardNumberResult.Value, TrackingType.Tracking);
+            if (card == null)
+                return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
             
-            var pinCodeHash = await Hasher.ComputeSha256HashAsync(request.CardPinCode);
-            var isActivated =  await _unitOfWork.CardRepository.ActivateAsync(user.Id, request.CardNumber, pinCodeHash);  
+            var pinHashResult = CardPinHash.Create(request.CardPin);
+            if (pinHashResult.IsFailed)
+                return Result.Fail(pinHashResult.Errors);
 
-            if (!isActivated)
-                return Result.Fail($"Failed to activate card with number: {request.CardNumber}. Card not found");
+            var verifyResult = card.VerifyPin(pinHashResult.Value);
+            if (verifyResult.IsFailed)
+                return Result.Fail(verifyResult.Errors);
 
-            var isChangesSaved = await _unitOfWork.SaveChangesAsync();
+            if (Guid.TryParse(request.UserId, out var userId))
+                return Result.Fail(new InvalidData("Invalid user id"));
+            
+            var activateResult = card.Activate(userId);
+            if (activateResult.IsFailed)
+                return Result.Fail(activateResult.Errors);
 
-            return Result.OkIf(
-                isChangesSaved,
-                $"Card with number: {request.CardNumber} was activated, but failed to save changes to the database");
+            var changesSaved = await _unitOfWork.SaveChangesAsync();
+            if (!changesSaved)
+                return Result.Fail("Failed to save changes");
+
+            return Result.Ok(new ActivateCardResponse(card.Id));
         }
     }
 }

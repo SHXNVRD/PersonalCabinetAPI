@@ -1,7 +1,8 @@
-﻿using System.Numerics;
+﻿using System.ComponentModel.DataAnnotations;
 using Application.Interfaces;
-using Application.Refunds.DTOs;
 using Domain.Aggregates.PurchaseAggregate;
+using Domain.Shared.Errors;
+using Domain.Shared.ValueObjects;
 using FluentResults;
 using MediatR;
 
@@ -18,57 +19,32 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, R
 
     public async Task<Result<CreateRefundResponse>> Handle(CreateRefundCommand request, CancellationToken cancellationToken)
     {
-        var refundingPurchase = await _unitOfWork.PurchaseRepository.GetLatestByCardNumber(request.CardNumber, TrackingType.Tracking);
-
-        if (refundingPurchase == null)
-            return Result.Fail($"Purchase with card number {request.CardNumber} was not found");
-
-        var card = refundingPurchase.Card;
-
-        // Возвращаем только первый продукт. В запросе на возврат приходят данные только об одном продукте
-        var refundingPurchaseItem = refundingPurchase.PurchaseItems.First();
+        var cardNumberResult = CardNumber.Create(request.CardNumber);
+        if (cardNumberResult.IsFailed)
+            return Result.Fail(cardNumberResult.Errors);
         
-        if (refundingPurchaseItem.ProductId != request.ProductId
-            || refundingPurchaseItem.Quantity != request.Quantity
-            || refundingPurchaseItem.Total != request.Total)
-            return Result.Fail("Cannot refund non-last purchase");
+        var card = await _unitOfWork.CardRepository.FindByNumberWithPurchasesAndRefundsAsync(cardNumberResult.Value, TrackingType.Tracking);
 
-        var productPrice = await _unitOfWork.ProductRepository
-            .GetPriceAtDateAsync(refundingPurchaseItem.ProductId,refundingPurchase.CreatedAt);
+        if (card == null)
+            return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
 
-        Check check = new()
-        {
-            CreatedAt = request.RefundedAt
-        };
+        var productResult = _unitOfWork.ProductRepository.FindById(request.ProductId, TrackingType.Tracking);
+
+        var quantityResult = Quantity.Create(request.Quantity);
+        if (quantityResult.IsFailed)
+            return Result.Fail(quantityResult.Errors);
+
+        var refundResult = card.RefundLatest(request.ProductId, request.ProductPrice, quantityResult.Value);
+        if (refundResult.IsFailed)
+            return Result.Fail(refundResult.Errors);
         
-        Refund refund = new()
-        {
-            PurchaseId = refundingPurchase.Id,
-            Check = check,
-            RefundItems = new List<RefundItem>()
-            {
-                new()
-                {
-                    ProductId = refundingPurchaseItem.ProductId,
-                    Quantity = request.Quantity,
-                    ProductPriceAtRefund = productPrice
-                }
-            }
-        };
-
-        card.Balance += refund.Total;
-
-        await _unitOfWork.RefundRepository.AddAsync(refund);
         var changesSaved = await _unitOfWork.SaveChangesAsync();
 
         if (!changesSaved)
             return Result.Fail("Failed to save changes");
 
-        return new CreateRefundResponse()
-        {
-            CardBalance = card.Balance,
-            ProductName = refundingPurchaseItem.Product!.Title,
-            CheckId = check.Id
-        };
+        var product = card.Purchases.MaxBy(p => p.CreatedAt)!.PurchaseItems[0].Product;
+
+        return new CreateRefundResponse(card.Balance, refundResult.Value.Check.Id, product.Title);
     }
 }

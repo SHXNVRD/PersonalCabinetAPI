@@ -53,5 +53,5 @@ public class CreatePurchaseRow : RowBase
     public string Сurrency { get; set; }
 
     [XmlAttribute("pin")]
-    public string CardPinCode { get; set; }
+    public string CardPin { get; set; }
 }

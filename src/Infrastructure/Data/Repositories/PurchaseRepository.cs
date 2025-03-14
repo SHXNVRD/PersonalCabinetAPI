@@ -18,14 +18,4 @@ public class PurchaseRepository : IPurchaseRepository
 
     public async Task AddAsync(Purchase purchase)
         => await _context.Purchases.AddAsync(purchase);
-
-    public async Task<Purchase?> GetLatestByCardNumber(string cardNumber, TrackingType trackingType = TrackingType.NoTracking)
-        => await _context.Purchases
-            .SetTracking(trackingType)
-            .OrderByDescending(p => p.CreatedAt)
-            .Include(p => p.PurchaseItems)
-            .ThenInclude(pi => pi.Product)
-            .ThenInclude(prod => prod!.ProductPriceHistories).AsSplitQuery()
-            .Include(p => p.Card)
-            .FirstOrDefaultAsync(p => p.Card != null && p.Card.Number == cardNumber);
 }

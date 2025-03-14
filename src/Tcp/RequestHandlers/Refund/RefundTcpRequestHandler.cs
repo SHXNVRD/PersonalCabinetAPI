@@ -23,27 +23,12 @@ public class RefundTcpRequestHandler : ITcpRequestHandler<RefundTcpRequest>
     {
         var requestBody = request.R.Row;
 
-        if (!DateTime.TryParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out DateTime parsedDate))
-            return Result.Fail("Failed to parse refund date");
-
-        if (!decimal.TryParse(requestBody.ProductPrice, CultureInfo.InvariantCulture, out decimal parsedPrice))
+        if (!decimal.TryParse(requestBody.ProductPrice, CultureInfo.InvariantCulture, out var price))
             return Result.Fail("Failed to parse product price");
-
-        if (!decimal.TryParse(requestBody.Quantity, CultureInfo.InvariantCulture, out decimal parsedQuantity))
+        if (!double.TryParse(requestBody.Quantity, CultureInfo.InvariantCulture, out var quantity))
             return Result.Fail("Failed to parse product quantity");
-        
-        if (!decimal.TryParse(requestBody.Total, CultureInfo.InvariantCulture, out decimal parsedTotal))
-            return Result.Fail("Failed to parse product total price");
-        
-        CreateRefundCommand command = new()
-        {
-            RefundedAt = parsedDate,
-            CardNumber = requestBody.CardNumber,
-            ProductId = requestBody.ProductId,
-            ProductPrice = parsedPrice,
-            Quantity = (int)parsedQuantity,
-            Total = parsedTotal
-        };
+
+        CreateRefundCommand command = new(requestBody.CardNumber, requestBody.ProductId, quantity, price);
         
          var result = await _mediator.Send(command, cancellationToken);
 

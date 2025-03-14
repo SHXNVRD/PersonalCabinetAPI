@@ -10,6 +10,13 @@ namespace Infrastructure.Data.Configurations
         protected override void AddCustomConfiguration(EntityTypeBuilder<PurchaseItem> builder)
         {
             builder.ToTable("purchase_items");
+
+            builder
+                .HasOne(pi => pi.Product)
+                .WithMany()
+                .HasForeignKey("product_id")
+                .HasConstraintName("FK_purchase_item_product_id")
+                .IsRequired();
             
             builder
                 .Property(pi => pi.ProductPriceAtPurchase)

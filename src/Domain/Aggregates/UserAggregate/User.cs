@@ -1,4 +1,7 @@
+using Domain.Aggregates.Base;
 using Domain.Aggregates.CardAggregate;
+using Domain.Shared.Errors;
+using Domain.Shared.ValueObjects;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,20 +13,18 @@ namespace Domain.Aggregates.UserAggregate
         public DateOnly? DayOfBirth { get; private set; }
         private List<Card> _cards = [];
         public IReadOnlyList<Card> Cards => _cards.AsReadOnly();
-
-        public Result AddCard(Card card)
+        
+        public Result BlockCard(CardNumber number)
         {
+            if (number is null)
+                return Result.Fail(new InvalidData($"{nameof(number)} cannot be empty"));
+
+            var card = _cards.SingleOrDefault(c => c.Number == number);
             if (card == null)
-                return Result.Fail($"{nameof(card)} cannot be null");
-            if (_cards.Any(c => c.Number == card.Number))
-                return Result.Fail("Duplicated card");
+                return Result.Fail(new NotFound($"Card with number {number.Value} was not found"));
 
-            var activationResult = card.Activate(Id);
-            if (activationResult.IsFailed)
-                return Result.Fail(activationResult.Errors);
+            card.Block();
             
-            _cards.Add(card);
-
             return Result.Ok();
         }
     }

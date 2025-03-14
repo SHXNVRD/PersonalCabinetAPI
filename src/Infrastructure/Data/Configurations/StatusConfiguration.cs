@@ -20,5 +20,7 @@ public class StatusConfiguration : IdentityConfigurationBase<Status, int>
             .Property(s => s.Title)
             .HasColumnName("title")
             .IsRequired();
+
+        builder.HasData(Status.All());
     }
 }

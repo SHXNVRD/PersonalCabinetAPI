@@ -1,4 +1,4 @@
-﻿using Application.Cards.Commands.Deactivate;
+﻿using Application.Cards.Commands.Block;
 using Riok.Mapperly.Abstractions;
 
 namespace API.DTOs.CardController;
@@ -8,5 +8,5 @@ public record DeactivateCardRequest(int CardNumber);
 [Mapper]
 public static partial class DeactivateCardMapper
 {
-    public static partial DeactivateCardCommand ToCommand(DeactivateCardRequest request);
+    public static partial BlockCardCommand ToCommand(DeactivateCardRequest request);
 }

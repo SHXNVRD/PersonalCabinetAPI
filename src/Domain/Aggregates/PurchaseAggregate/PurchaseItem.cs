@@ -1,5 +1,6 @@
 using Domain.Aggregates.Base;
 using Domain.Aggregates.ProductAggregate;
+using Domain.Shared.Errors;
 using Domain.Shared.ValueObjects;
 using FluentResults;
 
@@ -7,7 +8,7 @@ namespace Domain.Aggregates.PurchaseAggregate;
 
 public sealed class PurchaseItem : Identity<Guid>
 {
-    public long ProductId { get; private set; }
+    public Product Product { get; private set; } = null!;
     public Quantity Quantity { get; private set; } = null!;
     public decimal ProductPriceAtPurchase { get; private set; }
     public decimal Total => (decimal)Quantity.Value * ProductPriceAtPurchase;
@@ -16,12 +17,12 @@ public sealed class PurchaseItem : Identity<Guid>
     { }
 
     private PurchaseItem(
-        long productId,
+        Product product,
         Quantity quantity,
         decimal productPriceAtPurchase) : this()
     {
         Id = Guid.NewGuid();
-        ProductId = productId;
+        Product = product;
         Quantity = quantity;
         ProductPriceAtPurchase = productPriceAtPurchase;
     }
@@ -29,21 +30,31 @@ public sealed class PurchaseItem : Identity<Guid>
     public static Result<PurchaseItem> Create(Product product, Quantity quantity)
     {
         if (product == null)
-            return Result.Fail($"{nameof(product)} cannot be null");
-        if (quantity > product.Quantity)
-            return Result.Fail($"{nameof(quantity)} must be less than the available product quantity");
+            return Result.Fail(new InvalidData($"{nameof(product)} cannot be null"));
 
-        return new PurchaseItem(product.Id, quantity, product.Price);
+        var removeResult = product.Remove(quantity);
+        if (removeResult.IsFailed)
+            return Result.Fail(
+                new Conflict($"{nameof(quantity)} must be less than the available product quantity")
+                    .CausedBy(removeResult.Errors));
+        
+        return new PurchaseItem(product, quantity, product.Price);
     }
 
     public Result Add(Quantity quantity)
     {  
-        var updateResult = Quantity.Add(quantity);
-        if (updateResult.IsFailed)
-            return Result.Fail(updateResult.Errors);
+        var addResult = Quantity.Add(quantity);
+        if (addResult.IsFailed)
+            return Result.Fail(addResult.Errors);
 
-        Quantity = updateResult.Value;
-            
+        var removeProductQuantityResult = Product.Remove(quantity);
+        if (removeProductQuantityResult.IsFailed)
+            return Result.Fail(
+                new Conflict($"{nameof(quantity)} must be less than the available product quantity")
+                    .CausedBy(removeProductQuantityResult.Errors));
+                
+        Quantity = addResult.Value;
+        
         return Result.Ok();
     }
 
@@ -52,6 +63,10 @@ public sealed class PurchaseItem : Identity<Guid>
         var updateResult = Quantity.Subtract(quantity);
         if (updateResult.IsFailed)
             return Result.Fail(updateResult.Errors);
+        
+        var addProductQuantityResult = Product.Add(quantity);
+        if (addProductQuantityResult.IsFailed)
+            return Result.Fail(addProductQuantityResult.Errors);
 
         Quantity = updateResult.Value;
             

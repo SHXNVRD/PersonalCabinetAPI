@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Domain.Aggregates.CardAggregate;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Interfaces.Repositories
 {
     public interface ICardRepository
     {
-        Task<Card?> FindByNumberAsync(string number, TrackingType trackingType = TrackingType.NoTracking);
-        Task<Card?> FindByIdAsync(long id, TrackingType trackingType = TrackingType.NoTracking);
-        Task<Card?> FindByUserIdAsync(long id, TrackingType trackingType = TrackingType.NoTracking);
-        Task<bool> ActivateAsync(long userId, string number, string pinCodeHash);
-        Task<bool> DeactivateAsync(string number);
+        Task<Card?> FindByNumberAsync(CardNumber number, TrackingType trackingType = TrackingType.NoTracking);
+        Task<Card?> FindByNumberWithPurchasesAndRefundsAsync(CardNumber number, TrackingType trackingType = TrackingType.NoTracking);
+        Task<Card?> FindByIdAsync(Guid id, TrackingType trackingType = TrackingType.NoTracking);
+        Task<Card?> FindByUserIdAsync(Guid id, TrackingType trackingType = TrackingType.NoTracking);
+        Task<bool> ActivateAsync(Guid userId, CardNumber number, CardPinHash pinHash);
+        Task<bool> DeactivateAsync(CardNumber number);
     }
 }

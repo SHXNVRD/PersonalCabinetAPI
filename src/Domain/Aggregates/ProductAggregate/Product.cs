@@ -1,5 +1,6 @@
 using Domain.Aggregates.Base;
 using Domain.Shared.ValueObjects;
+using FluentResults;
 
 namespace Domain.Aggregates.ProductAggregate;
 
@@ -15,4 +16,26 @@ public sealed class Product : Identity<long>
         .OrderByDescending(pph => pph.CreatedAt)
         .Select(pph => pph.Price)
         .First();
+
+    internal Result Remove(Quantity quantity)
+    {
+        var newQuantityResult = Quantity.Subtract(quantity);
+        if (newQuantityResult.IsFailed)
+            return Result.Fail(newQuantityResult.Errors);
+
+        Quantity = newQuantityResult.Value;
+
+        return Result.Ok();
+    }
+    
+    internal Result Add(Quantity quantity)
+    {
+        var newQuantityResult = Quantity.Add(quantity);
+        if (newQuantityResult.IsFailed)
+            return Result.Fail(newQuantityResult.Errors);
+
+        Quantity = newQuantityResult.Value;
+
+        return Result.Ok();
+    }
 }

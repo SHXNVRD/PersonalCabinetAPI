@@ -1,5 +1,6 @@
 using Domain.Aggregates.Base;
 using Domain.Aggregates.ProductAggregate;
+using Domain.Shared.Errors;
 using Domain.Shared.ValueObjects;
 using FluentResults;
 
@@ -31,7 +32,7 @@ public sealed class Purchase : Aggregate<Guid>
     public static Result<Purchase> Create(Guid cardId)
     {
         if (cardId == Guid.Empty)
-            return Result.Fail($"{nameof(cardId)} cannot be empty");
+            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
 
         var checkResult = Check.Create();
         if (checkResult.IsFailed)
@@ -40,14 +41,14 @@ public sealed class Purchase : Aggregate<Guid>
         return  new Purchase(cardId, checkResult.Value, DateTime.UtcNow);
     }
 
-    public Result AddOrUpdateProduct(Product product, Quantity quantity)
+    public Result AddOrUpdate(Product product, Quantity quantity)
     {
         if (product == null)
-            return Result.Fail($"{nameof(product)} cannot be null");
+            return Result.Fail(new InvalidData($"{nameof(product)} cannot be null"));
         if (quantity > product.Quantity)
-            return Result.Fail($"{nameof(quantity)} must be less than available product quantity");
+            return Result.Fail(new Conflict($"{nameof(quantity)} must be less than available product quantity"));
             
-        var item = _purchaseItems.SingleOrDefault(pi => pi.ProductId == product.Id);
+        var item = _purchaseItems.SingleOrDefault(pi => pi.Product.Id == product.Id);
         
         if (item != null)
         {
@@ -69,15 +70,13 @@ public sealed class Purchase : Aggregate<Guid>
 
     public Result Remove(Product product, Quantity quantity)
     {
-        var item = _purchaseItems.FirstOrDefault(pi => pi.ProductId == product.Id);
+        var item = _purchaseItems.FirstOrDefault(pi => pi.Product.Id == product.Id);
         if (item == null)
-            return Result.Fail("Product not found in purchase");
+            return Result.Fail(new NotFound("Product not found in purchase"));
                     
         var newQuantityResult = item.Remove(quantity);
         if (newQuantityResult.IsFailed)
-            return Result
-                .Fail("Cannot remove more quantity than exists")
-                .WithErrors(newQuantityResult.Errors);
+            return Result.Fail(new Conflict("Cannot remove more quantity than exists"));
 
         if (item.Quantity.Value == 0)
             _purchaseItems.Remove(item);

@@ -69,11 +69,6 @@ namespace Infrastructure.Data.Configurations
                     .HasMaxLength(64)
                     .IsFixedLength()
                     .IsRequired());
-
-            builder
-                .HasIndex(c => c.Number)
-                .HasDatabaseName("IX_card_number")
-                .IsUnique();
         }
     }
 }

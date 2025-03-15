@@ -1,6 +1,8 @@
-﻿namespace Domain.Shared.Errors;
+﻿using Domain.Shared.Errors.Base;
 
-public class LowCardBalance : Conflict
+namespace Domain.Shared.Errors;
+
+public class LowCardBalance : DomainError
 {
     public LowCardBalance(string message) 
         : base(message)

@@ -1,48 +1,54 @@
-using System.Text;
-using API.Helpers;
 using API.Helpers.ProblemDetailsBuilder;
-using Application.Errors.Base;
+using Domain.Shared.Errors;
+using Domain.Shared.Errors.Base;
 using FluentResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using InvalidCastException = System.InvalidCastException;
+using HttpContent = Microsoft.AspNetCore.Http.HttpContext;
 
-namespace API.Extensions
+namespace API.Extensions;
+
+public static class ResultExtensions
 {
-    public static class ResultExtensions
+    public static ObjectResult ToObjectResult(this ResultBase result, HttpContent context)
     {
-        private static IHttpContextAccessor _httpContextAccessor;
+        if (result.IsSuccess)
+            throw new InvalidCastException($"Result must be failed");
 
-        public static void Configure(IHttpContextAccessor httpContextAccessor) =>
-            _httpContextAccessor = httpContextAccessor;
-
-        public static ObjectResult ToObjectResult(this ResultBase result)
-        {
-            if (result.IsSuccess)
-                throw new InvalidCastException($"Result must be failed");
-
-            var appError = result.Errors.OfType<ApplicationError>().FirstOrDefault();
-            var statusCode = appError?.ErrorType == null
-                ? StatusCodes.Status500InternalServerError
-                : ApplicationErrorMapper.MapToStatusCode(appError.ErrorType);
+        var error = result.Errors.OfType<DomainError>().FirstOrDefault();
+        var statusCode = error == null
+            ? StatusCodes.Status500InternalServerError
+            : MapToStatusCode(error.GetType());
             
-            var errors = result.Errors.Select(e => e.Message);
+        var errors = result.Errors.Select(e => e.Message);
 
-            var builder = new ProblemDetailsBuilder(statusCode);
-            var problemDetails = builder
-                .AddTitle()
-                .AddDetail()
-                .AddType()
-                .AddInstance(_httpContextAccessor.HttpContext.Request.Path.Value)
-                .AddExtension("errors", errors)
-                .Build();
+        var builder = new ProblemDetailsBuilder(statusCode);
+        var problemDetails = builder
+            .AddTitle()
+            .AddDetail()
+            .AddType()
+            .AddInstance(context.Request.Path.Value ?? "")
+            .AddExtension("errors", errors)
+            .Build();
 
-            var objectResult = new ObjectResult(problemDetails)
-            {
-                StatusCode = statusCode
-            };
+        var objectResult = new ObjectResult(problemDetails)
+        {
+            StatusCode = statusCode
+        };
 
-            return objectResult;
-        }
+        return objectResult;
     }
+    
+    private static readonly Dictionary<Type, int> ErrorTypes = new()
+    {
+        [typeof(InvalidData)] = StatusCodes.Status400BadRequest,
+        [typeof(Unauthorized)] = StatusCodes.Status401Unauthorized,
+        [typeof(Forbidden)] = StatusCodes.Status403Forbidden,
+        [typeof(NotFound)] = StatusCodes.Status404NotFound,
+        [typeof(Conflict)] = StatusCodes.Status409Conflict
+    };
+
+    private static int MapToStatusCode(Type errorType)
+        => ErrorTypes.TryGetValue(errorType, out var code) 
+            ? code 
+            : StatusCodes.Status500InternalServerError;
 }

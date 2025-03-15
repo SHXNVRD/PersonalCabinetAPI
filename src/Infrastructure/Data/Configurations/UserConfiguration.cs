@@ -38,7 +38,6 @@ namespace Infrastructure.Data.Configurations
             builder
                 .Property(u => u.DayOfBirth)
                 .HasColumnName("day_of_birth")
-                .HasConversion(new ToUtcValueConverter())
                 .IsRequired(false);
             
             builder

@@ -23,13 +23,6 @@ public class RefundConfiguration : IdentityConfigurationBase<Refund, Guid>
             .IsRequired();
 
         builder
-            .HasOne(r => r.Check)
-            .WithOne()
-            .HasForeignKey("refund_id")
-            .HasConstraintName("FK_check_refund_id")
-            .IsRequired(false);
-
-        builder
             .Property(r => r.Total)
             .HasColumnName("total")
             .IsRequired();

@@ -30,7 +30,7 @@ namespace Infrastructure.Data
             base.OnModelCreating(builder);
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            builder.Entity<IdentityRole>(r =>
+            builder.Entity<IdentityRole<Guid>>(r =>
             {
                 r.ToTable("roles");
                 

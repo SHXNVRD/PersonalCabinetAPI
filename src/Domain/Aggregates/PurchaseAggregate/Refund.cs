@@ -22,6 +22,7 @@ public sealed class Refund : Identity<Guid>
         decimal total,
         DateTime createdAt) : this()
     {
+        Id = Guid.NewGuid();
         CardId = cardId;
         PurchaseId = purchaseId;
         Check = check;

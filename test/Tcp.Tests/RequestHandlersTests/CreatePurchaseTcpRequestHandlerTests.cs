@@ -50,8 +50,8 @@ public class CreatePurchaseTcpRequestHandlerTests
                     Quantity = _quantity,
                     CardNumber = _cardNumber,
                     CardPin = _cardPin,
-                    Date = _date,
-                    ProductId = _productId
+                    ProductId = _productId,
+                    ProductPrice = _productPrice
                 }
             }
         };
@@ -59,12 +59,12 @@ public class CreatePurchaseTcpRequestHandlerTests
         var requestBody = request.R.Row;
         
         _mediatorMock.Setup(x => x.Send(
-                It.Is<CreatePurchaseCommand>(
-                    c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) &&
-                         c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
+                It.Is<CreatePurchaseCommand>(c =>
+                         c.Quantity == double.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
                          c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPin &&
-                         c.ProductId == requestBody.ProductId), 
+                         c.CardPin == requestBody.CardPin &&
+                         c.ProductId == requestBody.ProductId &&
+                         c.ProductPrice == decimal.Parse(requestBody.ProductPrice, CultureInfo.InvariantCulture)),
                 default))
             .ReturnsAsync(Result.Fail(It.IsAny<string>()));
         
@@ -75,13 +75,13 @@ public class CreatePurchaseTcpRequestHandlerTests
         Assert.True(result.IsFailed);
         
         _mediatorMock.Verify(x => x.Send(
-            It.Is<CreatePurchaseCommand>(
-                c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) && 
-                     c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) && 
-                     c.CardNumber == requestBody.CardNumber &&
-                     c.PinCode == requestBody.CardPin &&
-                     c.ProductId == requestBody.ProductId), 
-                default), 
+                It.Is<CreatePurchaseCommand>(c =>
+                    c.Quantity == double.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
+                    c.CardNumber == requestBody.CardNumber &&
+                    c.CardPin == requestBody.CardPin &&
+                    c.ProductId == requestBody.ProductId &&
+                    c.ProductPrice == decimal.Parse(requestBody.ProductPrice, CultureInfo.InvariantCulture)),
+                default),
             Times.Once);
     }
     
@@ -106,39 +106,34 @@ public class CreatePurchaseTcpRequestHandlerTests
             }
         };
 
-        CreatePurchaseResponse mediatorResponse = new()
-        {
-            CardBalance = 1,
-            CheckId = 1,
-            ProductName = "productName"
-        };
+        CreatePurchaseResponse response = new(1, 1, "productName");
         
         var requestBody = request.R.Row;
         
         _mediatorMock.Setup(x => x.Send(
-                It.Is<CreatePurchaseCommand>(
-                    c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) &&
-                         c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
-                         c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPin &&
-                         c.ProductId == requestBody.ProductId), 
+                It.Is<CreatePurchaseCommand>(c =>
+                    c.Quantity == double.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
+                    c.CardNumber == requestBody.CardNumber &&
+                    c.CardPin == requestBody.CardPin &&
+                    c.ProductId == requestBody.ProductId &&
+                    c.ProductPrice == decimal.Parse(requestBody.ProductPrice, CultureInfo.InvariantCulture)),
                 default))
-            .ReturnsAsync(Result.Ok(mediatorResponse));
+            .ReturnsAsync(Result.Ok(response));
         
         var handler = new CreatePurchaseTcpRequestHandler(_mediatorMock.Object, _tcpOptionsMock.Object);
 
-        var result = await handler.HandleAsync(request, default);   
+        var result = await handler.HandleAsync(request);   
         
         Assert.True(result.IsSuccess);
         
         _mediatorMock.Verify(x => x.Send(
-                It.Is<CreatePurchaseCommand>(
-                    c => c.CreatedAt == DateTime.ParseExact(requestBody.Date, "dd.MM.yyyy HH:mm:ss", DateTimeFormatInfo.InvariantInfo) && 
-                         c.Quantity == (int)decimal.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) && 
-                         c.CardNumber == requestBody.CardNumber &&
-                         c.PinCode == requestBody.CardPin &&
-                         c.ProductId == requestBody.ProductId), 
-                default), 
+                It.Is<CreatePurchaseCommand>(c =>
+                    c.Quantity == double.Parse(requestBody.Quantity, CultureInfo.InvariantCulture) &&
+                    c.CardNumber == requestBody.CardNumber &&
+                    c.CardPin == requestBody.CardPin &&
+                    c.ProductId == requestBody.ProductId &&
+                    c.ProductPrice == decimal.Parse(requestBody.ProductPrice, CultureInfo.InvariantCulture)),
+                default),
             Times.Once);
     }
 }

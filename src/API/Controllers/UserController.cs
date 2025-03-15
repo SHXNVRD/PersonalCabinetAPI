@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using API.Extensions;
-using Application.DTOs;
-using Application.Errors;
-using Application.Extensions;
 using Application.Users.DTOs;
 using Application.Users.Queries.GetById;
+using Domain.Shared.Errors;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
@@ -39,8 +33,8 @@ namespace API.Controllers
 
             if (userId == null)
                 return Result
-                    .Fail(new UnauthorizedError("Access token does not contain user id"))
-                    .ToObjectResult();
+                    .Fail(new Unauthorized("Access token does not contain user id"))
+                    .ToObjectResult(HttpContext);
 
             var command = new GetUserByIdQuery
             {
@@ -49,7 +43,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToObjectResult();
+                return result.ToObjectResult(HttpContext);
             
             return result.ToActionResult();
         }
@@ -68,7 +62,7 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToObjectResult();
+                return result.ToObjectResult(HttpContext);
             
             return result.ToActionResult();
         }

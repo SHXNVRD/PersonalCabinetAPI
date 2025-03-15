@@ -32,13 +32,6 @@ namespace Infrastructure.Data.Configurations
                 .IsRequired(false);
 
             builder
-                .HasOne(p => p.Check)
-                .WithOne()
-                .HasForeignKey("purchase_id")
-                .HasConstraintName("FK_check_purchase_id")
-                .IsRequired(false);
-
-            builder
                 .Property(p => p.CardId)
                 .HasColumnName("card_id")
                 .IsRequired();

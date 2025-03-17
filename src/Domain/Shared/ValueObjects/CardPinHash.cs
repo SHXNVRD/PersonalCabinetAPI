@@ -26,7 +26,7 @@ public class CardPinHash : ValueObject
         
         var hash = Hasher.ComputeSha256Hash(trimmedPin);
 
-        return new CardPinHash(hash.ToUpperInvariant());
+        return new CardPinHash(hash);
     }
     
     public static bool operator ==(CardPinHash? a, CardPinHash? b)

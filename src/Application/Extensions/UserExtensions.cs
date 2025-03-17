@@ -13,12 +13,7 @@ namespace Application.Extensions
     {
         public static User ToEntity(this RegistrationCommand request)
         {
-            return new User
-            {
-                Email = request.Email,
-                UserName = request.UserName,
-                PhoneNumber = request.PhoneNumber
-            };
+            return User.Create(request.Email, request.PhoneNumber, request.UserName).Value;
         }
 
         public static UserResponse ToDto(this User user)

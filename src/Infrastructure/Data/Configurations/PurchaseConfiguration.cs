@@ -39,6 +39,7 @@ namespace Infrastructure.Data.Configurations
             builder
                 .Property(p => p.CreatedAt)
                 .HasColumnName("created_at")
+                .HasDefaultValueSql("NOW()")
                 .HasConversion(new ToUtcValueConverter())
                 .IsRequired();
 

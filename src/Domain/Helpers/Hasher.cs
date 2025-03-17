@@ -10,7 +10,7 @@ namespace Domain.Helpers
             ArgumentNullException.ThrowIfNull(rawData);
 
             var bytes = SHA256.HashData(Encoding.ASCII.GetBytes(rawData));
-            return Convert.ToHexString(bytes);
+            return Convert.ToHexString(bytes).ToLowerInvariant();
         }
     }
 }

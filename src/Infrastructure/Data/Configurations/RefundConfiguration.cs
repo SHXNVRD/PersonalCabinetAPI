@@ -30,6 +30,7 @@ public class RefundConfiguration : IdentityConfigurationBase<Refund, Guid>
         builder
             .Property(r => r.CreatedAt)
             .HasColumnName("created_at")
+            .HasDefaultValueSql("NOW()")
             .HasConversion(new ToUtcValueConverter())
             .IsRequired();
     }

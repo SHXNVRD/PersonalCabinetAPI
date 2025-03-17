@@ -29,6 +29,7 @@ public class CheckConfiguration : IdentityConfigurationBase<Check, long>
         builder
             .Property(c => c.CreatedAt)
             .HasColumnName("created_at")
+            .HasDefaultValueSql("NOW()")
             .HasConversion(new ToUtcValueConverter());
     }
 }

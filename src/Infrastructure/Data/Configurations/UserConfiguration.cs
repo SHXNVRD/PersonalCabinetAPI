@@ -11,6 +11,7 @@ namespace Infrastructure.Data.Configurations
         {
             builder.ToTable("users");
             
+            builder.Property(e => e.Id).HasColumnName("id");
             builder.Property(e => e.UserName).HasColumnName("user_name");
             builder.Property(e => e.NormalizedUserName).HasColumnName("normalized_user_name");
             builder.Property(e => e.Email).HasColumnName("email");
@@ -44,6 +45,7 @@ namespace Infrastructure.Data.Configurations
                 .Property(u => u.RegisteredAt)
                 .HasColumnName("registered_at")
                 .HasConversion(new ToUtcValueConverter())
+                .HasDefaultValueSql("NOW()")
                 .IsRequired();
         }
     }

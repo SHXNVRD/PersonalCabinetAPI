@@ -53,7 +53,7 @@ public sealed class Card : Aggregate<Guid>
     {
         if (userId == Guid.Empty)
             return Result.Fail(new InvalidData($"{nameof(userId)} cannot be empty"));
-        if (Status.CanChangeTo(Status.Activated))
+        if (!Status.CanChangeTo(Status.Activated))
             return Result.Fail(new Conflict("Activation failed. Status cannot be settled"));
 
         UserId = userId;
@@ -63,9 +63,9 @@ public sealed class Card : Aggregate<Guid>
         return Result.Ok();
     }
     
-    internal Result Block()
+    public Result Block()
     {
-        if (Status.CanChangeTo(Status.Blocked))
+        if (!Status.CanChangeTo(Status.Blocked))
             return Result.Fail(new Conflict("Deactivation failed. Status cannot be settled"));
 
         Status = Status.Blocked;
@@ -78,10 +78,10 @@ public sealed class Card : Aggregate<Guid>
 
     public Result Buy(Purchase purchase)
     {
-        if (Status != Status.Activated)
-            return Result.Fail(new Conflict("Card must be activated to make purchases"));
         if (purchase is null)
             return Result.Fail(new InvalidData($"{nameof(purchase)} cannot be null"));
+        if (Status != Status.Activated)
+            return Result.Fail(new Conflict("Card must be activated to make purchases"));
         if (purchase.PurchaseItems.Count == 0)
             return Result.Fail(new Conflict("Purchase must contain at least one item"));
         if (Balance < purchase.Total)
@@ -102,9 +102,8 @@ public sealed class Card : Aggregate<Guid>
         if (purchase == null)
             return Result.Fail(new Conflict("No purchases for refund"));
         
-        var canRefundResult = CanRefund(purchase, productId, productPrice, productQuantity);
-        if (canRefundResult.IsFailed)
-            return Result.Fail(canRefundResult.Errors);
+        if (!CanRefund(purchase, productId, productPrice, productQuantity))
+            return Result.Fail(new Conflict("Cannot refund purchase"));
 
         var refundResult = Refund.Create(Id, purchase);
         if (refundResult.IsFailed)
@@ -121,18 +120,15 @@ public sealed class Card : Aggregate<Guid>
         return Result.Ok(refund);
     }
         
-    private Result CanRefund(Purchase purchase, long productId, decimal productPrice, Quantity productQuantity)
+    private bool CanRefund(Purchase purchase, long productId, decimal productPrice, Quantity productQuantity)
     {
-        var refund = _refunds.SingleOrDefault(r => r.PurchaseId == purchase.Id);
-
-        if (refund != null)
-            return Result.Fail(new Conflict($"{nameof(purchase)} already refunded"));
+        if (_refunds.Any(r => r.PurchaseId == purchase.Id))
+            return false;
         
         var purchaseItem = purchase.PurchaseItems.SingleOrDefault(pi => pi.Product.Id == productId);
-
         if (purchaseItem?.ProductPriceAtPurchase != productPrice || purchaseItem.Quantity != productQuantity)
-            return Result.Fail(new Conflict("Cannot refund non-latest purchase"));
+            return false;
 
-        return Result.Ok();
+        return true;
     }
 }

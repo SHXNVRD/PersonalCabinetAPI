@@ -24,8 +24,8 @@ public sealed class Status : Identity<int>
 
     public bool CanChangeTo(Status status)
     {
-        if (status is null)
-            throw new ArgumentException($"{nameof(status)} cannot be null");
+        ArgumentNullException.ThrowIfNull(status);
+        
         if (!All().Contains(status))
             throw new ArgumentOutOfRangeException(nameof(status), "Unsupported status");
 

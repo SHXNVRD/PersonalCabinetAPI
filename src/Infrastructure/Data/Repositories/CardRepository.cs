@@ -31,6 +31,7 @@ namespace Infrastructure.Data.Repositories
         {
             return _context.Cards
                 .SetTracking(trackingType)
+                .Include(c => c.Status)
                 .SingleOrDefaultAsync(c => c.Number == number);
         }
         

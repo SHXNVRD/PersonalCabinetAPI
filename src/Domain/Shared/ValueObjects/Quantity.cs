@@ -20,12 +20,18 @@ public class Quantity : ValueObject
 
     public FluentResults.Result<Quantity> Add(Quantity quantity)
     {
+        if (quantity is null)
+            return Result.Fail($"{nameof(quantity)} cannot ne null");
+        
         var newValue = Value + quantity.Value;
         return Create(newValue);
     }
 
     public FluentResults.Result<Quantity> Subtract(Quantity quantity)
     {
+        if (quantity is null)
+            return Result.Fail($"{nameof(quantity)} cannot ne null");
+        
         var newValue = Value - quantity.Value;
         return Create(newValue);
     }

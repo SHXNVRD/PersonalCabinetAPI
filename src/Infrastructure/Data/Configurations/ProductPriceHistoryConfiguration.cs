@@ -12,9 +12,11 @@ public class ProductPriceHistoryConfiguration : IdentityConfigurationBase<Produc
     {
         builder.ToTable("product_price_histories");
         
+        
         builder
             .Property(pph => pph.CreatedAt)
             .HasColumnName("created_at")
+            .HasDefaultValueSql("NOW()")
             .HasConversion(new ToUtcValueConverter())
             .IsRequired();
 

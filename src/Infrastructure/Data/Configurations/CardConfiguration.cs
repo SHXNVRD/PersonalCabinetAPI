@@ -1,4 +1,5 @@
 using Domain.Aggregates.CardAggregate;
+using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data.Configurations.Base;
 using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,16 @@ namespace Infrastructure.Data.Configurations
             builder
                 .Navigation(c => c.Purchases)
                 .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            builder
+                .HasOne<User>()
+                .WithMany(u => u.Cards)
+                .HasForeignKey(c => c.UserId)
+                .HasConstraintName("FK_card_user_id");
+
+            builder
+                .Property(c => c.UserId)
+                .HasColumnName("user_id");
 
             builder
                 .HasMany(c => c.Purchases)
@@ -46,6 +57,7 @@ namespace Infrastructure.Data.Configurations
             builder
                 .Property(c => c.ActivatedAt)
                 .HasColumnName("activated_at")
+                .HasDefaultValueSql("NOW()")
                 .HasConversion(new ToUtcValueConverter())
                 .IsRequired(false);
 

@@ -12,6 +12,8 @@ namespace Application.Tests.Users.Commands;
 public class CreateEmailConfirmationLinkCommandHandlerTests
 {
     private readonly string _email = "test@mail.com";
+    private readonly string _phoneNumber = "1234567890";
+    private readonly string _name = "Test";
     private readonly string _token = "token";
     private readonly string _confirmationLink = "link";
     private readonly CreateEmailConfirmationLinkCommand _command = new();
@@ -46,10 +48,7 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
     [Fact]
     public async Task Handle_FailedToSendLink_ReturnsFail()
     {
-        User user = new()
-        {
-            Email = _command.Email
-        };
+        var user = User.Create(_email, _phoneNumber, _name).Value;
         
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))
@@ -91,10 +90,7 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
     [Fact]
     public async Task Handle_ValidEmail_ReturnsSuccess()
     {
-        User user = new()
-        {
-            Email = _command.Email
-        };
+        var user = User.Create(_email, _phoneNumber, _name).Value;
         
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))

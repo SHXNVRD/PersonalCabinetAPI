@@ -1,4 +1,5 @@
 using Domain.Aggregates.Base;
+using Domain.Shared.Errors;
 using Domain.Shared.ValueObjects;
 using FluentResults;
 
@@ -16,8 +17,43 @@ public sealed class Product : Identity<long>
         .OrderByDescending(pph => pph.CreatedAt)
         .Select(pph => pph.Price)
         .First();
+    
+    private Product()
+    { }
 
-    internal Result Remove(Quantity quantity)
+    private Product(
+        string title,
+        string description,
+        Quantity quantity,
+        Category category,
+        ProductPriceHistory price) : this()
+    {
+        Title = title;
+        Description = description;
+        Quantity = quantity;
+        Category = category;
+        _productPriceHistories.Add(price);
+    }
+
+    public static Result<Product> Create(string title, string description, decimal price, Quantity quantity, Category category)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            return Result.Fail(new InvalidData($"{nameof(title)} cannot be empty"));
+        if (string.IsNullOrWhiteSpace(description))
+            return Result.Fail(new InvalidData($"{nameof(description)} cannot be empty"));
+        if (quantity is null)
+            return Result.Fail(new InvalidData($"{nameof(quantity)} cannot be null"));
+        if (category is null)
+            return Result.Fail(new InvalidData($"{nameof(category)} cannot be null"));
+
+        var priceResult = ProductPriceHistory.Create(price);
+        if (priceResult.IsFailed)
+            return Result.Fail(priceResult.Errors);
+
+        return new Product(title.Trim(), description.Trim(), quantity, category, priceResult.Value);
+    }
+
+    public Result Remove(Quantity quantity)
     {
         var newQuantityResult = Quantity.Subtract(quantity);
         if (newQuantityResult.IsFailed)
@@ -28,7 +64,7 @@ public sealed class Product : Identity<long>
         return Result.Ok();
     }
     
-    internal Result Add(Quantity quantity)
+    public Result Add(Quantity quantity)
     {
         var newQuantityResult = Quantity.Add(quantity);
         if (newQuantityResult.IsFailed)

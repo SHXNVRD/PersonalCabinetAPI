@@ -36,7 +36,6 @@ services.AddHttpContextAccessor();
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
-ResultExtensions.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 app.UseSerilogRequestLogging(options =>
 {
     options.MessageTemplate = "Remote ip: {RemoteIpAddress} {RequestHost} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Interfaces.Token

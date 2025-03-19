@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Text;
 using System.Xml.Linq;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Tcp.Abstractions;
+using Tcp.Extensions;
 
 namespace Tcp.Behaviors;
 
@@ -41,6 +43,13 @@ public class TcpRequestsLoggingPipelineBehavior<TRequest>
             _logger.LogError("Tcp request failure {@Errors} in {ExecutingTime} ms,",
                 result.Errors,
                 _stopwatch.ElapsedMilliseconds);
+        }
+
+        var response = result.ValueOrDefault;
+        if (response is not null)
+        {
+            var buffer = await response.ToByteArrayAsync(Encoding.UTF8, cancellationToken);
+            _logger.LogDebug("{Response}", Encoding.UTF8.GetString(buffer));
         }
         
         _stopwatch.Reset();

@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces.Token;
 using Application.Services;
 using Application.Users.Commands.Login;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +14,8 @@ namespace Application.Tests.Users.Commands;
 public class LoginCommandHandlerTests
 {
     private readonly string _email = "test@mail.com";
+    private readonly string _phoneNumber = "1234567890";
+    private readonly string _name = "Test";
     private readonly string _password = "password";
     private readonly LoginCommand _command = new();
     
@@ -55,11 +57,8 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_UnconfirmedEmail_ReturnsFail()
     {
-        User user = new()
-        {
-            EmailConfirmed = false
-        };
-        
+        var user = User.Create(_email, _phoneNumber, _name).Value;
+
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))
             .ReturnsAsync(user);
@@ -77,12 +76,8 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_WrongPassword_ReturnsFail()
     {
-        User user = new()
-        {
-            Email = _command.Email,
-            EmailConfirmed = true
-        };
-        
+        var user = User.Create(_email, _phoneNumber, _name).Value;
+
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))
             .ReturnsAsync(user);
@@ -103,11 +98,9 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_ValidCommand_ReturnsSuccess()
     {
-        User user = new()
-        {
-            Email = _command.Email,
-            EmailConfirmed = true
-        };
+        var user = User.Create(_email, _phoneNumber, _name).Value;
+        user.EmailConfirmed = true;
+
         var accessToken = "accessToken";
         var refreshToken = "refreshToken";
         var tokenType = "tokenType";

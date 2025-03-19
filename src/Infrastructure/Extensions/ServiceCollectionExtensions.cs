@@ -4,7 +4,7 @@ using Application.Interfaces.Email;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Token;
 using Application.Services;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data;
 using Infrastructure.Data.IdentityValidators;
 using Infrastructure.Data.Repositories;
@@ -102,7 +102,7 @@ namespace Infrastructure.Extensions
             });
             
             services
-                .AddIdentity<User, IdentityRole<long>>(options =>
+                .AddIdentity<User, IdentityRole<Guid>>(options =>
                 {
                     options.User.RequireUniqueEmail = true;
                     options.SignIn.RequireConfirmedEmail = true;

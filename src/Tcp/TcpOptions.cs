@@ -1,9 +1,9 @@
 ﻿namespace Tcp;
 
-public class TcpOptions
+public record TcpOptions
 {
-    public int StartTimeout { get; set; }
-    public int ReadTimeout { get; set; }
+    public int StartTimeout { get; init; }
+    public int ReadTimeout { get; init; }
     public string Host { get; init; } = null!;
     public int Port { get; init; }
 }

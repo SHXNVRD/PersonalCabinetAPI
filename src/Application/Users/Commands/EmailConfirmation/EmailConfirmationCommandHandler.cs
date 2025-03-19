@@ -1,6 +1,5 @@
 using Application.Extensions;
 using Application.Services;
-using Domain.Models;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

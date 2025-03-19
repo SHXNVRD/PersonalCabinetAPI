@@ -1,25 +1,35 @@
-﻿using System.Linq.Expressions;
-using Domain.Models;
+﻿using Domain.Aggregates.PurchaseAggregate;
 using Infrastructure.Data.Configurations.Base;
+using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class CheckConfiguration : IdentityConfigurationBase<Check>
+public class CheckConfiguration : IdentityConfigurationBase<Check, long>
 {
     protected override void AddCustomConfiguration(EntityTypeBuilder<Check> builder)
     {
-        Expression<Func<DateTime, DateTime>> convertToUtc = dateTime =>
-            dateTime.Kind == DateTimeKind.Utc ? dateTime : DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
-
+        builder.ToTable("checks");
+        
         builder
-            .Property(c => c.CreatedAt)
-            .HasConversion(convertToUtc, convertToUtc)
-            .IsRequired();
+            .HasOne<Purchase>()
+            .WithOne(p => p.Check)
+            .HasForeignKey<Check>("purchase_id")
+            .HasConstraintName("FK_check_purchase_id")
+            .IsRequired(false);
+        
+        builder
+            .HasOne<Refund>()
+            .WithOne(r => r.Check)
+            .HasForeignKey<Check>("refund_id")
+            .HasConstraintName("FK_check_refund_id")
+            .IsRequired(false);
         
         builder
             .Property(c => c.CreatedAt)
-            .HasDefaultValueSql("now()");
+            .HasColumnName("created_at")
+            .HasDefaultValueSql("NOW()")
+            .HasConversion(new ToUtcValueConverter());
     }
 }

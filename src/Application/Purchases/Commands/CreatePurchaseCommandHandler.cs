@@ -1,7 +1,7 @@
-﻿using Application.Helpers;
-using Application.Interfaces;
-using Application.Purchases.DTOs;
-using Domain.Models;
+﻿using Application.Interfaces;
+using Domain.Aggregates.PurchaseAggregate;
+using Domain.Shared.Errors;
+using Domain.Shared.ValueObjects;
 using FluentResults;
 using MediatR;
 
@@ -18,53 +18,53 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
 
     public async Task<Result<CreatePurchaseResponse>> Handle(CreatePurchaseCommand request, CancellationToken cancellationToken)
     {
-        var card = await _unitOfWork.CardRepository.FindByNumberAsync(request.CardNumber, TrackingType.Tracking);
+        var cardNumberResult = CardNumber.Create(request.CardNumber);
+        if (cardNumberResult.IsFailed)
+            return Result.Fail(cardNumberResult.Errors);
+        
+        var card = await _unitOfWork.CardRepository.FindByNumberAsync(cardNumberResult.Value, TrackingType.Tracking);
 
         if (card == null)
-            return Result.Fail($"Card with number {request.CardNumber} was not found");
+            return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
 
-        if (await Hasher.ComputeSha256HashAsync(request.PinCode) != card.PinCodeHash)
-            return Result.Fail("Incorrect card pin-code");
+        var cardPinHashResult = CardPinHash.Create(request.CardPin);
+        if (cardPinHashResult.IsFailed)
+            return Result.Fail(cardPinHashResult.Errors);
 
-        var product = await _unitOfWork.ProductRepository.FindById(request.ProductId);
+        var pinVerifyResult = card.VerifyPin(cardPinHashResult.Value);
+        if (pinVerifyResult.IsFailed)
+            return Result.Fail(pinVerifyResult.Errors);
+
+        var product = await _unitOfWork.ProductRepository.FindById(request.ProductId, TrackingType.Tracking);
 
         if (product == null)
-            return Result.Fail($"Product with id {request.ProductId} was not found");
+            return Result.Fail(new NotFound($"Product with id {request.ProductId} was not found"));
+        if (product.Price != request.ProductPrice)
+            return Result.Fail(new Conflict("Product price discrepancy"));
+
+        var purchaseResult = Purchase.Create(card.Id);
+        if (purchaseResult.IsFailed)
+            return Result.Fail(purchaseResult.Errors);
+
+        var quantityResult = Quantity.Create(request.Quantity);
+        if (quantityResult.IsFailed)
+            return Result.Fail(quantityResult.Errors);
         
-        Check check = new()
-        {
-            CreatedAt = request.CreatedAt
-        };
+        var purchase = purchaseResult.Value;
+        var addResult = purchase.AddOrUpdate(product, quantityResult.Value);
+        if (addResult.IsFailed)
+            return Result.Fail(quantityResult.Errors);
 
-        Purchase purchase = new()
-        {
-            CardId = card.Id,
-            CreatedAt = request.CreatedAt,
-            Check = check,
-            PurchaseItems = new List<PurchaseItem>()
-            {
-                new()
-                {
-                    ProductPriceAtPurchase = product.Price,
-                    ProductId = product.Id,
-                    Quantity = request.Quantity
-                }
-            }
-        };
-
-        card.Balance -= purchase.Total;
-
+        var buyResult = card.Buy(purchase);
+        if (buyResult.IsFailed)
+            return Result.Fail(buyResult.Errors);
+        
         await _unitOfWork.PurchaseRepository.AddAsync(purchase);
         var changesSaved = await _unitOfWork.SaveChangesAsync();
 
         if (!changesSaved)
             return Result.Fail("Failed to save changes");
 
-        return new CreatePurchaseResponse()
-        {
-            CardBalance = card.Balance,
-            ProductName = product.Title,
-            CheckId = check.Id
-        };
+        return new CreatePurchaseResponse(card.Balance, purchase.Check.Id, product.Title);
     }
 }

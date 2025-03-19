@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.Users.Commands.Registration;
 using Application.Users.DTOs;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 
 namespace Application.Extensions
 {
@@ -13,12 +13,7 @@ namespace Application.Extensions
     {
         public static User ToEntity(this RegistrationCommand request)
         {
-            return new User
-            {
-                Email = request.Email,
-                UserName = request.UserName,
-                PhoneNumber = request.PhoneNumber
-            };
+            return User.Create(request.Email, request.PhoneNumber, request.UserName).Value;
         }
 
         public static UserResponse ToDto(this User user)
@@ -29,7 +24,7 @@ namespace Application.Extensions
                 Name = user.UserName ?? string.Empty,
                 Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber ?? string.Empty,
-                BirthDate = user.BirthDate
+                BirthDate = user.DayOfBirth
             };
         }
     }

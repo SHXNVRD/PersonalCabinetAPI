@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces;
 using Application.Interfaces.Repositories;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 

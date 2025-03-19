@@ -1,18 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Application.DTOs;
 using FluentResults;
 using MediatR;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Application.Cards.Commands.Activate
 {
-    public class ActivateCardCommand : IRequest<Result>
+    public class ActivateCardCommand : IRequest<Result<ActivateCardResponse>>
     {
         public string UserId { get; set; }
         public string CardNumber { get; set; }
-        public string CardPinCode { get; set; }
+        public string CardPin { get; set; }
     }
 }

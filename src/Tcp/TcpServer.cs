@@ -128,13 +128,7 @@ public class TcpServer : ITcpServer
 
     private async Task SendAsync(NetworkStream writer, XDocument response, CancellationToken cancellationToken = default)
     {
-        var buffer = await response.ToByteArrayAsync(Encoding.GetEncoding(1251), cancellationToken);
-        
-        _logger.LogDebug("{Response}", 
-            Encoding
-            .GetEncoding(1251)
-            .GetString(buffer));
-        
+        var buffer = await response.ToByteArrayAsync(Encoding.UTF8, cancellationToken);
         await writer.WriteAsync(buffer, cancellationToken);
         await writer.FlushAsync(cancellationToken);
     }

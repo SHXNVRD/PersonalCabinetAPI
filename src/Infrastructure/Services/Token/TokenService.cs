@@ -3,7 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.Interfaces.Token;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data;
 using Infrastructure.Services.Options;
 using Microsoft.AspNetCore.Identity;

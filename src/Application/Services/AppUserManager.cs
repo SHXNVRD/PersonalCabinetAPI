@@ -1,4 +1,4 @@
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

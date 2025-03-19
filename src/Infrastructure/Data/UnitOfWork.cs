@@ -1,9 +1,6 @@
-using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Infrastructure.Data.Repositories;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 

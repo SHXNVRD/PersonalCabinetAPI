@@ -7,7 +7,6 @@ using Application.Interfaces.Email;
 using Application.Interfaces.Token;
 using Application.Services;
 using Application.Users.DTOs;
-using Domain.Models;    
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;

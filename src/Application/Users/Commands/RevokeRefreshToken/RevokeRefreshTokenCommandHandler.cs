@@ -1,6 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Token;
-using Domain.Models;
+using Domain.Aggregates.UserAggregate;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

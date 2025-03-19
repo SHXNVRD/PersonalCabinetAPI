@@ -1,16 +1,8 @@
 using System.Security.Claims;
 using API.DTOs.CardController;
 using API.Extensions;
-using API.DTOs;
-using Application.Cards.Commands;
 using Application.Cards.Commands.Activate;
-using Application.Cards.Commands.Deactivate;
-using Application.Cards.DTOs;
-using Application.Cards.Queries;
-using Application.Cards.Queries.GetCardByUserId;
-using Application.DTOs;
-using Application.Errors;
-using Application.Extensions;
+using Domain.Shared.Errors;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
 using MediatR;
@@ -37,14 +29,14 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<CardActivatedResponse>> Activate([FromBody] ActivateCardRequest request)
+        public async Task<ActionResult<ActivateCardResponse>> Activate([FromBody] ActivateCardRequest request)
         {
             var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
                 return Result
-                    .Fail(new UnauthorizedError("Access token does not contain user id"))
-                    .ToObjectResult();
+                    .Fail(new Unauthorized("Access token does not contain user id"))
+                    .ToObjectResult(HttpContext);
 
             var command = ActivateCardMapper.ToCommand(request);
             command.UserId = userId;
@@ -52,56 +44,23 @@ namespace API.Controllers
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToObjectResult();
+                return result.ToObjectResult(HttpContext);
 
             return result.ToActionResult();
         }
 
-        [HttpGet("current")]
-        [Authorize]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<CardResponse>> GetCurrent()
-        {
-            var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (userId == null)
-                return Result
-                    .Fail(new UnauthorizedError("Access token does not contain user id"))
-                    .ToObjectResult();
-
-            if (!long.TryParse(userId, out var parsedId))
-                return Result
-                    .Fail(new UnauthorizedError("Failed to parse user id"))
-                    .ToObjectResult();
-
-            var command = new GetCardByUserIdQuery
-            {
-                Id = parsedId
-            };
-
-            var result = await _mediatR.Send(command);
-
-            if (result.IsFailed)
-                return result.ToObjectResult();
-
-            return result.ToActionResult();
-        }
-
-        [HttpPut("deactivation")]
+        [HttpPut("block")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> Deactivate([FromBody] DeactivateCardRequest request)
+        public async Task<ActionResult> Deactivate([FromBody] BlockCardRequest request)
         {
             var command = DeactivateCardMapper.ToCommand(request);
             var result = await _mediatR.Send(command);
 
             if (result.IsFailed)
-                return result.ToObjectResult();
+                return result.ToObjectResult(HttpContext);
 
             return NoContent();
         }

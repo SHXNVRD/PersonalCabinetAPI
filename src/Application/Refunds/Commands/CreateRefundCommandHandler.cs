@@ -28,8 +28,6 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, R
         if (card == null)
             return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
 
-        var productResult = _unitOfWork.ProductRepository.FindById(request.ProductId, TrackingType.Tracking);
-
         var quantityResult = Quantity.Create(request.Quantity);
         if (quantityResult.IsFailed)
             return Result.Fail(quantityResult.Errors);
@@ -37,7 +35,8 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, R
         var refundResult = card.RefundLatest(request.ProductId, request.ProductPrice, quantityResult.Value);
         if (refundResult.IsFailed)
             return Result.Fail(refundResult.Errors);
-        
+
+        await _unitOfWork.RefundRepository.AddAsync(refundResult.Value);
         var changesSaved = await _unitOfWork.SaveChangesAsync();
 
         if (!changesSaved)

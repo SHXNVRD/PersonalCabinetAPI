@@ -2,6 +2,8 @@
 using FluentResults;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.Helpers.CheckBuilder;
+using Tcp.Helpers.TerminalResponseBuilder;
 
 namespace Tcp.RequestHandlers.CloseShift;
 
@@ -16,26 +18,25 @@ public class CloseShiftTcpRequestHandler : ITcpRequestHandler<CloseShiftTcpReque
     
     public Task<Result<XDocument>> HandleAsync(CloseShiftTcpRequest request, CancellationToken cancellationToken = default)
     {
-        var result = new XDocument(
-            new XElement("DP",
-                new XElement("M",
-                    new XElement("S",
-                        new XAttribute("serv1", _tcpOptions.Host),
-                        new XAttribute("serv2", _tcpOptions.Host),
-                        new XAttribute("portf1", _tcpOptions.Port),
-                        new XAttribute("portf2", _tcpOptions.Port),
-                        new XAttribute("porte1", _tcpOptions.Port),
-                        new XAttribute("porte2", _tcpOptions.Port))),
-                new XElement("R",
-                    new XElement("ROW",
-                        new XAttribute("o_fl_otvet", "0"),
-                        new XAttribute("kod_check", "0"),
-                        new XAttribute("otkaz", "0"),
-                        new XAttribute("balance", "100"),
-                        new XAttribute("kod_otkaz", "0"),
-                        new XAttribute("kod_otvet_xml", "0"),
-                        new XAttribute("checksrc", "**** Закрытие смены ****&#13;&#10;****** Svoy.Club ******")))));
+        var settings = new TerminalResponseBuilderSettings(_tcpOptions.Host, _tcpOptions.Port.ToString());
+        var responseBuilder = new TerminalResponseBuilder(settings);
+        var checkBuilder = new CheckBuilder();
 
-        return Task.FromResult(Result.Ok(result));
+        var check = checkBuilder
+            .AddLine("**** Закрытие смены ****")
+            .AddLine("****** Svoy.Club ******")
+            .Build();
+
+        var response = responseBuilder
+            .AddResponseCode("0")
+            .AddOFlResponse("0")
+            .AddRejection("0")
+            .AddRejectionCode("0")
+            .AddBalance("100")
+            .AddCheckId("0")
+            .AddCheck(check)
+            .Build();
+
+        return Task.FromResult(Result.Ok(response));
     }
 }

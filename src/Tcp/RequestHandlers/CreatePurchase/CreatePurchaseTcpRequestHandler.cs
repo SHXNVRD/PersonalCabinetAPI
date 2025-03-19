@@ -7,6 +7,8 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tcp.Abstractions;
+using Tcp.Helpers.CheckBuilder;
+using Tcp.Helpers.TerminalResponseBuilder;
 
 namespace Tcp.RequestHandlers.CreatePurchase;
 
@@ -42,50 +44,46 @@ public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchase
         if (result.IsFailed)
             return Result.Fail(result.Errors);
 
-        var checkContent = "*************************" +
-                           "#13;#10;       Svoy.Club         " +
-                           "#13;#10;    Processing center    " +
-                           "#13;#10;*************************" +
-                           "#13;#10;ООО `Иванов Иван Иван`" +
-                           "#13;#10;ИНН 0000000000 ТО :" +
-                           "#13;#10; Красноармейск" +
-                           "#13;#10; ул. 1 Мая,  5" +
-                           "#13;#10;*************************" +
-                           $"#13;#10;   {requestBody.Date}   " +
-                           "#13;#10;ТО .................28140" +
-                           "#13;#10;ЭмитТО ..............0010" +
-                           $"#13;#10;Карта № .....{requestBody.CardNumber}" +
-                           $"#13;#10;Чек № ..................{result.Value.CheckId}" +
-                           $"#13;#10;Баланс ............{result.Value.CardBalance}" +
-                           "#13;#10;*************************" +
-                           $"#13;#10;{result.Value.ProductName} (Деб.)========{requestBody.Quantity}" +
-                           $"#13;#10;Цена :{requestBody.ProductPrice}" +
-                           $"#13;#10;Сумма :{requestBody.Total}" +
-                           "#13;#10;Добро пожаловать!" +
-                           "#13;#10;***********MPay**********" +
-                           "#13;#10;*************************" +
-                           "#13;#10;#13;#10;#13;#10;";
+        var settings = new TerminalResponseBuilderSettings(_tcpOptions.Host, _tcpOptions.Port.ToString());
+        var responseBuilder = new TerminalResponseBuilder(settings);
+        var checkBuilder = new CheckBuilder();
+        
+        var checkContent = checkBuilder
+            .AddSeparator()
+            .AddLine("       Svoy.Club         ")
+            .AddLine("    Processing center    ")
+            .AddSeparator()
+            .AddLine("ООО `Иванов Иван Иван`")
+            .AddLine("ИНН 0000000000 ТО :")
+            .AddLine(" Красноармейск")
+            .AddLine(" ул. 1 Мая,  5")
+            .AddSeparator()
+            .AddLine($"   {requestBody.Date}   ")
+            .AddLine("ТО .................28140")
+            .AddLine("ЭмитТО ..............0010")
+            .AddLine($"Карта № .....{requestBody.CardNumber}")
+            .AddLine($"Чек № ..................{result.Value.CheckId}")
+            .AddLine($"Баланс ............{result.Value.CardBalance}")
+            .AddSeparator()
+            .AddLine($"{result.Value.ProductName} (Деб.)========{requestBody.Quantity}")
+            .AddLine($"Цена :{requestBody.ProductPrice}")
+            .AddLine($"Сумма :{requestBody.Total}")
+            .AddLine("Добро пожаловать!")
+            .AddLine("***********MPay**********")
+            .AddSeparator()
+            .AddIndent()
+            .Build();
 
-        var response = new XDocument(
-            new XElement("DP",
-                new XElement("M",
-                    new XElement("S",
-                        new XAttribute("serv1", _tcpOptions.Host),
-                        new XAttribute("portf1", _tcpOptions.Port),
-                        new XAttribute("porte1", _tcpOptions.Port),
-                        new XAttribute("serv2", _tcpOptions.Host),
-                        new XAttribute("portf2", _tcpOptions.Port),
-                        new XAttribute("porte2", _tcpOptions.Port))),
-                new XElement("R",
-                    new XElement("ROW",
-                        new XAttribute("kod_otvet_xml", "0"),
-                        new XAttribute("o_fl_otvet", "0"),
-                        new XAttribute("otkaz", "0"),
-                        new XAttribute("kod_otkaz", "0"),
-                        new XAttribute("kod_check", result.Value.CheckId),
-                        new XAttribute("balance", result.Value.CardBalance),
-                        new XAttribute("checksrc", checkContent),
-                        new XAttribute("cardno", requestBody.CardNumber)))));
+        var response = responseBuilder
+            .AddResponseCode("0")
+            .AddOFlResponse("0")
+            .AddRejection("0")
+            .AddRejectionCode("0")
+            .AddCheckId(result.Value.CheckId.ToString())
+            .AddBalance(result.Value.CardBalance.ToString(CultureInfo.InvariantCulture))
+            .AddCheck(checkContent)
+            .AddCardNumber(requestBody.CardNumber)
+            .Build();
 
         return Result.Ok(response);
     }

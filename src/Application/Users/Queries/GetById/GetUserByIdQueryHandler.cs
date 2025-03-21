@@ -9,29 +9,29 @@ using Application.Interfaces;
 using Application.Interfaces.Token;
 using Application.Users.DTOs;
 using Domain.Aggregates.UserAggregate;
+using Domain.Shared.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Users.Queries.GetById
+namespace Application.Users.Queries.GetById;
+
+public class GetUserByTokenQueryHandler : IRequestHandler<GetUserByIdQuery, Result<GetUserByIdResponse>>
 {
-    public class GetUserByTokenQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserResponse>>
+    private readonly UserManager<User> _userManager;
+
+    public GetUserByTokenQueryHandler(UserManager<User> userManager, ITokenService tokenService)
     {
-        private readonly UserManager<User> _userManager;
+        _userManager = userManager;
+    }
 
-        public GetUserByTokenQueryHandler(UserManager<User> userManager, ITokenService tokenService)
-        {
-            _userManager = userManager;
-        }
+    public async Task<Result<GetUserByIdResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(request.Id);
+        if (user == null)
+            return Result.Fail(new NotFound("User with specified id not found"));
 
-        public async Task<Result<UserResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
-        {
-            var user = await _userManager.FindByIdAsync(request.Id);
-            
-            if (user == null)
-                return Result.Fail($"User with specified id not found");
-
-            return Result.Ok(user.ToDto());
-        }
+        return Result.Ok(new GetUserByIdResponse(user.Id, user.UserName, user.DayOfBirth, user.PhoneNumber,
+            user.PhoneNumberConfirmed, user.TwoFactorEnabled, user.Email));
     }
 }

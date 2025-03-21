@@ -1,7 +1,6 @@
-﻿using Application.Users.Commands.CreateEmailConfirmationLink;
-using FluentValidation;
+﻿using FluentValidation;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
 public class CreateEmailConfirmationLinkRequestValidator : AbstractValidator<CreateEmailConfirmationLinkRequest>
 {

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using Org.BouncyCastle.Math.EC.Multiplier;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
 public class SendPasswordResetLinkRequestValidator : AbstractValidator<SendPasswordResetLinkRequest>
 {

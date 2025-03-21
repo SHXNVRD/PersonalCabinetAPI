@@ -1,5 +1,6 @@
 ﻿using Application.Extensions;
 using Application.Services;
+using Domain.Shared.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -19,11 +20,11 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail("User with specified email not found");
+            return Result.Fail(new NotFound("User with specified email not found"));
 
-        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
-        if (!result.Succeeded)
-            return result.ToFluentResult();
+        var resetResult = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        if (!resetResult.Succeeded)
+            return Result.Fail(new Conflict(resetResult.Errors.First().Description));
 
         return Result.Ok();
     }

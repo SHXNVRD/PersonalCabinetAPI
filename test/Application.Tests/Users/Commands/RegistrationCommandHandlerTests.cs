@@ -1,7 +1,10 @@
-﻿using Application.Services;
+﻿using System.Data;
+using Application.Interfaces;
+using Application.Services;
 using Application.Users.Commands.Registration;
 using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
 
 namespace Application.Tests.Users.Commands;
@@ -17,6 +20,9 @@ public class RegistrationCommandHandlerTests
     
     private readonly Mock<AppUserManager> _appUserManagerMock = 
         new(new Mock<IUserStore<User>>().Object, null, null, null, null, null, null, null, null);
+    
+    private readonly Mock<IDbContextTransaction> _transactionMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
 
     public RegistrationCommandHandlerTests()
     {
@@ -40,7 +46,11 @@ public class RegistrationCommandHandlerTests
                     _command.Password))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
 
-        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object);
+        _unitOfWorkMock
+            .Setup(x => x.BeginTransactionAsync(It.IsAny<bool>()))
+            .ReturnsAsync(It.IsAny<IDbContextTransaction>());
+
+        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object, _unitOfWorkMock.Object);
 
         var result = await handler.Handle(_command, default);
         
@@ -77,8 +87,12 @@ public class RegistrationCommandHandlerTests
                          u.PhoneNumber == _command.PhoneNumber),
                 _role))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
+        
+        _unitOfWorkMock
+            .Setup(x => x.BeginTransactionAsync(It.IsAny<bool>()))
+            .ReturnsAsync(_transactionMock.Object);
 
-        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object);
+        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object, _unitOfWorkMock.Object);
 
         var result = await handler.Handle(_command, default);
         
@@ -123,8 +137,12 @@ public class RegistrationCommandHandlerTests
                          u.PhoneNumber == _command.PhoneNumber),
                 _role))
             .ReturnsAsync(IdentityResult.Success);
+        
+        _unitOfWorkMock
+            .Setup(x => x.BeginTransactionAsync(It.IsAny<bool>()))
+            .ReturnsAsync(_transactionMock.Object);
 
-        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object);
+        var handler = new RegistrationCommandHandler(_appUserManagerMock.Object, _unitOfWorkMock.Object);
 
         var result = await handler.Handle(_command, default);
         

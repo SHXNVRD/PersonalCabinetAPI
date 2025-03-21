@@ -1,9 +1,8 @@
 using Application.DTOs.Emails;
 
-namespace Application.Interfaces.Email
+namespace Application.Interfaces.Email;
+
+public interface IEmailTemplate
 {
-    public interface IEmailTemplate
-    {
-        Task<EmailBody> CompileAsync(string templateName, object model);
-    }
+    Task<EmailBody> CompileAsync(string templateName, object model);
 }

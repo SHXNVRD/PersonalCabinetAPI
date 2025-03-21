@@ -7,10 +7,18 @@ using Application.Users.DTOs;
 using FluentResults;
 using MediatR;
 
-namespace Application.Users.Queries.GetById
+namespace Application.Users.Queries.GetById;
+
+public class GetUserByIdQuery : IRequest<Result<GetUserByIdResponse>>
 {
-    public class GetUserByIdQuery : IRequest<Result<UserResponse>>
-    {
-        public string Id { get; set; }
-    }
+    public string Id { get; set; }
 }
+
+public record GetUserByIdResponse(
+    Guid Id,
+    string Name,
+    DateOnly? DayOfBirth,
+    string PhoneNumber,
+    bool PhoneNumberConfirmed,
+    bool TwoFactorEnabled,
+    string Email);

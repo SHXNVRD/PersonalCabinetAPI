@@ -1,7 +1,7 @@
 ﻿using Application.Users.Commands.SendPasswordResetLink;
 using Riok.Mapperly.Abstractions;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
 public record SendPasswordResetLinkRequest(string Email);
 

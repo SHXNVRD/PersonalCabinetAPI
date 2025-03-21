@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Application.Interfaces.Email;
 using Application.Services;
+using Domain.Shared.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +30,7 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail("User with specified email not found");
+            return Result.Fail(new NotFound("User with specified email not found"));
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
@@ -39,8 +40,8 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
             new { email = user.Email, token });
         
         EmailMessage message = new("Сброс пароля", "ResetPassword", [user.Email]);
-        var isMessageSent = await _emailService.SendPasswordResetLinkAsync(message, resetPasswordLink!, cancellationToken);
-        
-        return Result.OkIf(isMessageSent, "Fail to sent reset password link");
+        await _emailService.SendPasswordResetLinkAsync(message, resetPasswordLink!, cancellationToken);
+
+        return Result.Ok();
     }
 }

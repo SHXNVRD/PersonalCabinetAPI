@@ -3,12 +3,12 @@ using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Data.Configurations
+namespace Infrastructure.Data.Configurations;
+
+public class ProductConfiguration : IdentityConfigurationBase<Product, long>
 {
-    public class ProductConfiguration : IdentityConfigurationBase<Product, long>
+    protected override void AddCustomConfiguration(EntityTypeBuilder<Product> builder)
     {
-        protected override void AddCustomConfiguration(EntityTypeBuilder<Product> builder)
-        {
             builder.ToTable("products");
             
             builder
@@ -47,5 +47,4 @@ namespace Infrastructure.Data.Configurations
 
             builder.Ignore(p => p.Price);
         }
-    }
 }

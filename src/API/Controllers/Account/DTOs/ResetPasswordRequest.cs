@@ -1,7 +1,7 @@
 ﻿using Application.Users.Commands.ResetPassword;
 using Riok.Mapperly.Abstractions;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
 public record ResetPasswordRequest(
     string Email,

@@ -6,25 +6,25 @@ using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Behaviors
+namespace Application.Behaviors;
+
+public sealed class RequestLoggingBehavior<TRequest, TResponse>
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+    where TResponse : ResultBase
 {
-    public sealed class RequestLoggingBehavior<TRequest, TResponse>
-        : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
-        where TResponse : ResultBase
-    {
-        private readonly ILogger<RequestLoggingBehavior<TRequest, TResponse>> _logger;
+    private readonly ILogger<RequestLoggingBehavior<TRequest, TResponse>> _logger;
     
-        public RequestLoggingBehavior(ILogger<RequestLoggingBehavior<TRequest, TResponse>> logger)
-        {
+    public RequestLoggingBehavior(ILogger<RequestLoggingBehavior<TRequest, TResponse>> logger)
+    {
             _logger = logger;
         }
 
-        public async Task<TResponse> Handle(
-            TRequest request,
-            RequestHandlerDelegate<TResponse> next,
-            CancellationToken cancellationToken)
-        {
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
             var requestName = typeof(TRequest).Name;
 
             _logger.LogInformation("Starting request {RequestName}", requestName);
@@ -35,7 +35,7 @@ namespace Application.Behaviors
                 _logger.LogInformation("Completed request {RequestName}", requestName);
             else
             {
-                _logger.LogError(
+                _logger.LogInformation(
                     "Request failure {RequestName}, {@Errors}",
                     requestName,
                     result.Errors);
@@ -43,5 +43,4 @@ namespace Application.Behaviors
 
             return result;
         }
-    }
 }

@@ -1,7 +1,7 @@
 using Application.Users.Commands.RefreshToken;
 using Riok.Mapperly.Abstractions;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 public record RefreshTokenRequest(string RefreshToken);
 
 [Mapper]

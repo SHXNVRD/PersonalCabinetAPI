@@ -7,34 +7,55 @@ using Application.Interfaces.Email;
 using Application.Interfaces.Token;
 using Application.Services;
 using Application.Users.DTOs;
+using Domain.Aggregates.UserAggregate;
+using Domain.Shared.Errors;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Users.Commands.Registration
+namespace Application.Users.Commands.Registration;
+
+public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, Result>
 {
-    public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, Result>
+    private readonly AppUserManager _userManager;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public RegistrationCommandHandler(AppUserManager userManager, IUnitOfWork unitOfWork)
     {
-        private readonly AppUserManager _userManager;
+        _userManager = userManager;
+        _unitOfWork = unitOfWork;
+    }
 
-        public RegistrationCommandHandler(AppUserManager userManager)
-        {
-            _userManager = userManager;
-        }
+    public async Task<Result> Handle(RegistrationCommand request, CancellationToken cancellationToken)
+    {
+        var createUserResult = User.Create(request.Email, request.PhoneNumber, request.UserName);
+        if (createUserResult.IsFailed)
+            return Result.Fail(createUserResult.Errors);
 
-        public async Task<Result> Handle(RegistrationCommand request, CancellationToken cancellationToken)
+        var user = createUserResult.Value;
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        try
         {
-            var user = request.ToEntity();
-            
             var userResult = await _userManager.CreateAsync(user, request.Password);
-            
             if (!userResult.Succeeded)
-                return userResult.ToFluentResult();
-
+                return Result.Fail(new Conflict(userResult.Errors.First().Description));
+                
             var roleResult = await _userManager.AddToRoleAsync(user, "user");
-
-            return Result.OkIf(roleResult.Succeeded, "Failed to add role (user)");
+            if (!roleResult.Succeeded)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Result.Fail(new Conflict(roleResult.Errors.First().Description));
+            }
         }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return Result.Ok();
     }
 }

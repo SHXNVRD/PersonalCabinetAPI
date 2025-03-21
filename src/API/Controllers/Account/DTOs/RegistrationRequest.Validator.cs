@@ -1,19 +1,23 @@
-﻿using FluentValidation;
+using FluentValidation;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
-public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest>
+public class RegistrationRequestValidator : AbstractValidator<RegistrationRequest>
 {
-    public ResetPasswordRequestValidator()
+    public RegistrationRequestValidator()
     {
-        RuleFor(r => r.Token)
-            .NotEmpty().WithMessage("Reset password token is required");
-        
+        RuleFor(r => r.UserName)
+            .NotEmpty().WithMessage("User name cannot be empty");
+
         RuleFor(r => r.Email)
             .NotEmpty().WithMessage("Email address is required")
             .EmailAddress().WithMessage("Invalid email address");
-        
-        RuleFor(r => r.NewPassword)
+
+        RuleFor(r => r.PhoneNumber)
+            .NotEmpty().WithMessage("Phone number is required")
+            .Length(10).WithMessage("Invalid phone number");
+
+        RuleFor(r => r.Password)
             .NotEmpty().WithMessage("Your password cannot be empty")
             .MinimumLength(8).WithMessage("Your password length must be at least 8.")
             .MaximumLength(20).WithMessage("Your password length must not exceed 20.")

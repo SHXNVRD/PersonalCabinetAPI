@@ -5,21 +5,21 @@ using Domain.Shared.ValueObjects;
 using FluentResults;
 using MediatR;
 
-namespace Application.Cards.Commands.Activate
-{
-    public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<ActivateCardResponse>>
-    {
-        private readonly AppUserManager _userManager;
-        private readonly IUnitOfWork _unitOfWork;
+namespace Application.Cards.Commands.Activate;
 
-        public ActivateCardCommandHandler(AppUserManager userManager, IUnitOfWork unitOfWork)
-        {
+public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, Result<ActivateCardResponse>>
+{
+    private readonly AppUserManager _userManager;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ActivateCardCommandHandler(AppUserManager userManager, IUnitOfWork unitOfWork)
+    {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
-        }
+    }
 
-        public async Task<Result<ActivateCardResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
-        {
+    public async Task<Result<ActivateCardResponse>> Handle(ActivateCardCommand request, CancellationToken cancellationToken)
+    {
             var cardNumberResult = CardNumber.Create(request.CardNumber);
             if (cardNumberResult.IsFailed)
                 return Result.Fail(cardNumberResult.Errors);
@@ -48,6 +48,5 @@ namespace Application.Cards.Commands.Activate
                 return Result.Fail("Failed to save changes");
 
             return Result.Ok(new ActivateCardResponse(card.Id));
-        }
     }
 }

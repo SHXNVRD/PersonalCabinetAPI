@@ -3,30 +3,32 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
-namespace API.Middlewares
-{
-    public class GlobalExceptionHandler : IExceptionHandler
-    {
-        private readonly IProblemDetailsService _problemDetailsService;
-        private readonly ILogger<GlobalExceptionHandler> _logger;
-        private readonly IHostEnvironment _environment;
+namespace API.Middlewares;
 
-        public GlobalExceptionHandler(
-            ILogger<GlobalExceptionHandler> logger, 
-            IProblemDetailsService problemDetailsService, 
-            IHostEnvironment hostEnvironment)
-        {
+public class GlobalExceptionHandler : IExceptionHandler
+{
+    private readonly IProblemDetailsService _problemDetailsService;
+    private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly IHostEnvironment _environment;
+
+    public GlobalExceptionHandler(
+        ILogger<GlobalExceptionHandler> logger, 
+        IProblemDetailsService problemDetailsService, 
+        IHostEnvironment hostEnvironment)
+    {
             _logger = logger;
             _problemDetailsService = problemDetailsService;
             _environment = hostEnvironment;
         }
 
-        public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
-        {
-            _logger.LogError(exception, "An unhandled exception has occurred while executing the request: {Message}", exception.Message);
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+            _logger.LogCritical(
+                "[EXCEPTION] type: {type}, message: {description}, exception: {@exception}, inner exception: {@innerException}",
+                exception.GetType().Name, exception.Message, exception, exception.InnerException);
 
             var detail = _environment.IsDevelopment() 
                 ? exception.Message
@@ -45,5 +47,4 @@ namespace API.Middlewares
                 }
             });
         }
-    }
 }

@@ -1,8 +1,7 @@
 ﻿using Application.Users.Commands.CreateEmailConfirmationLink;
-using MediatR;
 using Riok.Mapperly.Abstractions;
 
-namespace API.DTOs.AccountController;
+namespace API.Controllers.Account.DTOs;
 
 public record CreateEmailConfirmationLinkRequest(string Email);
 

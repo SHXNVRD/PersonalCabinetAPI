@@ -3,12 +3,12 @@ using Infrastructure.Data.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Data.Configurations
+namespace Infrastructure.Data.Configurations;
+
+public class PurchaseItemConfiguration : IdentityConfigurationBase<PurchaseItem, Guid>
 {
-    public class PurchaseItemConfiguration : IdentityConfigurationBase<PurchaseItem, Guid>
+    protected override void AddCustomConfiguration(EntityTypeBuilder<PurchaseItem> builder)
     {
-        protected override void AddCustomConfiguration(EntityTypeBuilder<PurchaseItem> builder)
-        {
             builder.ToTable("purchase_items");
 
             builder
@@ -31,5 +31,4 @@ namespace Infrastructure.Data.Configurations
 
             builder.Ignore(pi => pi.Total);
         }
-    }
 }

@@ -4,12 +4,12 @@ using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Data.Configurations
+namespace Infrastructure.Data.Configurations;
+
+public class PurchaseConfiguration : IdentityConfigurationBase<Purchase, Guid>
 {
-    public class PurchaseConfiguration : IdentityConfigurationBase<Purchase, Guid>
+    protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
     {
-        protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
-        {
             builder.ToTable("purchases");
             
             builder
@@ -45,5 +45,4 @@ namespace Infrastructure.Data.Configurations
 
             builder.Ignore(p => p.Total);
         }
-    }
 }

@@ -9,12 +9,12 @@ using Tcp;
 using Tcp.Abstractions;
 using Tcp.Behaviors;
 
-namespace API.Extensions
+namespace API.Extensions;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
     {
-        public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
-        {
             services
                 .ConfigureFluentValidation()
                 .ConfigureSwagger()
@@ -23,8 +23,8 @@ namespace API.Extensions
             return services;
         }
         
-        private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
-        {
+    private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
+    {
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo {Title = "Personal Cabinet API", Version = "v1"});
@@ -59,8 +59,8 @@ namespace API.Extensions
             return services;
         }
         
-        private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
-        {
+    private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
+    {
             services.AddValidatorsFromAssemblyContaining<AuthResponse>();
             services.AddFluentValidationAutoValidation(config =>
             {
@@ -69,5 +69,4 @@ namespace API.Extensions
             
             return services;
         }
-    }
 }

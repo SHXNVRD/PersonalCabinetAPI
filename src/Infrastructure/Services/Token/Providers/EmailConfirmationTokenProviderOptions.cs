@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Services.Token.Providers
+namespace Infrastructure.Services.Token.Providers;
+
+public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
 {
-    public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
+    public EmailConfirmationTokenProviderOptions()
     {
-        public EmailConfirmationTokenProviderOptions()
-        {
             Name = "EmailDataProtectorTokenProvider";
             TokenLifespan = TimeSpan.FromDays(1);
         }
-    }
 }

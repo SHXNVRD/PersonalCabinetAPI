@@ -1,15 +1,14 @@
 ﻿using Application.Users.Commands.EmailConfirmation;
 using FluentValidation;
 
-namespace API.DTOs.AccountController
+namespace API.Controllers.Account.DTOs;
+
+public class EmailConfirmationCommandValidator : AbstractValidator<EmailConfirmationCommand>
 {
-    public class EmailConfirmationCommandValidator : AbstractValidator<EmailConfirmationCommand>
+    public EmailConfirmationCommandValidator()
     {
-        public EmailConfirmationCommandValidator()
-        {
             RuleFor(c => c.Email)
                 .NotEmpty().WithMessage("Email address is required")
                 .EmailAddress().WithMessage("Invalid email address");
         }
-    }
 }

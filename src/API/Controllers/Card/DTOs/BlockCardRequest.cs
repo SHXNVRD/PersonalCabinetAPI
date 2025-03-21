@@ -1,7 +1,7 @@
 ﻿using Application.Cards.Commands.Block;
 using Riok.Mapperly.Abstractions;
 
-namespace API.DTOs.CardController;
+namespace API.Controllers.Card.DTOs;
 
 public record BlockCardRequest(int CardNumber);
 

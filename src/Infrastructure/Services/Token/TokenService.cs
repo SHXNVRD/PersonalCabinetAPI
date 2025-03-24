@@ -7,7 +7,6 @@ using Application.Interfaces.Token;
 using Domain.Aggregates.UserAggregate;
 using Domain.Shared.Errors;
 using FluentResults;
-using Infrastructure.Services.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

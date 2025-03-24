@@ -2,7 +2,6 @@ using System.Net.Sockets;
 using System.Security.Authentication;
 using Application.DTOs.Emails;
 using Application.Interfaces.Email;
-using Infrastructure.Services.Options;
 using MailKit;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
@@ -17,9 +16,9 @@ internal class MailkitSender : IEmailSender
     private readonly ILogger<MailkitSender> _logger;
     public MailkitSender(IOptions<EmailOptions> emailOptions, ILogger<MailkitSender> logger)
     {
-            _logger = logger;
-            _emailOptions = emailOptions.Value;
-        }
+        _logger = logger;
+        _emailOptions = emailOptions.Value;
+    }
         
     public async Task<bool> SendAsync(CompiledEmailMessage message, CancellationToken cancellationToken = default)
     {

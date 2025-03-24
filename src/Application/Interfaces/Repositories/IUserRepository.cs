@@ -4,5 +4,6 @@ namespace Application.Interfaces.Repositories;
 
 public interface IUserRepository
 {
-    Task<User?> GetByPhoneNumber(string phone, TrackingType trackingType = TrackingType.NoTracking);
+    Task<User?> FindByPhoneNumber(string phone, TrackingType trackingType = TrackingType.NoTracking);
+    Task<User?> FindWithCardsById(Guid id, TrackingType trackingType = TrackingType.NoTracking);
 }

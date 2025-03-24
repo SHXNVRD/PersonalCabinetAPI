@@ -4,6 +4,7 @@ using Domain.Aggregates;
 using Domain.Aggregates.PurchaseAggregate;
 using Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Infrastructure.Data.Repositories;
 

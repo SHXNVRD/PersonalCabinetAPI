@@ -15,8 +15,15 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User?> GetByPhoneNumber(string phone, TrackingType trackingType) =>
+    public async Task<User?> FindByPhoneNumber(string phone, TrackingType trackingType) =>
         await _context.Users
             .SetTracking(trackingType)
             .FirstOrDefaultAsync(u => u.PhoneNumber == phone);
+
+    public async Task<User?> FindWithCardsById(Guid id, TrackingType trackingType)
+        => await _context.Users
+            .SetTracking(trackingType)
+            .Include(u => u.Cards)
+            .ThenInclude(c => c.Status)
+            .SingleOrDefaultAsync(u => u.Id == id);
 }

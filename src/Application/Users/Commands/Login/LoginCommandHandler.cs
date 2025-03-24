@@ -28,14 +28,14 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail(new Conflict("Wrong password or email"));
+            return Result.Fail(new Unauthorized("Wrong password or email"));
 
         if (user.EmailConfirmed == false)
-            return Result.Fail(new Conflict("Email unconfirmed"));
+            return Result.Fail(new Unauthorized("Email unconfirmed"));
 
         var passwordCheckedResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
         if (!passwordCheckedResult.Succeeded)
-            return Result.Fail(new Conflict("Wrong password or email"));
+            return Result.Fail(new Unauthorized("Wrong password or email"));
 
         var accessToken = await _tokenService.GenerateTokenAsync(user);
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);

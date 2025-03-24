@@ -2,6 +2,8 @@ using System.Security.Claims;
 using API.Controllers.Card.DTOs;
 using API.Extensions;
 using Application.Cards.Commands.Activate;
+using Application.Cards.Commands.Block;
+using Domain.Aggregates.Base;
 using Domain.Shared.Errors;
 using FluentResults;
 using FluentResults.Extensions.AspNetCore;
@@ -31,13 +33,13 @@ public class CardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ActivateCardResponse>> Activate([FromBody] ActivateCardRequest request)
+    public async Task<ActionResult<ActivateCardResponse>> ActivateCardByNumber([FromBody] ActivateCardRequest request)
     {
         var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (userId == null)
             return Result
-                .Fail(new Unauthorized("Access token does not contain user id"))
+                .Fail(new Conflict("Access token does not contain user id"))
                 .ToObjectResult(HttpContext);
 
         var command = ActivateCardMapper.ToCommand(request);
@@ -51,19 +53,49 @@ public class CardController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPut("block")]
+    [HttpPut("{id}/block")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> Deactivate([FromBody] BlockCardRequest request)
+    public async Task<ActionResult> BlockCardById([FromRoute] string id)
     {
-        var command = DeactivateCardMapper.ToCommand(request);
+        var cardId = Guid.Parse(id);
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null)
+            return Result
+                .Fail(new Conflict("Access token does not contain user id"))
+                .ToObjectResult(HttpContext);
+
+        BlockCardCommand command = new()
+        {
+            CardId = cardId,
+            UserId = userId
+        };
+        
         var result = await _mediatR.Send(command);
 
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
 
         return NoContent();
+    }
+
+    [HttpGet("{cardId}/operations")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetOperationsById([FromRoute] Guid cardId, [FromQuery] int page, [FromQuery] int pageSize)
+    {
+        var request = new GetOperationsByIdRequest(cardId, page, pageSize);
+        var command = GetOperationsByIdMapper.ToQuery(request);
+        var result = await _mediatR.Send(command);
+        if (result.IsFailed)
+            return result.ToObjectResult(HttpContext);
+
+        return result.ToActionResult();
     }
 }

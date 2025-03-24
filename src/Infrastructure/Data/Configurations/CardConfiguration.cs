@@ -21,11 +21,13 @@ public class CardConfiguration : IdentityConfigurationBase<Card, Guid>
             .HasOne<User>()
             .WithMany(u => u.Cards)
             .HasForeignKey(c => c.UserId)
-            .HasConstraintName("FK_card_user_id");
+            .HasConstraintName("FK_card_user_id")
+            .IsRequired(false);
 
         builder
             .Property(c => c.UserId)
-            .HasColumnName("user_id");
+            .HasColumnName("user_id")
+            .IsRequired(false);
 
         builder
             .HasMany(c => c.Purchases)

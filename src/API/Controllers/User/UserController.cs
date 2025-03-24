@@ -22,7 +22,7 @@ public class UserController : ControllerBase
         _mediatR = mediatR;
     }
 
-    [HttpGet("current")]
+    [HttpGet("me")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -30,18 +30,18 @@ public class UserController : ControllerBase
     public async Task<ActionResult<GetUserByIdResponse>> GetCurrent()
     {
         var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
         if (userId == null)
             return Result
-                .Fail(new Unauthorized("Access token does not contain user id"))
+                .Fail(new InvalidData("Access token does not contain user id. Please log in again"))
                 .ToObjectResult(HttpContext);
 
+        var parsedId = Guid.Parse(userId);
         var command = new GetUserByIdQuery
         {
-            Id = userId
+            Id = parsedId
         };
+        
         var result = await _mediatR.Send(command);
-
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
             
@@ -53,14 +53,14 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<GetUserByIdResponse>> GetById(string id)
+    public async Task<ActionResult<GetUserByIdResponse>> GetById(Guid id)
     {
         var command = new GetUserByIdQuery
         {
             Id = id
         };
+        
         var result = await _mediatR.Send(command);
-
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
             

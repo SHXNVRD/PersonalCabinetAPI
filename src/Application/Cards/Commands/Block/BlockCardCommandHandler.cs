@@ -26,11 +26,7 @@ public class BlockCardCommandHandler : IRequestHandler<BlockCardCommand, Result>
         if (user == null)
             return Result.Fail(new NotFound($"User with id {request.UserId} was not found"));
 
-        var cardNumberResult = CardNumber.Create(request.Number);
-        if (cardNumberResult.IsFailed)
-            return Result.Fail(cardNumberResult.Errors);
-
-        var blockResult = user.BlockCard(cardNumberResult.Value);
+        var blockResult = user.BlockCard(request.CardId);
         if (blockResult.IsFailed)
             return Result.Fail(blockResult.Errors);
 

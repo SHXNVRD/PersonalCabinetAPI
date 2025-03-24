@@ -12,9 +12,9 @@ public class EmailService : IEmailService
 
     public EmailService(IEmailSender emailSender, IEmailTemplate emailTemplate)
     {
-            _emailSender = emailSender;
-            _emailTemplate = emailTemplate;
-        }
+        _emailSender = emailSender;
+        _emailTemplate = emailTemplate;
+    }
 
     public async Task<bool> SendEmailConfirmationLinkAsync(EmailMessage message, string confirmationLink, CancellationToken cancellationToken = default)
     {

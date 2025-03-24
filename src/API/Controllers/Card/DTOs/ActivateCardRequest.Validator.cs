@@ -1,3 +1,5 @@
+using API.Extensions;
+using Domain.Shared.ValueObjects;
 using FluentValidation;
 
 namespace API.Controllers.Card.DTOs;
@@ -6,11 +8,8 @@ public class ActivateCardRequestValidator : AbstractValidator<ActivateCardReques
 {
     public ActivateCardRequestValidator()
     {
-        RuleFor(r => r.CardPinCode)
-            .NotEmpty().WithMessage("Card pin code is required")
-            .Length(4).WithMessage("Invalid card code");
+        RuleFor(r => r.CardPinCode).MustBeValueObject(CardPinHash.Create);
 
-        RuleFor(r => r.CardNumber)
-            .NotEmpty().WithMessage("Card number is required");
+        RuleFor(r => r.CardNumber).MustBeValueObject(CardNumber.Create);
     }
 }

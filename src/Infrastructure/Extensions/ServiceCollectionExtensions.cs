@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using RazorLight;
 
 namespace Infrastructure.Extensions;
@@ -34,7 +35,7 @@ public static class ServiceCollectionExtensions
             // Вызов ConfigureJwtAuthentication должен быть после ConfigureIdentity для возврата 401 статус-кода
             // вместо редиректа на страницу входа, вызванным дефолтными настройками cookie identity
             .ConfigureJwtAuthentication(config)
-            .AddDatabase(config)
+            .ConfigureContextAndDataSource(config)
             .AddUnitOfWork();
             
         return services;
@@ -136,10 +137,36 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
+    private static IServiceCollection ConfigureContextAndDataSource(this IServiceCollection services, IConfiguration config)
     {
+        var connectionString = config.GetConnectionString("AppDbContext");
+
+        var dataSourceBuilder = connectionString is null
+            ? new NpgsqlDataSourceBuilder
+            {
+                ConnectionStringBuilder =
+                {
+                    ApplicationName = "Personal_cabinet#" + Environment.MachineName,
+                    Host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? throw new ArgumentNullException("Host"),
+                    Port = int.Parse(Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? throw new ArgumentNullException("Port")),
+                    Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? throw new ArgumentNullException("Database"),
+                    Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? throw new ArgumentNullException("Username"),
+                    Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? throw new ArgumentNullException("Password")
+                }
+            }
+            : new NpgsqlDataSourceBuilder(connectionString);
+
+        services.AddScoped<NpgsqlDataSource>(_ => dataSourceBuilder.Build());
+
+        var serviceProvider = services.BuildServiceProvider();
+        var dataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
+
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(config.GetConnectionString(nameof(AppDbContext))));
+        {
+            options.UseNpgsql(dataSource);
+            options.EnableDetailedErrors();
+            options.EnableSensitiveDataLogging();
+        });
 
         return services;
     }

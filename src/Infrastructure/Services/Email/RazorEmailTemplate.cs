@@ -13,12 +13,12 @@ public class RazorEmailTemplate : IEmailTemplate
 
     public RazorEmailTemplate(IRazorLightEngine razorEngine)
     {
-            _razorEngine = razorEngine;
-        }
+        _razorEngine = razorEngine;
+    }
 
     public async Task<EmailBody> CompileAsync(string templateName, object model)
     {
-            var html = await _razorEngine.CompileRenderAsync(templateName, model);
-            return new EmailBody(html, string.Empty);
-        }
+        var html = await _razorEngine.CompileRenderAsync(templateName, model);
+        return new EmailBody(html, string.Empty);
+    }
 }

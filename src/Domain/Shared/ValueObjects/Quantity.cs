@@ -18,6 +18,14 @@ public class Quantity : ValueObject
         return new Quantity(value);
     }
 
+    public static FluentResults.Result<Quantity> Create(string value)
+    {
+        if (!double.TryParse(value, out var quantity))
+            return Result.Fail(new InvalidData($"Cannot convert {value} to digit"));
+
+        return Create(quantity);
+    }
+
     public FluentResults.Result<Quantity> Add(Quantity quantity)
     {
         if (quantity is null)

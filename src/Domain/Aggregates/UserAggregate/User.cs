@@ -40,17 +40,17 @@ public class User : IdentityUser<Guid>
         return new User(email.Trim(), phoneNumber.Trim(), userName.Trim());
     }
         
-    public Result BlockCard(CardNumber number)
+    public Result BlockCard(Guid cardId)
     {
-            if (number is null)
-                return Result.Fail(new InvalidData($"{nameof(number)} cannot be empty"));
+        if (cardId == Guid.Empty)
+            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
 
-            var card = _cards.SingleOrDefault(c => c.Number == number);
-            if (card == null)
-                return Result.Fail(new NotFound($"Card with number {number.Value} was not found"));
+        var card = _cards.SingleOrDefault(c => c.Id == cardId);
+        if (card == null)
+            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
 
-            card.Block();
+        card.Block();
             
-            return Result.Ok();
-        }
+        return Result.Ok();
+    }
 }

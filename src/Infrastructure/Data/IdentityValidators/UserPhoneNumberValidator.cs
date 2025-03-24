@@ -30,7 +30,7 @@ public class UserPhoneNumberValidator<TUser> : IUserValidator<TUser>
             return IdentityResult.Failed(errors.ToArray());
         }
 
-        var owner = await _unitOfWork.UserRepository.GetByPhoneNumber(user.PhoneNumber);
+        var owner = await _unitOfWork.UserRepository.FindByPhoneNumber(user.PhoneNumber);
 
         if (owner != null && owner.Id != user.Id)
             errors.Add(new IdentityError

@@ -2,7 +2,7 @@ using Application.Cards.Commands.Activate;
 using Riok.Mapperly.Abstractions;
 
 namespace API.Controllers.Card.DTOs;
-public record ActivateCardRequest(int CardNumber, string CardPinCode);
+public record ActivateCardRequest(string CardNumber, string CardPinCode);
 
 [Mapper]
 public static partial class ActivateCardMapper

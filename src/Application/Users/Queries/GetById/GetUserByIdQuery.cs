@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application.Cards.DTOs;
 using Application.DTOs;
 using Application.Users.DTOs;
 using FluentResults;
@@ -11,7 +12,7 @@ namespace Application.Users.Queries.GetById;
 
 public class GetUserByIdQuery : IRequest<Result<GetUserByIdResponse>>
 {
-    public string Id { get; set; }
+    public Guid Id { get; set; }
 }
 
 public record GetUserByIdResponse(
@@ -21,4 +22,5 @@ public record GetUserByIdResponse(
     string PhoneNumber,
     bool PhoneNumberConfirmed,
     bool TwoFactorEnabled,
-    string Email);
+    string Email,
+    CardResponse[] Cards);

@@ -33,7 +33,7 @@ public class CreateEmailConfirmationLinkCommandHandler : IRequestHandler<CreateE
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
    
         //([request.Email]) См. переопределение implicit оператора EmailAddress
-        var message = new EmailMessage("Подтверждение регистрации", "EmailConfirmationMonolith", [request.Email]);
+        var message = new EmailMessage("Подтверждение регистрации", [request.Email]);
 
         var confirmationLink = _linkService.GetUriByAction(
             "ConfirmEmail",

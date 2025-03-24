@@ -39,7 +39,7 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
             "Account",
             new { email = user.Email, token });
         
-        EmailMessage message = new("Сброс пароля", "ResetPassword", [user.Email]);
+        EmailMessage message = new("Сброс пароля", [user.Email]);
         await _emailService.SendPasswordResetLinkAsync(message, resetPasswordLink!, cancellationToken);
 
         return Result.Ok();

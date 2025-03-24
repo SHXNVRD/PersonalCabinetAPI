@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="EmailTemplates\EmailConfirmation.cshtml" />
+        <None Include="EmailTemplates\EmailConfirmationMonolith.cshtml" />
+        <None Include="EmailTemplates\ResetPassword.cshtml" />
+        <None Include="EmailTemplates\_Layout.cshtml" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="**\*ViewModel.cs">
+            <DependentUpon>$([System.String]::Copy(%(Filename)).Replace('.ViewModel', '.cshtml'))</DependentUpon>
+        </Compile>
+    </ItemGroup>
+</Project>

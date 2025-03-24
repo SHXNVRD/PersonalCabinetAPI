@@ -10,7 +10,6 @@ using Infrastructure.Data.IdentityValidators;
 using Infrastructure.Data.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Services.Email;
-using Infrastructure.Services.Options;
 using Infrastructure.Services.Token;
 using Infrastructure.Services.Token.Providers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,7 +20,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
-using RazorLight;
 
 namespace Infrastructure.Extensions;
 
@@ -76,21 +74,11 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection ConfigureEmail(this IServiceCollection services, IConfiguration config)
     {
         services.Configure<EmailOptions>(config.GetSection("EmailOptions"));
-            
-        var razorEngine = new RazorLightEngineBuilder()
-            .UseOptions(new RazorLightOptions
-            {
-                EnableDebugMode = true
-            })
-            .UseEmbeddedResourcesProject(typeof(EmailService).Assembly, "Infrastructure.RazorTemplates.EmailTemplates")
-            .UseMemoryCachingProvider()
-            .Build();
-            
+        
         services
-            .AddSingleton<IRazorLightEngine>(razorEngine)
             .AddScoped<IEmailSender, MailkitSender>()
-            .AddScoped<IEmailTemplate, RazorEmailTemplate>()
-            .AddScoped<IEmailService, EmailService>();
+            .AddScoped<IEmailService, EmailService>()
+            .AddRazorTemplating();
 
         return services;
     }

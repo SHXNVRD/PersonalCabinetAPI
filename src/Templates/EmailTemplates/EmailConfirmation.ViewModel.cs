@@ -1,3 +1,3 @@
-﻿namespace Infrastructure.RazorTemplates.EmailTemplates.Shared;
+﻿namespace Templates.EmailTemplates;
 
 public record EmailConfirmationViewModel(string ConfirmationLink);

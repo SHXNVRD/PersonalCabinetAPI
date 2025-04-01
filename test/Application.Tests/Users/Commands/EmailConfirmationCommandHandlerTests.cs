@@ -41,13 +41,19 @@ public class EmailConfirmationCommandHandlerTests
     public async Task Handle_FailedToConfirmEmail_ReturnsFail()
     {
         var user = User.Create(_email, _phoneNumber, _name).Value;
-        
+        var error = new IdentityError
+        {
+            Code = "Code",
+            Description = "Description"
+        };
+        var identityResult = IdentityResult.Failed(error);
+            
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))
             .ReturnsAsync(user);
         _appUserManagerMock
             .Setup(x => x.ConfirmEmailAsync(user, _command.Token))
-            .ReturnsAsync(IdentityResult.Failed());
+            .ReturnsAsync(identityResult);
 
         var handler = new EmailConfirmationCommandHandler(_appUserManagerMock.Object);
 

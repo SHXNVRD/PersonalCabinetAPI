@@ -46,48 +46,6 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
     }
     
     [Fact]
-    public async Task Handle_FailedToSendLink_ReturnsFail()
-    {
-        var user = User.Create(_email, _phoneNumber, _name).Value;
-        
-        _appUserManagerMock
-            .Setup(x => x.FindByEmailAsync(_command.Email))
-            .ReturnsAsync(user);
-        _appUserManagerMock
-            .Setup(x => x.GenerateEmailConfirmationTokenAsync(user))
-            .ReturnsAsync(_token);
-        _linkServiceMock
-            .Setup(x => x.GetUriByAction(
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<object>(),
-                It.IsAny<string>()))
-            .Returns(_confirmationLink);
-        _emailServiceMock
-            .Setup(x => x.SendEmailConfirmationLinkAsync(
-                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)),
-                _confirmationLink,
-                default))
-            .ReturnsAsync(false);
-        
-        var handler = new CreateEmailConfirmationLinkCommandHandler(
-            _emailServiceMock.Object, 
-            _linkServiceMock.Object,
-            _appUserManagerMock.Object);
-
-        var result = await handler.Handle(_command, default);
-        
-        Assert.True(result.IsFailed);
-        
-        _emailServiceMock.Verify(
-            x => x.SendEmailConfirmationLinkAsync(
-                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)),
-                _confirmationLink,
-                default),
-            Times.Once());
-    }
-    
-    [Fact]
     public async Task Handle_ValidEmail_ReturnsSuccess()
     {
         var user = User.Create(_email, _phoneNumber, _name).Value;

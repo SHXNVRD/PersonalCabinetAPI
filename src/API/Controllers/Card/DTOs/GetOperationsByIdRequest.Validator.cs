@@ -9,7 +9,7 @@ public class GetOperationsByIdRequestValidator : AbstractValidator<GetOperations
     public GetOperationsByIdRequestValidator()
     {
         RuleFor(r => r.CardId)
-            .NotEqual(Guid.Empty).WithMessage("Card id cannot is required");
+            .NotEqual(Guid.Empty).WithMessage("Card id is required");
 
         RuleFor(r => r.Page)
             .GreaterThan(0).WithMessage("Page must be greater than 0");

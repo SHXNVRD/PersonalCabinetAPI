@@ -318,4 +318,41 @@ public class CardTests
 
         Assert.True(result.IsFailed);
     }
+
+    [Fact]
+    public void ChangePin_SuccessCase_ReturnsSuccess()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        var newPinHash = CardPinHash.Create("1234").Value;
+
+        var result = card.ChangePin(newPinHash);
+        
+        Assert.True(result.IsSuccess);
+        Assert.Equal(newPinHash, card.PinHash);
+    }
+
+    [Fact]
+    public void ChangePin_CannotChangePinForUnusedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        var newPinHash = CardPinHash.Create("1234").Value;
+
+        var result = card.ChangePin(newPinHash);
+        
+        Assert.True(result.IsFailed);
+    }
+    
+    [Fact]
+    public void ChangePin_CannotChangePinForBlockedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Block();
+        var newPinHash = CardPinHash.Create("1234").Value;
+
+        var result = card.ChangePin(newPinHash);
+        
+        Assert.True(result.IsFailed);
+    }
 }

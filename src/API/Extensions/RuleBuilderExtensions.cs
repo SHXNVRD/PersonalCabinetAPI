@@ -16,10 +16,5 @@ public static class RuleBuilderExtensions
                 context.AddFailure(result.Errors.First().Message);
         });
     }
-
-    public static IRuleBuilderOptions<T, string> MustBeGuid<T>(this IRuleBuilder<T, string> ruleBuilder)
-    {
-        return ruleBuilder.Must(value => Guid.TryParse(value, out _)).WithMessage("Id must match pattern 00000000-0000-0000-0000-000000000000");
-    }
 }
 

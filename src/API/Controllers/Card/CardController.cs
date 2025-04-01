@@ -3,6 +3,7 @@ using API.Controllers.Card.DTOs;
 using API.Extensions;
 using Application.Cards.Commands.Activate;
 using Application.Cards.Commands.Block;
+using Application.Cards.Commands.ChangePin;
 using Domain.Aggregates.Base;
 using Domain.Shared.Errors;
 using FluentResults;
@@ -53,15 +54,14 @@ public class CardController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPut("{id}/block")]
+    [HttpPut("{id:guid}/block")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> BlockCardById([FromRoute] string id)
+    public async Task<ActionResult> BlockCardById([FromRoute] Guid id)
     {
-        var cardId = Guid.Parse(id);
         var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null)
             return Result
@@ -70,7 +70,7 @@ public class CardController : ControllerBase
 
         BlockCardCommand command = new()
         {
-            CardId = cardId,
+            CardId = id,
             UserId = userId
         };
         
@@ -82,20 +82,44 @@ public class CardController : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{cardId}/operations")]
+    [HttpGet("{id:guid}/operations")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> GetOperationsById([FromRoute] Guid cardId, [FromQuery] int page, [FromQuery] int pageSize)
+    public async Task<ActionResult> GetOperationsById([FromRoute] Guid id, [FromQuery] int page, [FromQuery] int pageSize)
     {
-        var request = new GetOperationsByIdRequest(cardId, page, pageSize);
+        var request = new GetOperationsByIdRequest(id, page, pageSize);
         var command = GetOperationsByIdMapper.ToQuery(request);
         var result = await _mediatR.Send(command);
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
 
         return result.ToActionResult();
+    }
+
+    [HttpPut("{id:guid}/pin")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> ChangePin([FromRoute] Guid id, [FromBody] ChangeCardPinRequest request)
+    {
+        if (id == Guid.Empty)
+            return Result.Fail(new InvalidData("Id is required")).ToObjectResult(HttpContext);
+
+        var command = new ChangeCardPinCommand
+        {
+            CardId = id,
+            Pin = request.Pin
+        };
+
+        var result = await _mediatR.Send(command);
+        if (result.IsFailed)
+            return result.ToObjectResult(HttpContext);
+
+        return NoContent();
     }
 }

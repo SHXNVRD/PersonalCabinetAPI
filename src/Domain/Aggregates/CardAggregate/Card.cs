@@ -131,4 +131,16 @@ public sealed class Card : Aggregate<Guid>
 
         return true;
     }
+
+    public Result ChangePin(CardPinHash pinHash)
+    {
+        if (pinHash is null)
+            return Result.Fail(new InvalidData($"{nameof(pinHash)} cannot be null"));
+        if (Status != Status.Activated)
+            return Result.Fail(new Conflict("Card must be activated to change pin"));
+
+        PinHash = pinHash;
+
+        return Result.Ok();
+    }
 }

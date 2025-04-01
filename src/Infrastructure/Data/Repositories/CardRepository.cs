@@ -24,6 +24,7 @@ public class CardRepository : ICardRepository
     {
         return _context.Cards
             .SetTracking(trackingType)
+            .Include(c => c.Status)
             .SingleOrDefaultAsync(c => c.Id == id);
     }
         

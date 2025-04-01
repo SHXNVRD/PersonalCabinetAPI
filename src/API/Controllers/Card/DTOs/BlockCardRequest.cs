@@ -3,7 +3,7 @@ using Riok.Mapperly.Abstractions;
 
 namespace API.Controllers.Card.DTOs;
 
-public record BlockCardRequest(string CardId);
+public record BlockCardRequest(Guid CardId);
 
 [Mapper]
 public static partial class DeactivateCardMapper

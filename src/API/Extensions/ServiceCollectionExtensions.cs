@@ -15,58 +15,67 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration config)
     {
-            services
-                .ConfigureFluentValidation()
-                .ConfigureSwagger()
-                .AddScoped<ILinkService, LinkService>();
+        services
+            .ConfigureFluentValidation()
+            .ConfigureSwagger()
+            .AddScoped<ILinkService, LinkService>();
 
-            return services;
-        }
+        return services;
+    }
         
     private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
     {
-            services.AddSwaggerGen(options =>
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
             {
-                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Personal Cabinet API", Version = "v1"});
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                Title = "Gas station API", 
+                Version = "v1",
+                Description = "Gas station and customer`s personal cabinet API",
+                License = new OpenApiLicense
                 {
-                    Name = "Authorization",
-                    Description = "Enter the Bearer Authorization token",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "Jwt",
-                    Scheme = "Bearer"
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        new string[] { }
-                    }
-                });
+                    Name = "MIT",
+                    Url = new Uri("https://opensource.org/license/mit")
+                },
             });
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "Enter the Bearer Authorization token",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "Jwt",
+                Scheme = "Bearer"
+            });
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] { }
+                }
+            });
+        });
 
-            return services;
-        }
-        
+        return services;
+    }
+
     private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
     {
-            services.AddValidatorsFromAssemblyContaining<AuthResponse>();
-            services.AddFluentValidationAutoValidation(config =>
-            {
-                config.DisableBuiltInModelValidation = true;
-            });
+        services.AddValidatorsFromAssemblyContaining<AuthResponse>();
+        services.AddFluentValidationAutoValidation(config =>
+        {
+            config.DisableBuiltInModelValidation = true;
+        });
             
-            return services;
-        }
+        return services;
+    }
 }

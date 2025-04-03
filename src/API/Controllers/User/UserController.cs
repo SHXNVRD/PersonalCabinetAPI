@@ -26,7 +26,7 @@ public class UserController : ControllerBase
     [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ProblemDetails))]
     public async Task<ActionResult<GetUserByIdResponse>> GetCurrent()
     {
         var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -49,7 +49,7 @@ public class UserController : ControllerBase
     }
         
     [HttpGet("{id}")]
-    [AllowAnonymous]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

@@ -32,12 +32,14 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("auth/account")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> Registration([FromBody] RegistrationRequest request)
     {
+        throw new ArgumentException();
         var command = RegistrationMapper.ToCommand(request);
         var result = await _mediatR.Send(command);
 
@@ -48,6 +50,7 @@ public class AccountController : ControllerBase
     }
     
     [HttpPost("auth/account/session")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

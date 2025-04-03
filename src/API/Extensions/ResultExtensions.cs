@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using API.Helpers.ProblemDetailsBuilder;
 using Domain.Shared.Errors;
 using Domain.Shared.Errors.Base;
@@ -24,9 +25,9 @@ public static class ResultExtensions
         var builder = new ProblemDetailsBuilder(statusCode);
         var problemDetails = builder
             .AddTitle()
-            .AddDetail()
+            .AddStatus()
             .AddType()
-            .AddInstance(context.Request.Path.Value ?? "")
+            .AddExtension("traceId", Activity.Current?.Id ?? context.TraceIdentifier)
             .AddExtension("errors", errors)
             .Build();
 

@@ -11,7 +11,7 @@ public class ProblemDetailsBuilder : IProblemDetailsBuilder
 
     public ProblemDetailsBuilder(int statusCode)
     {
-        _statusCode = statusCode;
+        _statusCode = statusCode;   
     }
 
     public IProblemDetailsBuilder AddTitle(string? title = null)
@@ -62,6 +62,12 @@ public class ProblemDetailsBuilder : IProblemDetailsBuilder
         return this;
     }
 
+    public IProblemDetailsBuilder AddStatus()
+    {
+        _problemDetails.Status = _statusCode;
+        return this;
+    }
+
     public IProblemDetailsBuilder AddInstance(string instance)
     {
         _problemDetails.Instance = instance;
@@ -80,4 +86,4 @@ public class ProblemDetailsBuilder : IProblemDetailsBuilder
         _problemDetails = new ProblemDetails();
         return problemDetails;
     }
-}
+}   

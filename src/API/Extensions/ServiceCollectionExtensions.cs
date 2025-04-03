@@ -1,10 +1,14 @@
+using API.Controllers.Account.DTOs;
 using API.HostedServices;
 using API.Services;
 using Application.Interfaces;
 using Application.Users.DTOs;
 using FluentValidation;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Enums;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using Swashbuckle.AspNetCore.Filters;
 using Tcp;
 using Tcp.Abstractions;
 using Tcp.Behaviors;
@@ -47,22 +51,12 @@ public static class ServiceCollectionExtensions
                 BearerFormat = "Jwt",
                 Scheme = "Bearer"
             });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Name = "Bearer",
-                        In = ParameterLocation.Header,
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    new string[] { }
-                }
-            });
+            options.OperationFilter<SecurityRequirementsOperationFilter>();
+        });
+
+        services.AddFluentValidationRulesToSwagger(options =>
+        {
+            options.SetNotNullableIfMinLengthGreaterThenZero = true;
         });
 
         return services;
@@ -70,7 +64,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection ConfigureFluentValidation(this IServiceCollection services)
     {
-        services.AddValidatorsFromAssemblyContaining<AuthResponse>();
+        services.AddValidatorsFromAssemblyContaining<LoginRequest>();
         services.AddFluentValidationAutoValidation(config =>
         {
             config.DisableBuiltInModelValidation = true;

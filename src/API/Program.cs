@@ -5,6 +5,7 @@ using API.Middlewares;
 using Serilog;
 using Application.Extensions;
 using Infrastructure.Extensions;
+using Microsoft.OpenApi.Models;
 using Tcp.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -14,10 +15,9 @@ IServiceCollection services = builder.Services;
 builder.Host.ConfigureSerilog();
 services.AddControllers();
 services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
 services.AddProblemDetails();
-
 services.AddExceptionHandler<GlobalExceptionHandler>();
+services.AddHttpContextAccessor();
 
 services
     .AddInfrastructure(config)
@@ -31,7 +31,6 @@ services
 
 services.AddRouting(options => options.LowercaseUrls = true);
 
-services.AddHttpContextAccessor();
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -47,10 +46,16 @@ app.UseSerilogRequestLogging(options =>
 });
 
 app.UseExceptionHandler();
+app.UseSwagger(c =>
+{
+    c.PreSerializeFilters.Add((swagger, httpReq) =>
+    {
+        swagger.Servers = new List<OpenApiServer> { new() { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" } };
+    });
+});
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
     app.UseSwaggerUI();
     app.ApplyMigrations();
 }

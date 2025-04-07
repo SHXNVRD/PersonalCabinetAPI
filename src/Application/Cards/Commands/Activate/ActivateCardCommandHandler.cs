@@ -27,14 +27,6 @@ public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, R
             var card = await _unitOfWork.CardRepository.FindByNumberAsync(cardNumberResult.Value, TrackingType.Tracking);
             if (card == null)
                 return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
-            
-            var pinHashResult = CardPinHash.Create(request.CardPin);
-            if (pinHashResult.IsFailed)
-                return Result.Fail(pinHashResult.Errors);
-
-            var verifyResult = card.VerifyPin(pinHashResult.Value);
-            if (verifyResult.IsFailed)
-                return Result.Fail(verifyResult.Errors);
 
             if (Guid.TryParse(request.UserId, out var userId))
                 return Result.Fail(new InvalidData("Invalid user id"));
@@ -42,6 +34,14 @@ public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, R
             var activateResult = card.Activate(userId);
             if (activateResult.IsFailed)
                 return Result.Fail(activateResult.Errors);
+            
+            var pinHashResult = CardPinHash.Create(request.CardPin);
+            if (pinHashResult.IsFailed)
+                return Result.Fail(pinHashResult.Errors);
+
+            var changePinResult = card.ChangePin(pinHashResult.Value);
+            if (changePinResult.IsFailed)
+                return Result.Fail(changePinResult.Errors);
 
             var changesSaved = await _unitOfWork.SaveChangesAsync();
             if (!changesSaved)

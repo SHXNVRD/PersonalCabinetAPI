@@ -8,6 +8,7 @@ public sealed class Status : Identity<int>
     public static readonly Status Unused = new(1, nameof(Unused).ToLowerInvariant());
     public static readonly Status Activated = new(2, nameof(Activated).ToLowerInvariant());
     public static readonly Status Blocked = new(3, nameof(Blocked).ToLowerInvariant());
+    public static readonly Status Frozen = new(4, nameof(Frozen).ToLowerInvariant());
     public string Title { get; private set; } = null!;
     
     private Status()
@@ -20,7 +21,7 @@ public sealed class Status : Identity<int>
     }
 
     public static IEnumerable<Status> All()
-        => [Unused, Activated, Blocked];
+        => [Unused, Activated, Blocked, Frozen];
 
     public bool CanChangeTo(Status status)
     {
@@ -33,7 +34,10 @@ public sealed class Status : Identity<int>
         {
             _ when this == status => false,
             _ when this == Unused && status == Activated => true,
+            _ when this == Activated && status == Frozen => true,
             _ when this == Activated && status == Blocked => true,
+            _ when this == Frozen && status == Activated => true,
+            _ when this == Frozen && status == Blocked => true,
             _ => false
         };
     }

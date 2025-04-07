@@ -4,6 +4,8 @@ using API.Extensions;
 using Application.Cards.Commands.Activate;
 using Application.Cards.Commands.Block;
 using Application.Cards.Commands.ChangePin;
+using Application.Cards.Commands.Freeze;
+using Application.Cards.Commands.UnFreeze;
 using Domain.Aggregates.Base;
 using Domain.Shared.Errors;
 using FluentResults;
@@ -34,17 +36,14 @@ public class CardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ActivateCardResponse>> ActivateCardByNumber([FromBody] ActivateCardRequest request)
+    public async Task<ActionResult<ActivateCardResponse>> ActivateByNumber([FromBody] ActivateCardRequest request)
     {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (userId == null)
-            return Result
-                .Fail(new Conflict("Access token does not contain user id"))
-                .ToObjectResult(HttpContext);
+        var userIdResult = GetCurrentUserId();
+        if (userIdResult.IsFailed)
+            return userIdResult.ToObjectResult(HttpContext);
 
         var command = ActivateCardMapper.ToCommand(request);
-        command.UserId = userId;
+        command.UserId = userIdResult.Value;
             
         var result = await _mediatR.Send(command);
 
@@ -60,20 +59,70 @@ public class CardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<ActionResult> BlockCardById([FromRoute] Guid id)
+    public async Task<ActionResult> BlockById([FromRoute] Guid id)
     {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId is null)
-            return Result
-                .Fail(new Conflict("Access token does not contain user id"))
-                .ToObjectResult(HttpContext);
-
-        BlockCardCommand command = new()
+        var userIdResult = GetCurrentUserId();
+        if (userIdResult.IsFailed)
+            return userIdResult.ToObjectResult(HttpContext);
+        
+        var command = new BlockCardCommand
         {
-            CardId = id,
-            UserId = userId
+            UserId = userIdResult.Value,
+            CardId = id
         };
         
+        var result = await _mediatR.Send(command);
+
+        if (result.IsFailed)
+            return result.ToObjectResult(HttpContext);
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/freezing")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> FreezeById([FromRoute] Guid id)
+    {
+        var userIdResult = GetCurrentUserId();
+        if (userIdResult.IsFailed)
+            return userIdResult.ToObjectResult(HttpContext);
+        
+        var command = new FreezeCardCommand
+        {
+            UserId = userIdResult.Value,
+            CardId = id
+        };
+
+        var result = await _mediatR.Send(command);
+
+        if (result.IsFailed)
+            return result.ToObjectResult(HttpContext);
+
+        return NoContent();
+    }
+    
+    [HttpPut("{id:guid}/unfreezing")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> UnFreezeById([FromRoute] Guid id)
+    {
+        var userIdResult = GetCurrentUserId();
+        if (userIdResult.IsFailed)
+            return userIdResult.ToObjectResult(HttpContext);
+        
+        var command = new UnFreezeCardCommand
+        {
+            UserId = userIdResult.Value,
+            CardId = id
+        };
+
         var result = await _mediatR.Send(command);
 
         if (result.IsFailed)
@@ -121,5 +170,14 @@ public class CardController : ControllerBase
             return result.ToObjectResult(HttpContext);
 
         return NoContent();
+    }
+
+    private Result<string> GetCurrentUserId()
+    {
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return Result.Fail(new Conflict("Access token does not contain user id"));
+
+        return userId;
     }
 }

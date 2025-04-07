@@ -54,7 +54,7 @@ public class CardTests
     }
 
     [Fact]
-    public void Activate_SuccessCase_ReturnsSuccess()
+    public void Activate_UnUsedCard_ReturnsSuccess()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
 
@@ -77,7 +77,19 @@ public class CardTests
     }
 
     [Fact]
-    public void Activate_CannotActivateAlreadyActivatedCard_ReturnsFail()
+    public void Activate_ActivateFrozenCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Freeze();
+
+        var result = card.Activate(_userId);
+
+        Assert.True(result.IsFailed);
+    }
+
+    [Fact]
+    public void Activate_ActivateAlreadyActivatedCard_ReturnsFail()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
         card.Activate(_userId);
@@ -88,7 +100,7 @@ public class CardTests
     }
 
     [Fact]
-    public void Activate_CannotActivateBlockedCard_ReturnsFail()
+    public void Activate_ActivateBlockedCard_ReturnsFail()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
         card.Activate(_userId);
@@ -100,7 +112,7 @@ public class CardTests
     }
 
     [Fact]
-    public void Block_SuccessCase_ReturnsSuccess()
+    public void Block_BlockActivatedCard_ReturnsSuccess()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
         card.Activate(_userId);
@@ -110,9 +122,22 @@ public class CardTests
         Assert.True(result.IsSuccess);
         Assert.Equal(Status.Blocked, card.Status);
     }
+    
+    [Fact]
+    public void Block_BlockFrozenCard_ReturnsSuccess()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Freeze();
+        
+        var result = card.Block();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Status.Blocked, card.Status);
+    }
 
     [Fact]
-    public void Block_CannotBlockAlreadyBlockedCard_ReturnsFail()
+    public void Block_BlockAlreadyBlockedCard_ReturnsFail()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
         card.Activate(_userId);
@@ -124,12 +149,106 @@ public class CardTests
     }
     
     [Fact]
-    public void Block_CannotBlockUnusedCard_ReturnsFail()
+    public void Block_BlockUnusedCard_ReturnsFail()
     {
         var card = Card.Create(_number, _pinHash, _balance).Value;
 
         var result = card.Block();
 
+        Assert.True(result.IsFailed);
+    }
+
+    [Fact]
+    public void Freeze_FreezeActivatedCard_ReturnsSuccess()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+
+        var result = card.Freeze();
+        
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Status.Frozen, card.Status);
+    }
+
+    [Fact]
+    public void Freeze_FreezeUnUsedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+
+        var result = card.Freeze();
+        
+        Assert.True(result.IsFailed);
+    }
+    
+    [Fact]
+    public void Freeze_FreezeBlockedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Block();
+        
+        var result = card.Freeze();
+        
+        Assert.True(result.IsFailed);
+    }
+    
+        
+    [Fact]
+    public void Freeze_FreezeAlreadyFrozenCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Freeze();
+        
+        var result = card.Freeze();
+        
+        Assert.True(result.IsFailed);
+    }
+    
+        
+    [Fact]
+    public void UnFreeze_UnFreezeFrozenCard_ReturnsSuccess()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Freeze();
+        
+        var result = card.UnFreeze();
+        
+        Assert.True(result.IsSuccess);
+        Assert.Equal(Status.Activated, card.Status);
+    }
+    
+    [Fact]
+    public void UnFreeze_UnFreezeUnUsedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        
+        var result = card.UnFreeze();
+        
+        Assert.True(result.IsFailed);
+    }
+        
+    [Fact]
+    public void UnFreeze_UnFreezeActivatedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        
+        var result = card.UnFreeze();
+        
+        Assert.True(result.IsFailed);
+    }
+    
+    [Fact]
+    public void UnFreeze_UnFreezeBlockedCard_ReturnsFail()
+    {
+        var card = Card.Create(_number, _pinHash, _balance).Value;
+        card.Activate(_userId);
+        card.Block();
+        
+        var result = card.UnFreeze();
+        
         Assert.True(result.IsFailed);
     }
 

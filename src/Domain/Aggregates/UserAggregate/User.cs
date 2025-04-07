@@ -53,4 +53,32 @@ public class User : IdentityUser<Guid>
             
         return Result.Ok();
     }
+
+    public Result FreezeCard(Guid cardId)
+    {
+        if (cardId == Guid.Empty)
+            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+
+        var card = _cards.SingleOrDefault(c => c.Id == cardId);
+        if (card == null)
+            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
+
+        card.Freeze();
+            
+        return Result.Ok();
+    }
+    
+    public Result UnFreezeCard(Guid cardId)
+    {
+        if (cardId == Guid.Empty)
+            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+
+        var card = _cards.SingleOrDefault(c => c.Id == cardId);
+        if (card == null)
+            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
+
+        card.UnFreeze();
+            
+        return Result.Ok();
+    }
 }

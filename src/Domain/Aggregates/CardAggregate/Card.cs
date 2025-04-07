@@ -1,3 +1,4 @@
+using System.Net.NetworkInformation;
 using System.Reflection;
 using Domain.Aggregates.Base;
 using Domain.Aggregates.PurchaseAggregate;
@@ -53,13 +54,33 @@ public sealed class Card : Aggregate<Guid>
     {
         if (userId == Guid.Empty)
             return Result.Fail(new InvalidData($"{nameof(userId)} cannot be empty"));
-        if (!Status.CanChangeTo(Status.Activated))
+        if (!Status.CanChangeTo(Status.Activated) || Status == Status.Frozen)
             return Result.Fail(new Conflict("Activation failed. Status cannot be settled"));
 
         UserId = userId;
         Status = Status.Activated;
         ActivatedAt = DateTime.UtcNow;
             
+        return Result.Ok();
+    }
+
+    public Result Freeze()
+    {
+        if (!Status.CanChangeTo(Status.Frozen))
+            return Result.Fail(new Conflict("Freeze failed. Status cannot be settled"));
+
+        Status = Status.Frozen;
+        
+        return Result.Ok();
+    }
+
+    public Result UnFreeze()
+    {
+        if (!Status.CanChangeTo(Status.Activated) || Status == Status.Unused)
+            return Result.Fail(new Conflict("Unfreeze failed. Status cannot be settled"));
+
+        Status = Status.Activated;
+
         return Result.Ok();
     }
     
@@ -78,6 +99,18 @@ public sealed class Card : Aggregate<Guid>
 
     public Result Buy(Purchase purchase)
     {
+        var canBuyResult = CanBuy(purchase);
+        if (canBuyResult.IsFailed)
+            return Result.Fail(canBuyResult.Errors);
+
+        Balance -= purchase.Total;
+        _purchases.Add(purchase);
+
+        return Result.Ok();
+    }
+
+    private Result CanBuy(Purchase purchase)
+    {
         if (purchase is null)
             return Result.Fail(new InvalidData($"{nameof(purchase)} cannot be null"));
         if (Status != Status.Activated)
@@ -89,16 +122,12 @@ public sealed class Card : Aggregate<Guid>
         if (_purchases.Any(p => p.Id == purchase.Id))
             return Result.Fail(new Conflict("Duplicated purchase"));
 
-        Balance -= purchase.Total;
-        _purchases.Add(purchase);
-
         return Result.Ok();
     }
     
     public Result<Refund> RefundLatest(long productId, decimal productPrice, Quantity productQuantity)
     {
         var purchase = _purchases.MaxBy(p => p.CreatedAt);
-
         if (purchase == null)
             return Result.Fail(new Conflict("No purchases for refund"));
         
@@ -109,11 +138,10 @@ public sealed class Card : Aggregate<Guid>
         if (refundResult.IsFailed)
             return Result.Fail(refundResult.Errors);
 
-        var refund = refundResult.Value;
-        
         var purchaseItem = purchase.PurchaseItems.Single(pi => pi.Product.Id == productId);
         purchaseItem.Product.Add(purchaseItem.Quantity);
         
+        var refund = refundResult.Value;
         _refunds.Add(refund);
         Balance += refund.Total;
             

@@ -8,7 +8,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class RefundConfiguration : IdentityConfigurationBase<Refund, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Refund> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<Refund> builder)
     {
         builder.ToTable("refunds");
         

@@ -42,7 +42,7 @@ public static class ServiceCollectionExtensions
                     Url = new Uri("https://opensource.org/license/mit")
                 },
             });
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
                 Description = "Enter the Bearer Authorization token",

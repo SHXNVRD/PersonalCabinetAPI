@@ -13,6 +13,5 @@ public interface ICardRepository
     Task<Card?> FindByNumberWithPurchasesAndRefundsAsync(CardNumber number, TrackingType trackingType = TrackingType.NoTracking);
     Task<Card?> FindByIdAsync(Guid id, TrackingType trackingType = TrackingType.NoTracking);
     Task<Card?> FindByUserIdAsync(Guid id, TrackingType trackingType = TrackingType.NoTracking);
-    Task<bool> ActivateAsync(Guid userId, CardNumber number, CardPinHash pinHash);
-    Task<bool> DeactivateAsync(CardNumber number);
+    void UpdateStatus(Card card);
 }

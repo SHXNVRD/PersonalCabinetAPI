@@ -40,7 +40,7 @@ public class CreateEmailConfirmationLinkCommandHandler : IRequestHandler<CreateE
             "Account", 
             new { email = user.Email, token })!;
 
-        await _emailService.SendEmailConfirmationLinkAsync(message, confirmationLink, cancellationToken);
+        await _emailService.SendEmailConfirmationLinkAsync(message, confirmationLink, cancellationToken: cancellationToken);
 
         return Result.Ok();
     }

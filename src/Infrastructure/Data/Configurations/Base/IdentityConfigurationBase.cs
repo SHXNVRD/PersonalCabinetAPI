@@ -16,8 +16,8 @@ public abstract class IdentityConfigurationBase<TEntity, TKey> : ConfigurationBa
             .HasColumnName("id")
             .IsRequired();
         
-        AddCustomConfiguration(builder);
+        AddIdentityConfiguration(builder);
     }
 
-    protected abstract void AddCustomConfiguration(EntityTypeBuilder<TEntity> builder);
+    protected abstract void AddIdentityConfiguration(EntityTypeBuilder<TEntity> builder);
 }

@@ -8,7 +8,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class CheckConfiguration : IdentityConfigurationBase<Check, long>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Check> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<Check> builder)
     {
         builder.ToTable("checks");
         

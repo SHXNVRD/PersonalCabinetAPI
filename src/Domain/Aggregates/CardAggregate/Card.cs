@@ -1,6 +1,7 @@
 using System.Net.NetworkInformation;
 using System.Reflection;
 using Domain.Aggregates.Base;
+using Domain.Aggregates.CardAggregate.DomainEvents;
 using Domain.Aggregates.PurchaseAggregate;
 using Domain.Shared.Errors;
 using Domain.Shared.ValueObjects;
@@ -16,6 +17,7 @@ public sealed class Card : Aggregate<Guid>
     public decimal Balance { get; private set; }
     public DateTime? ActivatedAt { get; private set; }
     public Status Status { get; private set; } = null!;
+    public int FailedVerifyAttempts { get; private set; }
         
     private List<Purchase> _purchases = [];
     public IReadOnlyList<Purchase> Purchases => _purchases.AsReadOnly();
@@ -87,15 +89,32 @@ public sealed class Card : Aggregate<Guid>
     public Result Block()
     {
         if (!Status.CanChangeTo(Status.Blocked))
-            return Result.Fail(new Conflict("Deactivation failed. Status cannot be settled"));
+            return Result.Fail(new Conflict("Blocking failed. Status cannot be settled"));
 
         Status = Status.Blocked;
+        AddDomainEvent(new CardBlockedDomainEvent(UserId!.Value, Number.Value));
             
         return Result.Ok();
     }
 
     public Result VerifyPin(CardPinHash pinHash)
-        => Result.OkIf(pinHash == PinHash, new Conflict("Wrong card pin"));
+    {
+        if (PinHash == pinHash)
+        {
+            FailedVerifyAttempts = 0;
+            return Result.Ok();
+        }
+        
+        AddDomainEvent(new CardPinVerificationFailedDomainEvent(Id));
+        
+        return Result.Fail(new Conflict("Wrong card pin"));
+    }
+    
+    public void IncrementVerificationAttempt()
+    {
+        if (++FailedVerifyAttempts >= 4)
+            AddDomainEvent(new CardPinVerificationAttemptsExceededDomainEvent(Id));
+    }
 
     public Result Buy(Purchase purchase)
     {

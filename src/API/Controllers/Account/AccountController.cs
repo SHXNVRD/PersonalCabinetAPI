@@ -39,7 +39,6 @@ public class AccountController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> Registration([FromBody] RegistrationRequest request)
     {
-        throw new ArgumentException();
         var command = RegistrationMapper.ToCommand(request);
         var result = await _mediatR.Send(command);
 

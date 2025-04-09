@@ -5,7 +5,7 @@ using FluentResults;
 
 namespace Domain.Aggregates.ProductAggregate;
 
-public sealed class Product : Identity<long>
+public sealed class Product : Aggregate<long>
 {
     public Category Category { get; private set; } = null!;
     public string Title { get; private set; } = null!;

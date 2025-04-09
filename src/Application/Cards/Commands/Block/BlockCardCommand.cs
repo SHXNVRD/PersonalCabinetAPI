@@ -5,6 +5,6 @@ namespace Application.Cards.Commands.Block;
 
 public class BlockCardCommand : IRequest<Result>
 {
-    public string UserId { get; set; }
+    public Guid UserId { get; set; }
     public Guid CardId { get; set; }
 }

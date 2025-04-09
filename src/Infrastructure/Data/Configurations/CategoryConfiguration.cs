@@ -7,7 +7,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class CategoryConfiguration : IdentityConfigurationBase<Category, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Category> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<Category> builder)
     {
             builder.ToTable("categories");
             

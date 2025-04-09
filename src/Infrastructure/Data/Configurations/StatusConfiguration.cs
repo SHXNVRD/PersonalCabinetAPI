@@ -7,7 +7,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class StatusConfiguration : IdentityConfigurationBase<Status, int>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Status> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<Status> builder)
     {
         builder.ToTable("statuses");
         

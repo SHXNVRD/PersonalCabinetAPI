@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class CardConfiguration : IdentityConfigurationBase<Card, Guid>
+public class CardConfiguration : AggregateConfigurationBase<Card, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Card> builder)
+    protected override void AddAggregateConfiguration(EntityTypeBuilder<Card> builder)
     {
         builder.ToTable("cards");
             
@@ -83,5 +83,11 @@ public class CardConfiguration : IdentityConfigurationBase<Card, Guid>
                 .HasMaxLength(64)
                 .IsFixedLength()
                 .IsRequired());
+
+        builder
+            .Property(c => c.FailedVerifyAttempts)
+            .HasColumnName("failed_verify_attempts")
+            .HasDefaultValue(0)
+            .IsRequired();
     }
 }

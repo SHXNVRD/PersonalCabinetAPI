@@ -65,9 +65,7 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
             .Returns(_confirmationLink);
         _emailServiceMock
             .Setup(x => x.SendEmailConfirmationLinkAsync(
-                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)),
-                _confirmationLink,
-                default))
+                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)), _confirmationLink, 0, default))
             .ReturnsAsync(true);
         
         var handler = new CreateEmailConfirmationLinkCommandHandler(
@@ -81,9 +79,7 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
         
         _emailServiceMock.Verify(
             x => x.SendEmailConfirmationLinkAsync(
-                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)),
-                _confirmationLink,
-                default),
+                It.Is<EmailMessage>(m => m.To.Contains(_command.Email)), _confirmationLink, 0, default),
             Times.Once());
     }
 }

@@ -43,6 +43,7 @@ public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, R
             if (changePinResult.IsFailed)
                 return Result.Fail(changePinResult.Errors);
 
+            _unitOfWork.CardRepository.UpdateStatus(card);
             var changesSaved = await _unitOfWork.SaveChangesAsync();
             if (!changesSaved)
                 return Result.Fail("Failed to save changes");

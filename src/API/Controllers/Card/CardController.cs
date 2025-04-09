@@ -64,10 +64,13 @@ public class CardController : ControllerBase
         var userIdResult = GetCurrentUserId();
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
-        
+
+        if (!Guid.TryParse(userIdResult.Value, out var userId))
+            throw new Exception($"Access token contains invalid id: {userIdResult.Value}");
+                
         var command = new BlockCardCommand
         {
-            UserId = userIdResult.Value,
+            UserId = userId,
             CardId = id
         };
         
@@ -91,9 +94,12 @@ public class CardController : ControllerBase
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
         
+        if (!Guid.TryParse(userIdResult.Value, out var userId))
+            throw new Exception($"Access token contains invalid id: {userIdResult.Value}");
+        
         var command = new FreezeCardCommand
         {
-            UserId = userIdResult.Value,
+            UserId = userId,
             CardId = id
         };
 
@@ -117,9 +123,12 @@ public class CardController : ControllerBase
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
         
+        if (!Guid.TryParse(userIdResult.Value, out var userId))
+            throw new Exception($"Access token contains invalid id: {userIdResult.Value}");
+        
         var command = new UnFreezeCardCommand
         {
-            UserId = userIdResult.Value,
+            UserId = userId,
             CardId = id
         };
 

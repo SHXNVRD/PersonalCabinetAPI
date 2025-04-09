@@ -1,9 +1,13 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Domain.Aggregates.Base;
+using Domain.Shared;
+using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Infrastructure.Data;
 
@@ -86,6 +90,8 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public async Task<bool> SaveChangesAsync()
     {
+        await SaveDomainEventsInOutbox();
+        
         try
         {
             await _dbContext.SaveChangesAsync();
@@ -96,6 +102,30 @@ public sealed class UnitOfWork : IUnitOfWork
             _logger.LogError(exception, "Exception has occurred while saving changes into database: {Exception}", exception.Message);
             return false;
         }
+    }
+    
+    private async Task SaveDomainEventsInOutbox()
+    {
+        var outboxEvents = _dbContext.ChangeTracker
+            .Entries<Aggregate<Guid>>()
+            .Select(x => x.Entity)
+            .SelectMany(aggregate =>
+            {
+                var domainEvents = new List<DomainEvent>(aggregate.DomainEvents);
+
+                aggregate.ClearDomainEvents();
+                return domainEvents;
+            })
+            .Select(domainEvent => new OutboxEvent
+            {
+                EventId = domainEvent.Id,
+                CreatedAt = DateTime.UtcNow,
+                Type = domainEvent.GetType().Name,
+                Content = JsonConvert.SerializeObject(domainEvent, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All })
+            })
+            .ToList();
+
+        await _dbContext.Outboxes.AddRangeAsync(outboxEvents);
     }
 
     private void Dispose(bool disposing)

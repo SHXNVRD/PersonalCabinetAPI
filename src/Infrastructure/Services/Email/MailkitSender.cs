@@ -20,8 +20,13 @@ internal class MailkitSender : IEmailSender
         _emailOptions = emailOptions.Value;
     }
         
-    public async Task<bool> SendAsync(CompiledEmailMessage message, CancellationToken cancellationToken = default)
+    public async Task<bool> SendAsync(CompiledEmailMessage message, int retries = 0, CancellationToken cancellationToken = default)
     {
+        if (message is null)
+            ArgumentNullException.ThrowIfNull(message);
+        if (retries <= 0)
+            throw new ArgumentException($"{nameof(retries)} must be great or equal zero");
+            
         var mimeMessage = new MimeMessage();
 
         mimeMessage.Subject = message.Subject;
@@ -47,7 +52,15 @@ internal class MailkitSender : IEmailSender
 
         mimeMessage.Body = builder.ToMessageBody();
 
-        return await SendMimeMessageAsync(mimeMessage, cancellationToken);
+        while (retries >= 0)
+        {
+            if (await SendMimeMessageAsync(mimeMessage, cancellationToken))
+                return true;
+
+            retries--;
+        }
+
+        return false;
     }
 
     private async Task<bool> SendMimeMessageAsync(MimeMessage message, CancellationToken cancellationToken)

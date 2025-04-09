@@ -72,7 +72,10 @@ public class CardRepository : ICardRepository
             .Where(c => c.Number == number)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(c => c.Status, Status.Blocked));
-                    
+
         return deactivatedCards != 0;
     }
+    
+    public void UpdateStatus(Card card)
+        => _context.Attach(card.Status);
 }

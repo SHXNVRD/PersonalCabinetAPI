@@ -7,7 +7,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class PurchaseItemConfiguration : IdentityConfigurationBase<PurchaseItem, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<PurchaseItem> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<PurchaseItem> builder)
     {
             builder.ToTable("purchase_items");
 

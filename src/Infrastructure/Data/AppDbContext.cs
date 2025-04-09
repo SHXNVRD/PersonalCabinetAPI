@@ -3,6 +3,7 @@ using Domain.Aggregates.CardAggregate;
 using Domain.Aggregates.ProductAggregate;
 using Domain.Aggregates.PurchaseAggregate;
 using Domain.Aggregates.UserAggregate;
+using Infrastructure.Data.Outbox;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<ProductPriceHistory> ProductPriceHistories { get; set; } = null!;
     public DbSet<Purchase> Purchases { get; set; } = null!;
     public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+    public DbSet<OutboxEvent> Outboxes { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         :base(options)

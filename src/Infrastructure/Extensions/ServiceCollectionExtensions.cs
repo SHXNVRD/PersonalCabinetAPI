@@ -7,6 +7,7 @@ using Application.Services;
 using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data;
 using Infrastructure.Data.IdentityValidators;
+using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Repositories;
 using Infrastructure.Services;
 using Infrastructure.Services.Email;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using Quartz;
 
 namespace Infrastructure.Extensions;
 
@@ -34,6 +36,7 @@ public static class ServiceCollectionExtensions
             // вместо редиректа на страницу входа, вызванным дефолтными настройками cookie identity
             .ConfigureJwtAuthentication(config)
             .ConfigureContextAndDataSource(config)
+            .RegisterQuartzBackgroundJobs()
             .AddUnitOfWork();
             
         return services;
@@ -162,6 +165,22 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddUnitOfWork(this IServiceCollection services)
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        return services;
+    }
+    
+    private static IServiceCollection RegisterQuartzBackgroundJobs(this IServiceCollection services)
+    {
+        services.AddQuartz(configure =>
+        {
+            var outboxJobKey = new JobKey(nameof(OutboxBackgroundJob));
+            configure
+                .AddJob<OutboxBackgroundJob>(j => j.WithIdentity(outboxJobKey))
+                .AddTrigger(trigger => trigger.ForJob(outboxJobKey)
+                    .WithSimpleSchedule(scheduleBuilder => scheduleBuilder.WithIntervalInSeconds(3).RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
         return services;
     }

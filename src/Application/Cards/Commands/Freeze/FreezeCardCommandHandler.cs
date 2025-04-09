@@ -9,24 +9,27 @@ namespace Application.Cards.Commands.Freeze;
 public class FreezeCardCommandHandler : IRequestHandler<FreezeCardCommand, Result>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly AppUserManager _userManager;
 
-    public FreezeCardCommandHandler(IUnitOfWork unitOfWork, AppUserManager userManager)
+    public FreezeCardCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
     }
 
     public async Task<Result> Handle(FreezeCardCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await _unitOfWork.UserRepository.FindByIdAsync(request.UserId, TrackingType.Tracking);
         if (user == null)
             return Result.Fail(new NotFound($"User with id {request.UserId} was not found"));
 
-        var blockResult = user.FreezeCard(request.CardId);
-        if (blockResult.IsFailed)
-            return Result.Fail(blockResult.Errors);
+        var card = user.Cards.SingleOrDefault(c => c.Id == request.CardId);
+        if (card == null)
+            return Result.Fail(new NotFound($"Card with id {request.CardId} was not found"));
+        
+        var freezeResult = card.Freeze();
+        if (freezeResult.IsFailed)
+            return Result.Fail(freezeResult.Errors);
 
+        _unitOfWork.CardRepository.UpdateStatus(card);
         var changesSaved = await _unitOfWork.SaveChangesAsync();
 
         return Result.OkIf(changesSaved, "Failed to save changes");

@@ -8,7 +8,7 @@ namespace Infrastructure.Data.Configurations;
 
 public class ProductPriceHistoryConfiguration : IdentityConfigurationBase<ProductPriceHistory, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<ProductPriceHistory> builder)
+    protected override void AddIdentityConfiguration(EntityTypeBuilder<ProductPriceHistory> builder)
     {
         builder.ToTable("product_price_histories");
         

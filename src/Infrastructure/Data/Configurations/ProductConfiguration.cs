@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class ProductConfiguration : IdentityConfigurationBase<Product, long>
+public class ProductConfiguration : AggregateConfigurationBase<Product, long>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Product> builder)
+    protected override void AddAggregateConfiguration(EntityTypeBuilder<Product> builder)
     {
             builder.ToTable("products");
             

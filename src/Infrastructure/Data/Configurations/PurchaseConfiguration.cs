@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations;
 
-public class PurchaseConfiguration : IdentityConfigurationBase<Purchase, Guid>
+public class PurchaseConfiguration : AggregateConfigurationBase<Purchase, Guid>
 {
-    protected override void AddCustomConfiguration(EntityTypeBuilder<Purchase> builder)
+    protected override void AddAggregateConfiguration(EntityTypeBuilder<Purchase> builder)
     {
             builder.ToTable("purchases");
             

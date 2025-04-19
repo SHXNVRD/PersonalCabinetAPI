@@ -24,7 +24,7 @@ internal class MailkitSender : IEmailSender
     {
         if (message is null)
             ArgumentNullException.ThrowIfNull(message);
-        if (retries <= 0)
+        if (retries < 0)
             throw new ArgumentException($"{nameof(retries)} must be great or equal zero");
             
         var mimeMessage = new MimeMessage();

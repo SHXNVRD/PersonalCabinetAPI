@@ -28,7 +28,7 @@ public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, R
             if (card == null)
                 return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
 
-            if (Guid.TryParse(request.UserId, out var userId))
+            if (!Guid.TryParse(request.UserId, out var userId))
                 return Result.Fail(new InvalidData("Invalid user id"));
             
             var activateResult = card.Activate(userId);

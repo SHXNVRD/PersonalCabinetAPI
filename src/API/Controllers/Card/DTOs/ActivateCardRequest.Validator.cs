@@ -8,7 +8,7 @@ public class ActivateCardRequestValidator : AbstractValidator<ActivateCardReques
 {
     public ActivateCardRequestValidator()
     {
-        RuleFor(r => r.CardPinCode).MustBeValueObject(CardPinHash.Create);
+        RuleFor(r => r.CardPin).MustBeValueObject(CardPinHash.Create);
 
         RuleFor(r => r.CardNumber).MustBeValueObject(CardNumber.Create);
     }

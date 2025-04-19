@@ -1,9 +1,8 @@
 ﻿using Application.Interfaces;
 using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Infrastructure.Data.IdentityValidators;
+namespace Infrastructure.Data.Identity.Validators;
 
 public class UserPhoneNumberValidator<TUser> : IUserValidator<TUser>
     where TUser : User

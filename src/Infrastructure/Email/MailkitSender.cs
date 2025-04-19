@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace Infrastructure.Services.Email;
+namespace Infrastructure.Email;
 
 internal class MailkitSender : IEmailSender
 {

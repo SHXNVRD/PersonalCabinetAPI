@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Services.Email;
+﻿namespace Infrastructure.Email;
 
 public static class TemplateKeys
 {

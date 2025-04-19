@@ -3,7 +3,7 @@ using Application.Interfaces.Email;
 using Razor.Templating.Core;
 using Templates.EmailTemplates;
 
-namespace Infrastructure.Services.Email;
+namespace Infrastructure.Email;
 
 public class EmailService : IEmailService
 {

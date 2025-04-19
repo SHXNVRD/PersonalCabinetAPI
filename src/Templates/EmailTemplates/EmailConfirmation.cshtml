@@ -9,7 +9,7 @@
         Здравствуйте, для подтверждения адреса электронной почты, нажмите на кнопку ниже.
     </p>
     <div style="text-align: center; margin: 30px 0">
-        @await Html.PartialAsync("Button.cshtml", new ButtonViewModel("Подтвердить почту", @Model.ConfirmationLink));
+        @await Html.PartialAsync("Button.cshtml", new ButtonViewModel("Подтвердить почту", @Model.ConfirmationLink))
     </div>
     <p>
         Если Вы не создавали учётную запись в нашей системе, игнорируйте это письмо.

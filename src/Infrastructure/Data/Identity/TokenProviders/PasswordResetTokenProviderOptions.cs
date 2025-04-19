@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Services.Token.Providers;
+namespace Infrastructure.Data.Identity.TokenProviders;
 
 public class PasswordResetTokenProviderOptions : DataProtectionTokenProviderOptions
 {

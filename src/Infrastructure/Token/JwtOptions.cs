@@ -1,4 +1,4 @@
-namespace Infrastructure.Services.Token;
+namespace Infrastructure.Token;
 
 public class JwtOptions
 {

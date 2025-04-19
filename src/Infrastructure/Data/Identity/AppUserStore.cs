@@ -2,7 +2,7 @@ using Domain.Aggregates.UserAggregate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Infrastructure.Data;
+namespace Infrastructure.Data.Identity;
 
 public class AppUserStore : UserStore<User, IdentityRole<Guid>, AppDbContext, Guid>
 {

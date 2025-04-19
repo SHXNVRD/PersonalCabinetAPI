@@ -6,13 +6,13 @@ using Application.Interfaces.Token;
 using Application.Services;
 using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data;
-using Infrastructure.Data.IdentityValidators;
+using Infrastructure.Data.Identity;
+using Infrastructure.Data.Identity.TokenProviders;
+using Infrastructure.Data.Identity.Validators;
 using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Repositories;
-using Infrastructure.Services;
-using Infrastructure.Services.Email;
-using Infrastructure.Services.Token;
-using Infrastructure.Services.Token.Providers;
+using Infrastructure.Email;
+using Infrastructure.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -88,31 +88,22 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection ConfigureIdentity(this IServiceCollection services)
     {
-        services.Configure<DataProtectionTokenProviderOptions>(options =>
-        {
-            options.TokenLifespan = TimeSpan.FromDays(90);
-        });
-            
+        var emailConfirmation = "EmailConfirmation";
+        var passwordReset = "PasswordReset";
+        
         services
             .AddIdentity<User, IdentityRole<Guid>>(options =>
             {
                 options.User.RequireUniqueEmail = true;
                 options.SignIn.RequireConfirmedEmail = true;
-                options.Tokens.ProviderMap.Add(
-                    "EmailConfirmationTokenProvider",
-                    new TokenProviderDescriptor(typeof(EmailConfirmationTokenProvider<User>)));
-                options.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
-                    
-                options.Tokens.ProviderMap.Add(
-                    "PasswordResetToken",
-                    new TokenProviderDescriptor(typeof(PasswordResetTokenProvider<User>)));
-                options.Tokens.PasswordResetTokenProvider = "PasswordResetToken";
-                    
                 options.Password.RequiredLength = 8;
                 options.Password.RequireDigit = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
+                
+                options.Tokens.EmailConfirmationTokenProvider = emailConfirmation;
+                options.Tokens.PasswordResetTokenProvider = passwordReset;
             })
             .AddUserValidator<UserPhoneNumberValidator<User>>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -120,10 +111,9 @@ public static class ServiceCollectionExtensions
             .AddUserStore<AppUserStore>()
             .AddRoleStore<AppRoleStore>()
             .AddDefaultTokenProviders()
-            .AddTokenProvider(TokenOptions.DefaultAuthenticatorProvider, typeof(DataProtectorTokenProvider<User>));
-
-        services.AddTransient<EmailConfirmationTokenProvider<User>>();
-        services.AddTransient<PasswordResetTokenProvider<User>>();
+            .AddTokenProvider<RefreshTokenProvider<User>>(TokenProvider.RefreshProvider)
+            .AddTokenProvider<EmailConfirmationTokenProvider<User>>(emailConfirmation)
+            .AddTokenProvider<PasswordResetTokenProvider<User>>(passwordReset);
 
         return services;
     }

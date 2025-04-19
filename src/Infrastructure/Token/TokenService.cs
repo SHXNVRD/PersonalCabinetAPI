@@ -2,20 +2,20 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Application.Extensions;
 using Application.Interfaces.Token;
 using Domain.Aggregates.UserAggregate;
 using Domain.Shared.Errors;
 using FluentResults;
+using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Infrastructure.Services.Token;
+namespace Infrastructure.Token;
 
 public class TokenService : ITokenService
 {
-    private const string RefreshTokenPurpose = "RefreshToken";
+    private const string RefreshTokenPurpose = "Refresh";
     private readonly JwtOptions _jwtOptions;
     private readonly SigningCredentials _signingCredentials;
     private readonly UserManager<User> _userManager;
@@ -33,9 +33,9 @@ public class TokenService : ITokenService
 
     public async Task<string> GenerateRefreshTokenAsync(User user)
     {
-        var refreshToken = await _userManager.GenerateUserTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, RefreshTokenPurpose);
+        var refreshToken = await _userManager.GenerateUserTokenAsync(user, TokenProvider.RefreshProvider, RefreshTokenPurpose);
 
-        await _userManager.SetAuthenticationTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, RefreshTokenPurpose, refreshToken);
+        await _userManager.SetAuthenticationTokenAsync(user, TokenProvider.RefreshProvider, RefreshTokenPurpose, refreshToken);
 
         return refreshToken;
     }
@@ -69,7 +69,7 @@ public class TokenService : ITokenService
 
     public async Task<Result> RevokeRefreshTokenAsync(User user)
     {
-        var revokeResult = await _userManager.RemoveAuthenticationTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, RefreshTokenPurpose);
+        var revokeResult = await _userManager.RemoveAuthenticationTokenAsync(user, TokenProvider.RefreshProvider, RefreshTokenPurpose);
         if (!revokeResult.Succeeded)
             return Result.Fail(new Conflict(revokeResult.Errors.First().Description));
 
@@ -81,7 +81,7 @@ public class TokenService : ITokenService
     }
 
     public async Task<bool> VerifyUserRefreshTokenAsync(User user, string refreshToken) => 
-        await _userManager.VerifyUserTokenAsync(user, TokenOptions.DefaultAuthenticatorProvider, RefreshTokenPurpose, refreshToken);
+        await _userManager.VerifyUserTokenAsync(user, TokenProvider.RefreshProvider, RefreshTokenPurpose, refreshToken);
 
     public async Task<string> GenerateTokenAsync(User user)
     {

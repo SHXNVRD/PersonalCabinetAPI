@@ -14,14 +14,19 @@ using Infrastructure.Data.Repositories;
 using Infrastructure.Email;
 using Infrastructure.Token;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Quartz;
+using Quartz.Logging;
 
 namespace Infrastructure.Extensions;
 
@@ -44,34 +49,59 @@ public static class ServiceCollectionExtensions
         
     private static IServiceCollection ConfigureJwtAuthentication(this IServiceCollection services, IConfiguration config)
     {
-        services
-            .Configure<JwtOptions>(config.GetSection("JwtOptions"))
-            .AddScoped<ITokenService, TokenService>();
+        services.Configure<JwtOptions>(options =>
+        {
+            var issuer = config["JwtOptions:Issuer"] ?? GetUrlForCurrentEnvironment();
+            var audience = config["JwtOptions:Audience"] ?? GetUrlForCurrentEnvironment();
             
+            options.Issuer = issuer ?? throw new Exception("JWT issuer not set");
+            options.Audience = audience ?? throw new Exception("JWT audience not set");
+            options.AccessTokenExpiresInSeconds = config.GetValue<int>("JwtOptions:AccessTokenExpiresInSeconds");
+            options.TokenType = config["JwtOptions:TokenType"] ?? throw new Exception("JWT token type not set");
+            // TODO: Вынести в переменную среды/другое надёжное место
+            options.Key = config["JwtOptions:Key"] ?? throw new Exception("Encryption key not set");
+        });
+        
+        services.AddScoped<ITokenService, TokenService>();
+
         services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = 
-                options.DefaultSignInScheme = 
-                    options.DefaultChallengeScheme = 
-                        options.DefaultScheme = 
+            options.DefaultAuthenticateScheme =
+                options.DefaultSignInScheme =
+                    options.DefaultChallengeScheme =
+                        options.DefaultScheme =
                             options.DefaultForbidScheme =
                                 options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
+            var jwtOptions = services.BuildServiceProvider().GetRequiredService<IOptions<JwtOptions>>().Value;
+            
             options.TokenValidationParameters = new TokenValidationParameters()
             {
                 ValidateAudience = true,
-                ValidAudience = config["JwtOptions:Audience"],
+                ValidAudience = jwtOptions.Audience,
                 ValidateIssuer = true,
-                ValidIssuer = config["JwtOptions:Issuer"],
+                ValidIssuer = jwtOptions.Issuer,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtOptions:Key"]!)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
         });
-
+        
         return services;
+
+        string? GetUrlForCurrentEnvironment()
+        {
+            var environment = services.BuildServiceProvider().GetRequiredService<IWebHostEnvironment>();
+            var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?.Split(";") 
+                       ?? throw new Exception("ASPNETCORE_URLS environment variable not set");
+
+            if (environment.IsProduction())
+                return urls.FirstOrDefault(u => u.StartsWith("https"));
+            
+            return urls.FirstOrDefault(u => u.StartsWith("https") || u.StartsWith("http"));
+        }
     }
         
     private static IServiceCollection ConfigureEmail(this IServiceCollection services, IConfiguration config)
@@ -127,12 +157,12 @@ public static class ServiceCollectionExtensions
             {
                 ConnectionStringBuilder =
                 {
-                    ApplicationName = "Personal_cabinet#" + Environment.MachineName,
-                    Host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? throw new ArgumentNullException("Host"),
-                    Port = int.Parse(Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? throw new ArgumentNullException("Port")),
-                    Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? throw new ArgumentNullException("Database"),
-                    Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? throw new ArgumentNullException("Username"),
-                    Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? throw new ArgumentNullException("Password")
+                    ApplicationName = "GasStationAPI#" + Environment.MachineName,
+                    Host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? throw new Exception("Failed to configure database server host. POSTGRES_HOST environment variable not set"),
+                    Port = int.Parse(Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? throw new Exception("Failed to configure database server port. POSTGRES_PORT environment variable not set")),
+                    Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? throw new Exception("Failed to configure database name. POSTGRES_DB environment variable not set"),
+                    Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? throw new Exception("Failed to configure database server user. POSTGRES_USER environment variable not set"),
+                    Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? throw new Exception("Failed to configure database server user password. POSTGRES_PASSWORD environment variable not set")
                 }
             }
             : new NpgsqlDataSourceBuilder(connectionString);

@@ -37,8 +37,8 @@ public class CreateEmailConfirmationLinkCommandHandler : IRequestHandler<CreateE
 
         var confirmationLink = _linkService.GetUriByAction(
             "ConfirmEmail",
-            "Account", 
-            new { email = user.Email, token })!;
+            "Authentication", 
+            new { email = user.Email, token, request.RedirectUrl})!;
 
         await _emailService.SendEmailConfirmationLinkAsync(message, confirmationLink, cancellationToken: cancellationToken);
 

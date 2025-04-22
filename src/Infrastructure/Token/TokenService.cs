@@ -42,6 +42,12 @@ public class TokenService : ITokenService
 
     public bool TryGetPrincipal(string token, out ClaimsPrincipal claimsPrincipal)
     {
+        claimsPrincipal = new ClaimsPrincipal();
+        
+        var tokenHandler = new JwtSecurityTokenHandler();
+        if (!tokenHandler.CanReadToken(token))
+            return false;
+        
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
@@ -53,15 +59,12 @@ public class TokenService : ITokenService
             ValidateLifetime = false
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
         claimsPrincipal = tokenHandler.ValidateToken(
             token,
             tokenValidationParameters,
-            out SecurityToken securityToken);
-                
-        var jwtSecurityToken = securityToken as JwtSecurityToken;
-            
-        if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            out var securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             return false;
             
         return true;

@@ -5,6 +5,7 @@ using API.Middlewares;
 using Serilog;
 using Application.Extensions;
 using Infrastructure.Extensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Tcp.Extensions;
 
@@ -13,7 +14,11 @@ IConfiguration config = builder.Configuration;
 IServiceCollection services = builder.Services;
 
 builder.Host.ConfigureSerilog();
-services.AddControllers();
+services.Configure<ApiBehaviorOptions>(options => 
+{
+    options.SuppressMapClientErrors = true;
+    options.SuppressModelStateInvalidFilter = true;
+});
 services.AddEndpointsApiExplorer();
 services.AddProblemDetails();
 services.AddExceptionHandler<GlobalExceptionHandler>();

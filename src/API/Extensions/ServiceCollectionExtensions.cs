@@ -1,4 +1,4 @@
-using API.Controllers.Account.DTOs;
+using API.Controllers.Authentication.DTOs;
 using API.HostedServices;
 using API.Services;
 using Application.Interfaces;

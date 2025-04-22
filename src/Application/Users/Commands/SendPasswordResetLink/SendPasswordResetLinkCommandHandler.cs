@@ -36,7 +36,7 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
 
         var resetPasswordLink = _linkService.GetUriByAction(
             "ResetPassword",
-            "Account",
+            "Authentication",
             new { email = user.Email, token });
         
         EmailMessage message = new("Сброс пароля", [user.Email]);

@@ -1,4 +1,152 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@using Web.Shared
+@using Blazored.LocalStorage
+@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode="@_appSettings.IsDarkMode"
+                  @ref="@_mudThemeProvider"
+                  Theme="_defaultTheme"/>
+<MudPopoverProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar Elevation="0"
+               Style="pointer-events: none;">
+        <MudStack Class="mt-3 ml-n4"
+                  Spacing="1"
+                  Row
+                  AlignItems="AlignItems.Center">
+            <MudIconButton Color="Color.Inherit"
+                           Edge="Edge.Start"
+                           Icon="@Icons.Material.Rounded.Menu"
+                           OnClick="@ToggleDrawer"
+                           Size="Size.Medium"
+                           Style="pointer-events: all;" />
+            <MudImage Class="cursor-pointer"
+                      Height="64"
+                      @onclick="NavigateToHome"
+                      Src="./logo.scale-75.png" 
+                      Style="pointer-events: all;" />
+            <MudText Typo="Typo.h5"
+                     @onclick="@NavigateToHome"
+                     Class="cursor-pointer"
+                     Style="pointer-events: all;" >
+                Dotneft
+            </MudText>
+        </MudStack>
+        <MudSpacer/>
+        <MudStack Spacing="1"
+                  Row>
+            <MudToggleIconButton @bind-Toggled="@_appSettings.IsDarkMode"
+                                 Icon="@Icons.Material.Filled.DarkMode"
+                                 Color="Color.Default"
+                                 ToggledIcon="@Icons.Material.Filled.WbSunny"
+                                 ToggledColor="Color.Default"
+                                 Style="pointer-events: all;"/>
+            <MudIconButton Color="Color.Inherit"
+                           Icon="fa-solid fa-circle-user"
+                           Style="pointer-events: all;"/>
+        </MudStack>
+    </MudAppBar>
     
-</div>
+    <MudDrawer @bind-Open="_drawerOpen"
+               Elevation="1"
+               ClipMode="DrawerClipMode.Always">
+        <NavMenu/>
+    </MudDrawer>
+    <MudMainContent Class="pt-3 px-8">
+        <MudContainer Gutters
+                      MaxWidth="MaxWidth.Large">
+            <ErrorBoundary>
+                <ChildContent>
+                    <CascadingValue IsFixed="true"
+                                    Value="_appSettings">
+                            @Body
+                    </CascadingValue>
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    @if (Environment.IsDevelopment())
+                    {
+                        <p>@exception.Message</p>
+                        <br />
+                        <hr />
+                        <p>@exception.ToString()</p>
+                    }
+                    <MudAlert Icon="@Icons.Material.Rounded.Error"
+                              Severity="Severity.Error">
+                        Произошла ошибка.
+                        Пожалуйста, попробуйте снова.
+                    </MudAlert>
+                </ErrorContent>
+            </ErrorBoundary>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    
+    private bool _drawerOpen = true;
+    private bool IsHomePage => string.Equals(NavigationManager.BaseUri, NavigationManager.Uri, StringComparison.OrdinalIgnoreCase);
+    
+    private readonly MudTheme _defaultTheme = new();
+    private AppSettings _appSettings = new();
+    
+    private MudThemeProvider _mudThemeProvider = null!;
+
+    [Inject] 
+    public IWebAssemblyHostEnvironment Environment { get; set; } = null!;
+    
+    [Inject] 
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    [Inject] 
+    public ILocalStorageService LocalStorage { get; set; } = null!;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _appSettings = await LocalStorage.GetItemAsync<AppSettings>(nameof(AppSettings)) ?? new AppSettings();
+
+        _appSettings.OnChange += async (_, _) =>
+        {
+            await SaveSettings();
+            StateHasChanged();
+        };
+    }
+
+    //void ChangeTheme() => _appSettings.IsDarkMode = !_appSettings.IsDarkMode;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _appSettings.IsDarkModeSystem = await _mudThemeProvider.GetSystemPreference();
+        await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+        StateHasChanged();
+    }
+    
+    private async Task SaveSettings()
+    {
+        await LocalStorage.SetItemAsync(nameof(AppSettings), _appSettings);
+        StateHasChanged();
+    }
+
+    private Task OnSystemPreferenceChanged(bool newValue)
+    {
+        _appSettings.IsDarkModeSystem = newValue;
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+    
+    void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+    
+    void NavigateToHome()
+    {
+        if (IsHomePage)
+            return;
+
+        NavigationManager.NavigateTo("");
+    }
+}

@@ -14,6 +14,7 @@ IConfiguration config = builder.Configuration;
 IServiceCollection services = builder.Services;
 
 builder.Host.ConfigureSerilog();
+services.AddControllers();
 services.Configure<ApiBehaviorOptions>(options => 
 {
     options.SuppressMapClientErrors = true;

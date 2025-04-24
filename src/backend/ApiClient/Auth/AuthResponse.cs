@@ -1,6 +1,6 @@
 ﻿namespace ApiClient.Auth;
 
-public class LoginResponse
+public class AuthResponse
 {
     public string AccessToken { get; set; } = null!;
     public string TokenType { get; set; } = null!;

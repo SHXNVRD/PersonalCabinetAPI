@@ -1,0 +1,27 @@
+﻿@page "/auth/login"
+@using System.ComponentModel.DataAnnotations
+@attribute [AllowAnonymous]
+
+<PageTitle>Вход</PageTitle>
+
+
+@code {
+    private LoginModel Input { get; set; } = new();
+    
+    protected override void OnParametersSet()
+    {
+        Input = new LoginModel();
+    }
+    
+    private sealed class LoginModel
+    {
+        [Required(ErrorMessage = "Логин обязателен")]
+        [Display(Name = "Никнейм или Email")]
+        public string Login { get; set; }
+        
+        [Required(ErrorMessage = "Пароль обязатаелен")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Пароль")]
+        public string Password { get; set; }
+    }
+}

@@ -1,11 +1,12 @@
-﻿using ApiClient;
+﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using ApiClient;
 using ApiClient.Auth;
 using ApiClient.Extensions;
 using Blazored.LocalStorage;
 using FluentResults;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using Microsoft.IdentityModel.Tokens;
-using Web.Pages;
+using Microsoft.AspNetCore.Components.Authorization;
 using Web.Services.Authentication.DTOs;
 
 namespace Web.Services.Authentication;
@@ -15,42 +16,28 @@ public class AuthenticationService
     public const string AccessTokenKey = "AccessToken";
     public const string RefreshTokenKey = "RefreshToken";
     
-    private readonly JwtAuthStateProvider _authStateProvider;
+    private readonly AuthenticationStateProvider _authStateProvider;
     private readonly ILocalStorageService _localStorage;
-    private readonly GasStationClient _apiClient;
+    private readonly HttpClient _client;
 
     public AuthenticationService(
-        JwtAuthStateProvider authStateProvider, 
+        AuthenticationStateProvider authStateProvider, 
         ILocalStorageService localStorage, 
-        GasStationClient apiClient)
+        HttpClient client)
     {
         _authStateProvider = authStateProvider;
         _localStorage = localStorage;
-        _apiClient = apiClient;
+        _client = client;
     }
 
-    public async Task<Result> RegisterAsync(RegisterRequestDto user)
+    public async Task<Result> LoginAsync(string password, string login)
     {
-        var request = new RegisterRequest(user.Email, user.PhoneNumber, user.Password, 
-            user.FirstName, user.SecondName, user.Patronymic);
-        var response = await _apiClient.AuthClient.RegisterAsync(request);
+        var result = await AuthenticateAsync(password, login);
+        if (result.IsFailed)
+            return Result.Fail(result.Errors);
 
-        if (response.IsSuccessful)
-            return Result.Ok();
-
-        var problemDetails = await response.GetErrorAsync();
-        var message = problemDetails?.Errors.FirstOrDefault() ?? "Ошибка регистрации аккаунта.";
-        
-        return Result.Fail(message);
-    }
-
-    public async Task<Result> LoginAsync(string password, string? userName, string? email)
-    {
-        var result = await AuthenticateAsync(password, userName, email);
-        if (result.IsSuccess)
-            await _authStateProvider.NotifyUserAuthenticationAsync();
-
-        return Result.Fail(result.Errors);
+        await ((JwtAuthStateProvider)_authStateProvider).NotifyUserAuthenticationAsync();
+        return Result.Ok();
     }
 
     public async Task<Result<string>> RefreshTokenAsync()
@@ -62,46 +49,52 @@ public class AuthenticationService
             return Result.Fail("Не удалось загрузить токены доступа или токен обновления. Пройдите процедуру авторизации.");
 
         var request = new RefreshTokenRequest(refreshToken);
-        var response = await _apiClient.AuthClient.RefreshToken(request, accessToken);
-
-        if (!response.IsSuccessful)
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var response = await _client.PostAsync("auth/refresh", JsonContent.Create(request));
+        
+        if (!response.IsSuccessStatusCode)
         {
-            var problemDetails = await response.GetErrorAsync();
+            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(await response.Content.ReadAsStringAsync());
             var message = problemDetails?.Errors.FirstOrDefault() ?? "Не удалось обновить токен доступа. Пройдите процедуру авторизации.";
             return Result.Fail(message);
         }
 
-        var newAccessToken = response.Content.AccessToken;
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
 
-        await _localStorage.SetItemAsStringAsync(AccessTokenKey, newAccessToken);
-        await _localStorage.SetItemAsStringAsync(RefreshTokenKey, response.Content.RefreshToken);
+        if (result is null)
+            return Result.Fail("Некорректный ответ сервера");
 
-        return newAccessToken;
+        await _localStorage.SetItemAsStringAsync(AccessTokenKey, result.AccessToken);
+        await _localStorage.SetItemAsStringAsync(RefreshTokenKey, result.RefreshToken);
+
+        return result.AccessToken;
     }
 
-    private async Task<Result<AuthResponseDto>> AuthenticateAsync(string password, string? userName, string? email)
+    private async Task<Result<AuthResponseDto>> AuthenticateAsync(string password, string login)
     {
-        var request = new LoginRequest(password, userName, email);
-        var response = await _apiClient.AuthClient.LoginAsync(request);
+        var request = new LoginRequest(password, login);
+        var response = await _client.PostAsync(new Uri("auth/token", UriKind.Relative), JsonContent.Create(request));
+        _client.DefaultRequestHeaders.Clear();
         
-        if (!response.IsSuccessful)
+        if (!response.IsSuccessStatusCode)
         {
-            var problemDetails = await response.GetErrorAsync();
+            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(await response.Content.ReadAsStringAsync());
             var message = problemDetails?.Errors.FirstOrDefault() ?? "Не удалось авторизоваться.";
             return Result.Fail(message);
         }
 
-        var content = response.Content;
-        if (content is null
-            || string.IsNullOrWhiteSpace(content.AccessToken)
-            || string.IsNullOrWhiteSpace(content.RefreshToken))
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        
+        if (result is null
+            || string.IsNullOrWhiteSpace(result.AccessToken)
+            || string.IsNullOrWhiteSpace(result.RefreshToken))
         {
             return Result.Fail("Некорректный овтет сервера");
         }
 
-        await _localStorage.SetItemAsStringAsync(AccessTokenKey, content.AccessToken);
-        await _localStorage.SetItemAsStringAsync(RefreshTokenKey, content.RefreshToken);
+        await _localStorage.SetItemAsStringAsync(AccessTokenKey, result.AccessToken);
+        await _localStorage.SetItemAsStringAsync(RefreshTokenKey, result.RefreshToken);
         
-        return new AuthResponseDto(content.AccessToken, content.TokenType, content.ExpiresIn, content.RefreshToken);
+        return new AuthResponseDto(result.AccessToken, result.TokenType, result.ExpiresIn, result.RefreshToken);
     }
 }

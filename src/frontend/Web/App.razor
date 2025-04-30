@@ -5,23 +5,24 @@
                 <NotAuthorized>
                     @if (context.User.Identity?.IsAuthenticated == true)
                     {
-                        <Alert Color="Color.Danger">
-                            <AllertMessage>Досутп ограничен!</AllertMessage>
-                            <AlertDescription>Извините, но у вас нет прав на доступ к это странице</AlertDescription>
-                        </Alert>
+                        <MudAlert Severity="Severity.Error">
+                            Доступ ограничен. Похоже, у вас недостаточно прав для доступа к этому ресурсу.
+                        </MudAlert>
                     }
                     else
                     {
-                        <RedirectToLogin/>
+                        <LayoutView Layout="@typeof(EmptyLayout)">
+                            <RedirectToLogin/>
+                        </LayoutView>
                     }
                 </NotAuthorized>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
         </Found>
         <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
+            <PageTitle>Нету тут ничё</PageTitle>
+            <LayoutView Layout="@typeof(EmptyLayout)">
+                <MudAlert>Страница не найдена</MudAlert>
             </LayoutView>
         </NotFound>
     </Router>

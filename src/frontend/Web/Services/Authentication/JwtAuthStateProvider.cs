@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Web.Services.Authentication;
 

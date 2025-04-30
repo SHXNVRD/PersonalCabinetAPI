@@ -4,8 +4,8 @@ using Riok.Mapperly.Abstractions;
 namespace API.Controllers.Authentication.DTOs;
 
 public record LoginRequest(
-    string Email,
-    string Password);
+        string Password,
+        string Login);
 
 [Mapper]
 public static partial class LoginMapper

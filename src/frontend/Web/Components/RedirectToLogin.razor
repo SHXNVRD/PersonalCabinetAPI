@@ -2,6 +2,9 @@
 @inject NavigationManager Navigation
 
 @code {
-    protected override void OnInitialized() 
-        => Navigation.NavigateToLogin("auth/login");
+
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateToLogin("auth/login");
+    }
 }

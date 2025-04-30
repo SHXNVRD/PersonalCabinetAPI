@@ -1,9 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
-@using Web.Shared
-@using Blazored.LocalStorage
+@using Web.Services
 @inherits LayoutComponentBase
 
-<MudThemeProvider IsDarkMode="@_appSettings.IsDarkMode"
+<MudThemeProvider IsDarkMode="@ThemeService.IsDarkMode"
                   @ref="@_mudThemeProvider"
                   Theme="_defaultTheme"/>
 <MudPopoverProvider/>
@@ -38,15 +37,15 @@
         <MudSpacer/>
         <MudStack Spacing="1"
                   Row>
-            <MudToggleIconButton @bind-Toggled="@_appSettings.IsDarkMode"
+            <MudToggleIconButton @bind-Toggled="@ThemeService.IsDarkMode"
                                  Icon="@Icons.Material.Filled.DarkMode"
-                                 Color="Color.Default"
+                                 Color="Color.Inherit"
                                  ToggledIcon="@Icons.Material.Filled.WbSunny"
-                                 ToggledColor="Color.Default"
+                                 ToggledColor="Color.Inherit"
                                  Style="pointer-events: all;"/>
             <MudIconButton Color="Color.Inherit"
                            Icon="fa-solid fa-circle-user"
-                           Style="pointer-events: all;"/>
+                           Style="pointer-events: all;"/> 
         </MudStack>
     </MudAppBar>
     
@@ -60,10 +59,7 @@
                       MaxWidth="MaxWidth.Large">
             <ErrorBoundary>
                 <ChildContent>
-                    <CascadingValue IsFixed="true"
-                                    Value="_appSettings">
-                            @Body
-                    </CascadingValue>
+                    @Body
                 </ChildContent>
                 <ErrorContent Context="exception">
                     @if (Environment.IsDevelopment())
@@ -88,10 +84,10 @@
     
     private bool _drawerOpen = true;
     private bool IsHomePage => string.Equals(NavigationManager.BaseUri, NavigationManager.Uri, StringComparison.OrdinalIgnoreCase);
+    private const string LoginUri = "auth/login";
+    private bool IsLoginPage => string.Equals($"{NavigationManager.BaseUri}/{LoginUri}", NavigationManager.Uri, StringComparison.OrdinalIgnoreCase);
     
     private readonly MudTheme _defaultTheme = new();
-    private AppSettings _appSettings = new();
-    
     private MudThemeProvider _mudThemeProvider = null!;
 
     [Inject] 
@@ -101,42 +97,27 @@
     public NavigationManager NavigationManager { get; set; } = null!;
 
     [Inject] 
-    public ILocalStorageService LocalStorage { get; set; } = null!;
+    public ThemeService ThemeService { get; set; } = null!;
     
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _appSettings = await LocalStorage.GetItemAsync<AppSettings>(nameof(AppSettings)) ?? new AppSettings();
-
-        _appSettings.OnChange += async (_, _) =>
-        {
-            await SaveSettings();
-            StateHasChanged();
-        };
+        ThemeService.ThemeChanged += (_, _) => StateHasChanged();
     }
-
-    //void ChangeTheme() => _appSettings.IsDarkMode = !_appSettings.IsDarkMode;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
-            return;
-
-        _appSettings.IsDarkModeSystem = await _mudThemeProvider.GetSystemPreference();
-        await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
-        StateHasChanged();
+        if (firstRender)
+        {
+            var darkModeIsDefault = await _mudThemeProvider.GetSystemPreference();
+            await ThemeService.InitializeAsync(darkModeIsDefault);
+            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+            StateHasChanged();
+        }
     }
     
-    private async Task SaveSettings()
-    {
-        await LocalStorage.SetItemAsync(nameof(AppSettings), _appSettings);
-        StateHasChanged();
-    }
-
     private Task OnSystemPreferenceChanged(bool newValue)
     {
-        _appSettings.IsDarkModeSystem = newValue;
-        StateHasChanged();
-
+        ThemeService.IsDarkMode = newValue;
         return Task.CompletedTask;
     }
     
@@ -144,9 +125,9 @@
     
     void NavigateToHome()
     {
-        if (IsHomePage)
-            return;
-
-        NavigationManager.NavigateTo("");
+        if (!IsHomePage)
+        {
+            NavigationManager.NavigateTo("");
+        }
     }
 }

@@ -1,10 +1,10 @@
 using ApiClient;
-using ApiClient.Extensions;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using Web.Services;
 using Web.Services.Authentication;
 
 namespace Web;
@@ -25,18 +25,23 @@ public class Program
         services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
         
-        services.AddScoped<AuthenticationStateProvider,JwtAuthStateProvider>();
+        services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
         services.AddScoped<AuthenticationService>();
         services.Configure<RefreshTokenOptions>(config.GetSection(nameof(RefreshTokenOptions)));
         services.AddScoped<RefreshTokenService>();
+        services.AddScoped<ThemeService>();
         
         services.AddTransient<RefreshTokenHandler>();
-        services.AddHttpClient<GasStationClient>(client =>
-            {
-                client.BaseAddress = new Uri("https://localhost:8082/api");
-            })
-            .AddHttpMessageHandler<RefreshTokenHandler>();
-        
+
+        services.AddHttpClient<AuthenticationService>(c =>
+        {
+            c.BaseAddress = new Uri("https://localhost:8082/api/");
+        });
+        services.AddHttpClient<GasStationClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://localhost:8082/api/");
+        }).AddHttpMessageHandler<RefreshTokenHandler>();
+            
         services.AddMudServices();
         
         await builder.Build().RunAsync();

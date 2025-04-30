@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using FluentResults;
+﻿using FluentResults;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -8,12 +8,12 @@ namespace Web.Services.Authentication;
 public class RefreshTokenService
 {
     private readonly AuthenticationService _authService;
-    private readonly JwtAuthStateProvider _authStateProvider;
+    private readonly AuthenticationStateProvider _authStateProvider;
     private readonly RefreshTokenOptions _options;
 
     public RefreshTokenService(
         AuthenticationService authService, 
-        JwtAuthStateProvider authStateProvider,
+        AuthenticationStateProvider authStateProvider,
         IOptions<RefreshTokenOptions> options)
     {
         _authService = authService;

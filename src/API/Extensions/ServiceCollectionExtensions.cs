@@ -22,7 +22,8 @@ public static class ServiceCollectionExtensions
         services
             .ConfigureFluentValidation()
             .ConfigureSwagger()
-            .AddScoped<ILinkService, LinkService>();
+            .AddScoped<ILinkService, LinkService>()
+            .ConfigureCors(config);
 
         return services;
     }
@@ -70,6 +71,20 @@ public static class ServiceCollectionExtensions
             config.DisableBuiltInModelValidation = true;
         });
             
+        return services;
+    }
+
+    private static IServiceCollection ConfigureCors(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigin",
+                policy => policy
+                    .WithOrigins(config["CORS_ORIGIN"] ?? throw new Exception("CORS origins not specified"))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+        });
+
         return services;
     }
 }

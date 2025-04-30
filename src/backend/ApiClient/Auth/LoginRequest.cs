@@ -2,5 +2,4 @@
 
 public record LoginRequest(
     string Password,
-    string? UserName,
-    string? Email);
+    string Login);

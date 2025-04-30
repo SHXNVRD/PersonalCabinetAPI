@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Application.DTOs;
 using Application.Interfaces;
 using Application.Interfaces.Token;
@@ -26,16 +27,22 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
+        var regex = new Regex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$", RegexOptions.IgnoreCase);
+        var isEmail = regex.IsMatch(request.Login);
+        
+        var user = isEmail
+            ? await _userManager.FindByEmailAsync(request.Login)
+            : await _userManager.FindByNameAsync(request.Login);
+        
         if (user == null)
-            return Result.Fail(new Unauthorized("Wrong password or email"));
+            return Result.Fail(new Unauthorized("Wrong password or login"));
 
         if (user.EmailConfirmed == false)
             return Result.Fail(new Unauthorized("Email unconfirmed"));
 
         var passwordCheckedResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
         if (!passwordCheckedResult.Succeeded)
-            return Result.Fail(new Unauthorized("Wrong password or email"));
+            return Result.Fail(new Unauthorized("Wrong password or login"));
 
         var accessToken = await _tokenService.GenerateTokenAsync(user);
         var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);

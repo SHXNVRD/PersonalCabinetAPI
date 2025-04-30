@@ -6,6 +6,7 @@ namespace Application.Users.Commands.Login;
 
 public class LoginCommand : IRequest<Result<AuthResponse>>
 {
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string Password { get; set; } = null!;
+    
+    public string Login { get; set; } = null!;
 }

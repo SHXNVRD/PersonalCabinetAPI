@@ -2,6 +2,7 @@
 using Application.Services;
 using Application.Users.Commands.Login;
 using Domain.Aggregates.UserAggregate;
+using Domain.Shared.ValueObjects;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ public class LoginCommandHandlerTests
 {
     private readonly string _email = "test@mail.com";
     private readonly string _userName = "test";
+    private readonly Name _name = Name.Create("firstname", "lastname", "patronymic").Value;
     private readonly string _phoneNumber = "1234567890";
     private readonly string _password = "password";
     private readonly LoginCommand _commandWithEmail = new();
@@ -62,7 +64,7 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_UnconfirmedEmail_ReturnsFail()
     {
-        var user = User.Create(_email, _phoneNumber, _userName).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
 
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_commandWithEmail.Login))
@@ -98,7 +100,7 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_WrongPassword_ReturnsFail()
     {
-        var user = User.Create(_email, _phoneNumber, _userName).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
 
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_commandWithEmail.Login))
@@ -120,7 +122,7 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_SuccessCaseWithEmail_ReturnsSuccess()
     {
-        var user = User.Create(_email, _phoneNumber, _userName).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
         user.EmailConfirmed = true;
 
         var accessToken = "accessToken";
@@ -167,7 +169,7 @@ public class LoginCommandHandlerTests
     [Fact]
     public async Task Handle_SuccessCaseWithUserName_ReturnsSuccess()
     {
-        var user = User.Create(_email, _phoneNumber, _userName).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
         user.EmailConfirmed = true;
 
         var accessToken = "accessToken";

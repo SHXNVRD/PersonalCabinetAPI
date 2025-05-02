@@ -4,10 +4,12 @@ using Riok.Mapperly.Abstractions;
 namespace API.Controllers.Authentication.DTOs;
 
 public record RegistrationRequest(        
-    string UserName,
     string PhoneNumber,
     string Email,
-    string Password);
+    string Password,
+    string FirstName,
+    string LastName,
+    string? Patronymic);
 
 [Mapper]
 public static partial class RegistrationMapper

@@ -33,7 +33,10 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
 
         var response = new GetUserByIdResponse(
             user.Id,
-            user.Name,
+            user.UserName,
+            user.FirstName,
+            user.LastName,
+            user.Patronymic,
             user.DayOfBirth,
             user.PhoneNumber,
             user.PhoneNumberConfirmed,
@@ -52,7 +55,10 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
         """
           SELECT
               u.id AS Id,
-              u.user_name AS Name,
+              u.user_name AS UserName,
+              u.firstname as FirstName,
+              u.lastname as LastName,
+              u.patronymic as Patronymic,
               u.day_of_birth AS DayOfBirth,
               u.email AS Email,
               u.phone_number AS PhoneNumber,
@@ -65,8 +71,11 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
     private class DapperUserModel
     {
         public Guid Id { get; init; }
-        public string Name { get; init; }
-        public DateOnly DayOfBirth { get; init; }
+        public string UserName { get; init; }
+        public string FirstName { get; init; }
+        public string LastName { get; init; }
+        public string? Patronymic { get; init; }  
+        public DateOnly? DayOfBirth { get; init; }
         public string Email { get; init; }
         public string PhoneNumber { get; init; }
         public bool PhoneNumberConfirmed { get; init; }

@@ -9,6 +9,7 @@ using Application.Services;
 using Application.Users.DTOs;
 using Domain.Aggregates.UserAggregate;
 using Domain.Shared.Errors;
+using Domain.Shared.ValueObjects;
 using FluentResults;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -29,11 +30,17 @@ public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, R
 
     public async Task<Result> Handle(RegistrationCommand request, CancellationToken cancellationToken)
     {
-        var createUserResult = User.Create(request.Email, request.PhoneNumber, request.UserName);
+        var userName = UserNameGenerator.GenerateByEmail(request.Email);
+        var nameResult = Name.Create(request.FirstName, request.LastName, request.Patronymic);
+        if (nameResult.IsFailed)
+            return Result.Fail(nameResult.Errors);
+        
+        var createUserResult = User.Create(request.Email, request.PhoneNumber, userName, nameResult.Value);
         if (createUserResult.IsFailed)
             return Result.Fail(createUserResult.Errors);
 
         var user = createUserResult.Value;
+        
         await using var transaction = await _unitOfWork.BeginTransactionAsync();
 
         try

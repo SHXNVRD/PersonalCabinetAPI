@@ -1,6 +1,7 @@
 ﻿using Application.Services;
 using Application.Users.Commands.EmailConfirmation;
 using Domain.Aggregates.UserAggregate;
+using Domain.Shared.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 
@@ -10,7 +11,8 @@ public class EmailConfirmationCommandHandlerTests
 {
     private readonly string _email = "test@mail.com";
     private readonly string _phoneNumber = "1234567890";
-    private readonly string _name = "Test";
+    private readonly string _userName = "Test";
+    private readonly Name _name = Name.Create("firstname", "lastname", "patronymic").Value;
     private readonly string _token = "token";
     private readonly EmailConfirmationCommand _command = new ();
     
@@ -40,7 +42,7 @@ public class EmailConfirmationCommandHandlerTests
     [Fact]
     public async Task Handle_FailedToConfirmEmail_ReturnsFail()
     {
-        var user = User.Create(_email, _phoneNumber, _name).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
         var error = new IdentityError
         {
             Code = "Code",
@@ -69,7 +71,7 @@ public class EmailConfirmationCommandHandlerTests
     [Fact]
     public async Task Handle_ValidEmail_ReturnsSuccess()
     {
-        var user = User.Create(_email, _phoneNumber, _name).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
         
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))

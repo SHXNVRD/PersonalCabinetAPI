@@ -2,6 +2,7 @@ using Domain.Aggregates.UserAggregate;
 using Infrastructure.Data.Configurations.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Infrastructure.Data.Configurations;
 
@@ -47,5 +48,22 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion(new ToUtcValueConverter())
             .HasDefaultValueSql("NOW()")
             .IsRequired();
+
+        builder.ComplexProperty(
+            u => u.Name,
+            u =>
+            {
+                u.Property(n => n.FirstName)
+                    .HasColumnName("firstname")
+                    .IsRequired();
+
+                u.Property(n => n.LastName)
+                    .HasColumnName("lastname")
+                    .IsRequired();
+
+                u.Property(n => n.Patronymic)
+                    .HasColumnName("patronymic")
+                    .IsRequired(false);
+            });
     }
 }

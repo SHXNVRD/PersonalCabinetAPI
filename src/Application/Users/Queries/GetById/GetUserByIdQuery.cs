@@ -17,7 +17,10 @@ public class GetUserByIdQuery : IRequest<Result<GetUserByIdResponse>>
 
 public record GetUserByIdResponse(
     Guid Id,
-    string Name,
+    string UserName,
+    string FirstName,
+    string LastName,
+    string? Patronymic,
     DateOnly? DayOfBirth,
     string PhoneNumber,
     bool PhoneNumberConfirmed,

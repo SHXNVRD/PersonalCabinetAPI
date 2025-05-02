@@ -22,7 +22,7 @@ public class GetOperationsByIdQueryHandler : IRequestHandler<GetOperationsByIdQu
             new
             {
                 CardId = request.CardId,
-                OffSet = request.Page-- * request.PageSize,
+                OffSet = --request.Page * request.PageSize,
                 Limit = request.PageSize
             });
 

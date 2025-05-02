@@ -6,8 +6,11 @@ public class RegistrationRequestValidator : AbstractValidator<RegistrationReques
 {
     public RegistrationRequestValidator()
     {
-        RuleFor(r => r.UserName)
-            .NotEmpty().WithMessage("User name cannot be empty");
+        RuleFor(r => r.FirstName)
+            .NotEmpty().WithMessage("Firstname cannot be empty");
+
+        RuleFor(r => r.LastName)
+            .NotEmpty().WithMessage("Lastname cannot be empty");
 
         RuleFor(r => r.Email)
             .NotEmpty().WithMessage("Email address is required")

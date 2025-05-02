@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Application.DTOs;
+using Application.Extensions;
 using Application.Interfaces;
 using Application.Interfaces.Token;
 using Application.Users.DTOs;
@@ -27,8 +28,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        var regex = new Regex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$", RegexOptions.IgnoreCase);
-        var isEmail = regex.IsMatch(request.Login);
+        var isEmail = request.Login.IsEmail();
         
         var user = isEmail
             ? await _userManager.FindByEmailAsync(request.Login)

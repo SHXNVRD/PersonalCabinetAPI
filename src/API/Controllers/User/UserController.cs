@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using API.Controllers.User.DTOs;
 using API.Extensions;
 using Application.Users.DTOs;
+using Application.Users.Queries.GetAll;
 using Application.Users.Queries.GetById;
 using Domain.Shared.Errors;
 using FluentResults;
@@ -8,6 +10,7 @@ using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace API.Controllers.User;
 
@@ -64,6 +67,23 @@ public class UserController : ControllerBase
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
             
+        return result.ToActionResult();
+    }
+
+    [HttpGet]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<GetUsersResponse>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+    {
+        var request = new GetUsersRequest(page, pageSize);
+        var command = GetUsersMapper.ToQuery(request);
+
+        var result = await _mediatR.Send(command);
+        if (result.IsFailed)
+            return result.ToObjectResult(HttpContext);
+
         return result.ToActionResult();
     }
 }

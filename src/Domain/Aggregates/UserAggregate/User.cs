@@ -14,21 +14,24 @@ public class User : IdentityUser<Guid>
     public DateOnly? DayOfBirth { get; private set; }
     private List<Card> _cards = [];
     public IReadOnlyList<Card> Cards => _cards.AsReadOnly();
-        
+    public Name Name { get; set; }
+    
     private User()
     { }
 
     private User(
         string email,
         string phoneNumber,
-        string userName) : this()
+        string userName,
+        Name name) : this()
     {
         Email = email;
         PhoneNumber = phoneNumber;
         UserName = userName;
+        Name = name;
     }
 
-    public static Result<User> Create(string email, string phoneNumber, string userName)
+    public static Result<User> Create(string email, string phoneNumber, string userName, Name name)
     {
         if (string.IsNullOrWhiteSpace(email))
             return Result.Fail(new InvalidData($"{nameof(email)} cannot be empty"));
@@ -36,8 +39,10 @@ public class User : IdentityUser<Guid>
             return Result.Fail(new InvalidData($"{nameof(phoneNumber)} cannot be empty"));
         if (string.IsNullOrWhiteSpace(userName))
             return Result.Fail(new InvalidData($"{nameof(userName)} cannot be empty"));
+        if (name is null)
+            return Result.Fail(new InvalidData($"{nameof(name)} cannot be empty"));
 
-        return new User(email.Trim(), phoneNumber.Trim(), userName.Trim());
+        return new User(email.Trim(), phoneNumber.Trim(), userName.Trim(), name);
     }
         
     public Result BlockCard(Guid cardId)

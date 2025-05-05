@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Web.Services;
 using Web.Services.Authentication;
+using Web.Services.Users;
 
 namespace Web;
 
@@ -39,8 +40,10 @@ public class Program
         });
         services.AddHttpClient<GasStationClient>(c =>
         {
-            c.BaseAddress = new Uri("https://localhost:8082/api/");
+            c.BaseAddress = new Uri("https://localhost:8082");
         }).AddHttpMessageHandler<RefreshTokenHandler>();
+        
+        services.AddScoped<UserService>();
             
         services.AddMudServices();
         

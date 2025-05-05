@@ -10,7 +10,7 @@
         public bool IsSuccessStatusCode => (int)Code is >= 200 and <= 299;
         
         public string StringContent { get; } = content;
-
+        
         public ProblemDetails? GetError()
         {
             if (IsSuccessStatusCode)

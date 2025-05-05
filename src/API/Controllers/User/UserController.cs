@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace API.Controllers.User;
 
-[Route("api/v1/users")]
+[Route("api/users")]
 [ApiController]
 public class UserController : ControllerBase
 {

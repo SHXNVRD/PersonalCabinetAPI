@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using ApiClient.Auth;
 using Blazored.LocalStorage;
 
 namespace Web.Services.Authentication;

@@ -5,7 +5,7 @@ namespace ApiClient;
 
 public class ApiClientExecutor
 {
-    protected virtual string ApiPrefix => "api";
+    protected virtual string ApiPrefix => "/api";
     private readonly GasStationClient _apiClient;
 
     public ApiClientExecutor(GasStationClient client)

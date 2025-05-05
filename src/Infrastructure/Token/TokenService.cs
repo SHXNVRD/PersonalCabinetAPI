@@ -8,6 +8,7 @@ using Domain.Shared.Errors;
 using FluentResults;
 using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,12 +20,17 @@ public class TokenService : ITokenService
     private readonly JwtOptions _jwtOptions;
     private readonly SigningCredentials _signingCredentials;
     private readonly UserManager<User> _userManager;
+    private readonly ILogger<TokenService> _logger;
     public int AccessTokenExpiresInSeconds => _jwtOptions.AccessTokenExpiresInSeconds;
     public string TokenType => _jwtOptions.TokenType;
-    public TokenService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager)
+    public TokenService(
+        IOptions<JwtOptions> jwtOptions, 
+        UserManager<User> userManager, 
+        ILogger<TokenService> logger)
     {
         _jwtOptions = jwtOptions.Value;
         _userManager = userManager;
+        _logger = logger;
 
         var keyBytes = Encoding.UTF8.GetBytes(_jwtOptions.Key);
         _signingCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes),
@@ -59,10 +65,20 @@ public class TokenService : ITokenService
             ValidateLifetime = false
         };
 
-        claimsPrincipal = tokenHandler.ValidateToken(
-            token,
-            tokenValidationParameters,
-            out var securityToken);
+        SecurityToken securityToken;
+        
+        try
+        {
+            claimsPrincipal = tokenHandler.ValidateToken(
+                token,
+                tokenValidationParameters,
+                out securityToken);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Failed to validate token. Reason: {Reason}", e.Message);
+            return false;
+        }
 
         if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             return false;

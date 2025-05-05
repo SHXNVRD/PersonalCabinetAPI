@@ -18,7 +18,7 @@ using DeactivateCardMapper = API.Controllers.Card.DTOs.DeactivateCardMapper;
 
 namespace API.Controllers.Card;
 
-[Route("api/v1/cards")]
+[Route("api/cards")]
 [ApiController]
 public class CardController : ControllerBase
 {

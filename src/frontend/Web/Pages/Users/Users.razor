@@ -1,12 +1,133 @@
-﻿
+﻿@page "/users"
+@using Web.Services.Users
+@using System.Collections.ObjectModel
+@using System.Globalization
+@attribute [Authorize]
+
 <PageTitle>Пользователи - Dotneft Admin</PageTitle>
 
-<MudText Typo="Typo.h6">
-    Пользователи
-</MudText>
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12"
+             md="12">
+        <MudText Typo="Typo.h2">
+            <strong>Пользователи</strong>
+        </MudText>
+    </MudItem>
+    <MudItem xs="12"
+             md="12">
+        <MudDataGrid Items="_users"
+                     Dense="true"
+                     T="User"
+                     SortMode="SortMode.Multiple"
+                     Filterable="true"
+                     FilterMode="DataGridFilterMode.ColumnFilterMenu"
+                     Hover="true"
+                     QuickFilter="@QuickFilter"
+                     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
+                     EditMode="DataGridEditMode.Form"
+                     DragDropColumnReordering="true"
+                     ApplyDropClassesOnDragStarted="true"
+                     ColumnsPanelReordering="true"
+                     Hideable="true"
+                     Class="py-4">
 
-<MudGrid>
-    <MudDataGrid>
-        
-    </MudDataGrid>
+            <ToolBarContent>
+                <MudTextField @bind-Value="_searchString"
+                              T="string"
+                              Placeholder="Поиск"
+                              Adornment="Adornment.Start"
+                              Immediate="true"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"/>
+            </ToolBarContent>
+
+            <Columns>
+                <PropertyColumn Property="u => u.Id" Sortable="false" Filterable="false" Title="Ид" Editable="false"/>
+                <PropertyColumn Property="u => u.UserName" Title="Никнейм"/>
+                <PropertyColumn Property="u => u.Name" Title="ФИО"/>
+                <PropertyColumn Property="u => u.DayOfBirth" Title="Дата рождения"/>
+                <PropertyColumn Property="u => u.Email" Title="Электронная почта"/>
+                <TemplateColumn Title="Электронная почта подтверждена" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.EmailConfirmed"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="u => u.PhoneNumber" Title="Номер телефона"/>
+                <TemplateColumn Title="Номер телефона подтверждён" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.PhoneNumberConfirmed"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Двухфакторная аутениификация" Editable="false">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.TwoFactorEnabled"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="u => u.RegisteredAt" Title="Дата регистрации" Editable="false"/>
+                <PropertyColumn Property="u => u.AccessFailedCount" Title="Неудачных попыток входа" Editable="false"/>
+                <TemplateColumn Title="Статус" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.IsBlocked"
+                                        TrueMessage="Заблокирован"
+                                        FalseMessage="Активен"
+                                        TrueColor="Color.Error"
+                                        FalseColor="Color.Success"/>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            <PagerContent>
+                <MudDataGridPager T="User"/>
+            </PagerContent>
+        </MudDataGrid>
+    </MudItem>
 </MudGrid>
+
+@code {
+
+    [Inject] public UserService UserService { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+
+    private const int PageSize = 15;
+    public int Page { get; set; } = 1;
+
+    private ObservableCollection<User> _users;
+    private string _searchString;
+    
+    private Func<User, bool> QuickFilter => u =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (u.Id.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.DayOfBirth is not null && u.DayOfBirth.ToString()!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.RegisteredAt.ToString(CultureInfo.CurrentCulture).Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        //var data = $"{u.Id}{u.UserName}{u.Name}{u.DayOfBirth}{u.Email}{u.PhoneNumber}{u.RegisteredAt}{u.AccessFailedCount}";
+        //if (data.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+        //    return true;
+            
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var usersResult = await UserService.GetAllAsync(Page, PageSize);
+        if (usersResult.IsFailed)
+            Snackbar.Add(usersResult.Errors.First().Message);
+
+        _users = [..usersResult.Value];
+    }
+}

@@ -1,6 +1,6 @@
 ﻿namespace Web.Services.Authentication.DTOs;
 
-public record AuthResponseDto(
+public record AuthResponse(
     string AccessToken,
     string TokenType,
     int ExpiresIn,

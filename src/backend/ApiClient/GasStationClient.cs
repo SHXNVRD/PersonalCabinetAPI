@@ -1,4 +1,4 @@
-﻿using ApiClient.Auth;
+﻿using ApiClient.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -8,13 +8,13 @@ public class GasStationClient
 {
     public HttpClient HttpClient { get; }
     public Action<string> Log { get; }
-    public AuthClient AuthClient { get; }
+    public UserClient UserClient { get; }
 
     public GasStationClient(HttpClient client, Action<string> log)
     {
         HttpClient = client;
         Log = log;
-        AuthClient = new AuthClient(this);
+        UserClient = new UserClient(this);
     }
     
     [ActivatorUtilitiesConstructor]

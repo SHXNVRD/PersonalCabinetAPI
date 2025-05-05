@@ -148,22 +148,14 @@ public class AuthenticationController : ControllerBase
     }
         
     [HttpPost("refresh")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (userId == null)
-            return Result
-                .Fail(new Unauthorized("Access token does not contain user id"))
-                .ToObjectResult(HttpContext);
-
         var command = RefreshTokenMapper.ToCommand(request);
-        command.UserId = userId;
             
         var result = await _mediatR.Send(command);
 

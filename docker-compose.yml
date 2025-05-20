@@ -1,37 +1,49 @@
 ﻿services:
-  perscab.api:
-    image : ${DOCKER_REGISTRY}/perscabapi:dev
-    container_name: perscab.api
+  gas-station.api:
+    container_name: gas-station.api
+    image: ${DOCKER_REGISTRY}/gas-station.api
     restart: no
+    build:
+      context: .
+      dockerfile: src/API/Dockerfile
+      args:
+        - BUILD_CONFIGURATION=Release
+        - DOTNET_VERSION=8.0
     env_file:
       - .env
+    volumes:
+      - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https:ro
     depends_on:
-      perscab.db:
+      gas-station.db:
         condition: service_healthy
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=https://+:8081;http://+:8080
-      - ASPNETCORE_HTTPS_PORT=8081
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8082;http://+:8080
+      - ASPNETCORE_HTTPS_PORTS=8082
+      - ASPNETCORE_HTTP_PORTS=8080
     ports:
       - "8081:8081"
       - "8080:8080"
+      - "8082:8082"
       
-  perscab.db:
+  gas-station.db:
     image: postgres:17.1
-    container_name: perscab.db
+    container_name: gas-station.db
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
     healthcheck:
       test: [ "CMD-SHELL", "sh -c 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
   pgdata:
-  
+
+networks:
+  default:
+    name: gs_default
+    driver: bridge

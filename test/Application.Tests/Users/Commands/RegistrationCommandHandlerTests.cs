@@ -14,7 +14,9 @@ public class RegistrationCommandHandlerTests
     private readonly string _email = "test@mail.com";
     private readonly string _password = "password";
     private readonly string _phoneNumber = "88003553535";
-    private readonly string _userName = "Test";
+    private readonly string _firstName = "firstname";
+    private readonly string _lastName = "lastname";
+    private readonly string _patronymic = "patronymic";
     private readonly string _role = "user";
     private readonly RegistrationCommand _command = new();
     
@@ -29,7 +31,9 @@ public class RegistrationCommandHandlerTests
         _command.Email = _email;
         _command.Password = _password;
         _command.PhoneNumber = _phoneNumber;
-        _command.UserName = _userName;
+        _command.FirstName = _firstName;
+        _command.LastName = _lastName;
+        _command.Patronymic = _patronymic;
     }
 
     [Fact]
@@ -40,9 +44,11 @@ public class RegistrationCommandHandlerTests
         _appUserManagerMock
             .Setup(x => x.CreateAsync(
                     It.Is<User>(
-                        u => u.UserName == _command.UserName && 
-                             u.Email == _command.Email && 
-                             u.PhoneNumber == _command.PhoneNumber),
+                        u => u.Email == _command.Email && 
+                             u.PhoneNumber == _command.PhoneNumber &&
+                             u.Name.FirstName == _command.FirstName &&
+                             u.Name.LastName == _command.LastName &&
+                             u.Name.Patronymic == _command.Patronymic),
                     _command.Password))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
 
@@ -58,9 +64,11 @@ public class RegistrationCommandHandlerTests
         
         _appUserManagerMock.Verify(
             x => x.CreateAsync(It.Is<User>(
-                u => u.UserName == _command.UserName && 
-                     u.Email == _command.Email && 
-                     u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _command.Password), 
             Times.Once);
     }
@@ -73,18 +81,22 @@ public class RegistrationCommandHandlerTests
         _appUserManagerMock
             .Setup(x => x.CreateAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName && 
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _command.Password))
             .ReturnsAsync(IdentityResult.Success);
 
         _appUserManagerMock
             .Setup(x => x.AddToRoleAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName &&
-                         u.Email == _command.Email &&
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _role))
             .ReturnsAsync(IdentityResult.Failed(identityErrors));
         
@@ -101,18 +113,22 @@ public class RegistrationCommandHandlerTests
         _appUserManagerMock.Verify(
             x => x.CreateAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName && 
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _command.Password), 
             Times.Once);
         
         _appUserManagerMock.Verify(
             x => x.AddToRoleAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName &&
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber), 
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _role), 
             Times.Once);
     }
@@ -123,18 +139,22 @@ public class RegistrationCommandHandlerTests
         _appUserManagerMock
             .Setup(x => x.CreateAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName && 
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _command.Password))
             .ReturnsAsync(IdentityResult.Success);
 
         _appUserManagerMock
             .Setup(x => x.AddToRoleAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName &&
-                         u.Email == _command.Email &&
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _role))
             .ReturnsAsync(IdentityResult.Success);
         
@@ -151,18 +171,22 @@ public class RegistrationCommandHandlerTests
         _appUserManagerMock.Verify(
             x => x.CreateAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName && 
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber),
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _command.Password), 
             Times.Once);
         
         _appUserManagerMock.Verify(
             x => x.AddToRoleAsync(
                 It.Is<User>(
-                    u => u.UserName == _command.UserName &&
-                         u.Email == _command.Email && 
-                         u.PhoneNumber == _command.PhoneNumber), 
+                    u => u.Email == _command.Email && 
+                         u.PhoneNumber == _command.PhoneNumber &&
+                         u.Name.FirstName == _command.FirstName &&
+                         u.Name.LastName == _command.LastName &&
+                         u.Name.Patronymic == _command.Patronymic),
                 _role), 
             Times.Once);
     }

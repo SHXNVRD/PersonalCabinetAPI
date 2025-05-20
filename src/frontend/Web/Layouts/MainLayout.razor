@@ -1,0 +1,133 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@using Web.Services
+@inherits LayoutComponentBase
+
+<MudThemeProvider IsDarkMode="@ThemeService.IsDarkMode"
+                  @ref="@_mudThemeProvider"
+                  Theme="_defaultTheme"/>
+<MudPopoverProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar Elevation="0"
+               Style="pointer-events: none;">
+        <MudStack Class="mt-3 ml-n4"
+                  Spacing="1"
+                  Row
+                  AlignItems="AlignItems.Center">
+            <MudIconButton Color="Color.Inherit"
+                           Edge="Edge.Start"
+                           Icon="@Icons.Material.Rounded.Menu"
+                           OnClick="@ToggleDrawer"
+                           Size="Size.Medium"
+                           Style="pointer-events: all;" />
+            <MudImage Class="cursor-pointer"
+                      Height="64"
+                      @onclick="NavigateToHome"
+                      Src="./logo.scale-75.png" 
+                      Style="pointer-events: all;" />
+            <MudText Typo="Typo.h5"
+                     @onclick="@NavigateToHome"
+                     Class="cursor-pointer"
+                     Style="pointer-events: all;" >
+                Dotneft
+            </MudText>
+        </MudStack>
+        <MudSpacer/>
+        <MudStack Spacing="1"
+                  Row>
+            <MudToggleIconButton @bind-Toggled="@ThemeService.IsDarkMode"
+                                 Icon="@Icons.Material.Filled.DarkMode"
+                                 Color="Color.Inherit"
+                                 ToggledIcon="@Icons.Material.Filled.WbSunny"
+                                 ToggledColor="Color.Inherit"
+                                 Style="pointer-events: all;"/>
+            <MudIconButton Color="Color.Inherit"
+                           Icon="fa-solid fa-circle-user"
+                           Style="pointer-events: all;"/> 
+        </MudStack>
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen"
+               Elevation="1"
+               ClipMode="DrawerClipMode.Always">
+        <NavMenu/>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer Gutters
+                      Fixed="true">
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="exception">
+                    @if (Environment.IsDevelopment())
+                    {
+                        <p>@exception.Message</p>
+                        <br />
+                        <hr />
+                        <p>@exception.ToString()</p>
+                    }
+                    <MudAlert Icon="@Icons.Material.Rounded.Error"
+                              Severity="Severity.Error">
+                        Произошла ошибка.
+                        Пожалуйста, попробуйте снова.
+                    </MudAlert>
+                </ErrorContent>
+            </ErrorBoundary>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    
+    private bool _drawerOpen = true;
+    private bool IsHomePage => string.Equals(NavigationManager.BaseUri, NavigationManager.Uri, StringComparison.OrdinalIgnoreCase);
+    private const string LoginUri = "auth/login";
+    private bool IsLoginPage => string.Equals($"{NavigationManager.BaseUri}/{LoginUri}", NavigationManager.Uri, StringComparison.OrdinalIgnoreCase);
+    
+    private readonly MudTheme _defaultTheme = new();
+    private MudThemeProvider _mudThemeProvider = null!;
+
+    [Inject] 
+    public IWebAssemblyHostEnvironment Environment { get; set; } = null!;
+    
+    [Inject] 
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    [Inject] 
+    public ThemeService ThemeService { get; set; } = null!;
+    
+    protected override void OnInitialized()
+    {
+        ThemeService.ThemeChanged += (_, _) => StateHasChanged();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var darkModeIsDefault = await _mudThemeProvider.GetSystemPreference();
+            await ThemeService.InitializeAsync(darkModeIsDefault);
+            await _mudThemeProvider.WatchSystemPreference(OnSystemPreferenceChanged);
+            StateHasChanged();
+        }
+    }
+    
+    private Task OnSystemPreferenceChanged(bool newValue)
+    {
+        ThemeService.IsDarkMode = newValue;
+        return Task.CompletedTask;
+    }
+    
+    void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+    
+    void NavigateToHome()
+    {
+        if (!IsHomePage)
+        {
+            NavigationManager.NavigateTo("");
+        }
+    }
+}

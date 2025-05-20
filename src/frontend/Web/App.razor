@@ -1,0 +1,29 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated == true)
+                    {
+                        <MudAlert Severity="Severity.Error">
+                            Доступ ограничен. Похоже, у вас недостаточно прав для доступа к этому ресурсу.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <LayoutView Layout="@typeof(EmptyLayout)">
+                            <RedirectToLogin/>
+                        </LayoutView>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
+        </Found>
+        <NotFound>
+            <PageTitle>Нету тут ничё</PageTitle>
+            <LayoutView Layout="@typeof(EmptyLayout)">
+                <MudAlert>Страница не найдена</MudAlert>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

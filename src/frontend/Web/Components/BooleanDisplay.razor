@@ -1,0 +1,31 @@
+﻿<MudText Color="@Color">
+    <MudChip Color="ChipColor" Size="Size.Small" Variant="Variant.Text" T="string">
+        @if (Value == true && TrueMessage is not null)
+            @TrueMessage
+        else if (Value == false && FalseMessage is not null)
+            @FalseMessage
+        else
+            @Text
+    </MudChip>
+</MudText>
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public Color Color { get; set; } = Color.Inherit;
+    [Parameter] public string? TrueMessage { get; set; }
+    [Parameter] public string? FalseMessage { get; set; }
+    [Parameter] public Color? TrueColor { get; set; }
+    [Parameter] public Color? FalseColor { get; set; }
+    
+    private string Text => Value switch 
+    {
+        true => "Да",
+        false => "Нет"
+    };
+
+    private Color ChipColor => Value switch
+    {
+        true => TrueColor ?? Color.Success,
+        false => FalseColor ?? Color.Error
+    };
+}

@@ -4,6 +4,7 @@ using Application.Interfaces.Email;
 using Application.Services;
 using Application.Users.Commands.CreateEmailConfirmationLink;
 using Domain.Aggregates.UserAggregate;
+using Domain.Shared.ValueObjects;
 using Moq;
 using Microsoft.AspNetCore.Identity;
 
@@ -13,7 +14,8 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
 {
     private readonly string _email = "test@mail.com";
     private readonly string _phoneNumber = "1234567890";
-    private readonly string _name = "Test";
+    private readonly string _userName = "Test";
+    private readonly Name _name = Name.Create("firstname", "lastname", "patronymic").Value;
     private readonly string _token = "token";
     private readonly string _confirmationLink = "link";
     private readonly CreateEmailConfirmationLinkCommand _command = new();
@@ -48,7 +50,7 @@ public class CreateEmailConfirmationLinkCommandHandlerTests
     [Fact]
     public async Task Handle_ValidEmail_ReturnsSuccess()
     {
-        var user = User.Create(_email, _phoneNumber, _name).Value;
+        var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
         
         _appUserManagerMock
             .Setup(x => x.FindByEmailAsync(_command.Email))

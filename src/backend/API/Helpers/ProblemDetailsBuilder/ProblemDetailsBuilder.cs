@@ -62,12 +62,6 @@ public class ProblemDetailsBuilder : IProblemDetailsBuilder
         return this;
     }
 
-    public IProblemDetailsBuilder AddStatus()
-    {
-        _problemDetails.Status = _statusCode;
-        return this;
-    }
-
     public IProblemDetailsBuilder AddInstance(string instance)
     {
         _problemDetails.Instance = instance;

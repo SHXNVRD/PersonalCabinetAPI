@@ -19,16 +19,20 @@ public static class ResultExtensions
         var statusCode = error == null
             ? StatusCodes.Status500InternalServerError
             : MapToStatusCode(error.GetType());
+
+        if (statusCode == StatusCodes.Status200OK)
+            return new OkObjectResult(string.Empty);
             
-        var errors = result.Errors.Select(e => e.Message);
+        var errors = result.Errors
+            .Select(e => e.Message)
+            .ToArray();
 
         var builder = new ProblemDetailsBuilder(statusCode);
         var problemDetails = builder
             .AddTitle()
-            .AddStatus()
             .AddType()
             .AddExtension("traceId", Activity.Current?.Id ?? context.TraceIdentifier)
-            .AddExtension("errors", errors)
+            .AddExtension("errors", new Dictionary<string, string[]> {{"reasons", errors}})
             .Build();
 
         var objectResult = new ObjectResult(problemDetails)
@@ -44,7 +48,7 @@ public static class ResultExtensions
         [typeof(InvalidData)] = StatusCodes.Status400BadRequest,
         [typeof(Unauthorized)] = StatusCodes.Status401Unauthorized,
         [typeof(Forbidden)] = StatusCodes.Status403Forbidden,
-        [typeof(NotFound)] = StatusCodes.Status404NotFound,
+        [typeof(NotFound)] = StatusCodes.Status200OK,
         [typeof(Conflict)] = StatusCodes.Status409Conflict
     };
 

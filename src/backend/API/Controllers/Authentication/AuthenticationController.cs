@@ -71,27 +71,17 @@ public class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string token, [FromQuery] string? redirectUrl)
+    public async Task<ActionResult> ConfirmEmail([FromQuery] ConfirmEmailRequest request)
     {
-        var command = new EmailConfirmationCommand
-        {
-            Email = email,
-            Token = token
-        };
-            
-        var validator = new EmailConfirmationCommandValidator();
-        var validationResult = await validator.ValidateAsync(command);
-
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.ToValidationProblemErrors());
-            
+        var command = ConfirmEmailMapper.ToCommand(request);
+        
         var result = await _mediatR.Send(command);
 
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
-
-        if (Uri.IsWellFormedUriString(redirectUrl, UriKind.Absolute))
-            return Redirect(redirectUrl);
+        
+        if (request.RedirectUrl is not null)
+            return Redirect(request.RedirectUrl);
 
         return NoContent();
     }
@@ -116,7 +106,6 @@ public class AuthenticationController : ControllerBase
     [HttpPost("password/reset")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
@@ -133,7 +122,6 @@ public class AuthenticationController : ControllerBase
     [HttpPost("password/reset-link")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> SendPasswordResetLink([FromBody] SendPasswordResetLinkRequest request)
@@ -165,13 +153,13 @@ public class AuthenticationController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpDelete("refresh/{userId}")]
+    [HttpDelete("refresh/{userId:guid}")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult> RevokeRefreshToken([FromRoute] string userId)
+    public async Task<ActionResult> RevokeRefreshToken([FromRoute] Guid userId)
     {
         var command = new RevokeRefreshTokenCommand
         {

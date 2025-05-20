@@ -29,17 +29,16 @@ public class GlobalExceptionHandler : IExceptionHandler
             "[EXCEPTION] type: {type}, message: {description}, exception: {@exception}, inner exception: {@innerException}",
             exception.GetType().Name, exception.Message, exception, exception.InnerException);
 
-        var errors = _environment.IsDevelopment() 
-            ? new[] {exception.Message}
-            : new[] {"An internal server error has occurred."};
+        var details = _environment.IsDevelopment() 
+            ? exception.Message
+            : "An internal server error has occurred.";
         
         var builder = new ProblemDetailsBuilder(StatusCodes.Status500InternalServerError);
         var problemDetails = builder
             .AddTitle()
-            .AddStatus()
+            .AddDetail(details)
             .AddType()
-            .AddExtension("traceId", Activity.Current?.Id ?? httpContext.TraceIdentifier)
-            .AddExtension("errors", errors)
+            .AddExtension("errors", new Dictionary<string, string[]>())
             .Build();
         
         return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext

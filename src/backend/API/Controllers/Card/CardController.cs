@@ -13,6 +13,7 @@ using FluentResults.Extensions.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharpGrip.FluentValidation.AutoValidation.Shared.Extensions;
 using ActivateCardMapper = API.Controllers.Card.DTOs.ActivateCardMapper;
 using DeactivateCardMapper = API.Controllers.Card.DTOs.DeactivateCardMapper;
 
@@ -32,13 +33,12 @@ public class CardController : ControllerBase
     [HttpPut("activation")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ActivateCardResponse>> ActivateByNumber([FromBody] ActivateCardRequest request)
     {
-        var userIdResult = GetCurrentUserId();
+        var userIdResult = HttpContext.User.GetUserId();
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
 
@@ -56,12 +56,11 @@ public class CardController : ControllerBase
     [HttpPut("{id:guid}/block")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> BlockById([FromRoute] Guid id)
     {
-        var userIdResult = GetCurrentUserId();
+        var userIdResult = HttpContext.User.GetUserId();
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
 
@@ -90,7 +89,7 @@ public class CardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> FreezeById([FromRoute] Guid id)
     {
-        var userIdResult = GetCurrentUserId();
+        var userIdResult = HttpContext.User.GetUserId();
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
         
@@ -119,7 +118,7 @@ public class CardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> UnFreezeById([FromRoute] Guid id)
     {
-        var userIdResult = GetCurrentUserId();
+        var userIdResult = HttpContext.User.GetUserId();
         if (userIdResult.IsFailed)
             return userIdResult.ToObjectResult(HttpContext);
         
@@ -149,8 +148,16 @@ public class CardController : ControllerBase
     public async Task<ActionResult> GetOperationsById([FromRoute] Guid id, [FromQuery] int page, [FromQuery] int pageSize)
     {
         var request = new GetOperationsByIdRequest(id, page, pageSize);
+        var validator = new GetOperationsByIdRequestValidator();
+        
+        var validationResult = validator.Validate(request);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.ToValidationProblemErrors());
+            
         var command = GetOperationsByIdMapper.ToQuery(request);
+        
         var result = await _mediatR.Send(command);
+        
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
 
@@ -160,14 +167,10 @@ public class CardController : ControllerBase
     [HttpPut("{id:guid}/pin")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> ChangePin([FromRoute] Guid id, [FromBody] ChangeCardPinRequest request)
     {
-        if (id == Guid.Empty)
-            return Result.Fail(new InvalidData("Id is required")).ToObjectResult(HttpContext);
-
         var command = new ChangeCardPinCommand
         {
             CardId = id,
@@ -175,18 +178,10 @@ public class CardController : ControllerBase
         };
 
         var result = await _mediatR.Send(command);
+        
         if (result.IsFailed)
             return result.ToObjectResult(HttpContext);
 
         return NoContent();
-    }
-
-    private Result<string> GetCurrentUserId()
-    {
-        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null)
-            return Result.Fail(new Conflict("Access token does not contain user id"));
-
-        return userId;
     }
 }

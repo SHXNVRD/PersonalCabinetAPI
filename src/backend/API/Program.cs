@@ -6,6 +6,7 @@ using Serilog;
 using Application.Extensions;
 using Infrastructure.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.OpenApi.Models;
 using Tcp.Extensions;
 
@@ -14,12 +15,12 @@ IConfiguration config = builder.Configuration;
 IServiceCollection services = builder.Services;
 
 builder.Host.ConfigureSerilog();
-services.AddControllers();
-services.Configure<ApiBehaviorOptions>(options => 
-{
-    options.SuppressMapClientErrors = true;
-    options.SuppressModelStateInvalidFilter = true;
-});
+services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressMapClientErrors = true;
+        options.SuppressModelStateInvalidFilter = true;
+    });
 services.AddEndpointsApiExplorer();
 services.AddProblemDetails();
 services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -73,7 +74,7 @@ else
 app.ApplyMigrations();
 
 app.UseRouting();
-app.UseCors("AllowSpecificOrigin");
+//app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

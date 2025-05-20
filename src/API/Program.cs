@@ -41,6 +41,7 @@ services.AddRouting(options => options.LowercaseUrls = true);
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
+
 app.UseSerilogRequestLogging(options =>
 {
     options.MessageTemplate = "Remote ip: {RemoteIpAddress} {RequestHost} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
@@ -52,26 +53,27 @@ app.UseSerilogRequestLogging(options =>
 });
 
 app.UseExceptionHandler();
-app.UseSwagger(c =>
-{
-    c.PreSerializeFilters.Add((swagger, httpReq) =>
-    {
-        swagger.Servers = new List<OpenApiServer> { new() { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" } };
-    });
-});
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger(c =>
+    {
+        c.PreSerializeFilters.Add((swagger, httpReq) =>
+        {
+            swagger.Servers = new List<OpenApiServer> { new() { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}" } };
+        });
+    }); 
     app.UseSwaggerUI();
-    app.ApplyMigrations();
 }
 else
 {
     app.UseHsts();
 }
 
-app.UseCors("AllowSpecificOrigin");
+app.ApplyMigrations();
 
+app.UseRouting();
+app.UseCors("AllowSpecificOrigin");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

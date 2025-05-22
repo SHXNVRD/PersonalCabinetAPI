@@ -11,7 +11,7 @@ public static class ClaimsPrincipalExtensions
         var userId = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
         
         if (userId == null)
-            return Result.Fail(new Unauthorized("Invalid access token"));
+            return Result.Fail(Errors.Unauthorized.WrongCredentials("Invalid access token"));
 
         return userId;
     }

@@ -30,7 +30,7 @@ public class SendPasswordResetLinkCommandHandler : IRequestHandler<SendPasswordR
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail(new NotFound("User with specified email not found"));
+            return Result.Fail(new NotFoundError("User with specified email not found"));
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 

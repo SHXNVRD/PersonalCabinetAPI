@@ -20,11 +20,11 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail(new NotFound("User with specified email not found"));
+            return Result.Fail(new NotFoundError("User with specified email not found"));
 
         var resetResult = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
         if (!resetResult.Succeeded)
-            return Result.Fail(new Conflict(resetResult.Errors.First().Description));
+            return resetResult.ToFluentResult();
 
         return Result.Ok();
     }

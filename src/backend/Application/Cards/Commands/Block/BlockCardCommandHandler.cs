@@ -22,11 +22,11 @@ public class BlockCardCommandHandler : IRequestHandler<BlockCardCommand, Result>
     {
         var user = await _unitOfWork.UserRepository.FindByIdAsync(request.UserId, TrackingType.Tracking);
         if (user == null)
-            return Result.Fail(new NotFound($"User with id {request.UserId} was not found"));
+            return Result.Fail(new NotFoundError($"User with id {request.UserId} was not found"));
 
         var card = user.Cards.SingleOrDefault(c => c.Id == request.CardId);
         if (card == null)
-            return Result.Fail(new NotFound($"Card with id {request.CardId} was not found"));
+            return Result.Fail(new NotFoundError($"Card with id {request.CardId} was not found"));
         
         var blockResult = card.Block();
         if (blockResult.IsFailed)

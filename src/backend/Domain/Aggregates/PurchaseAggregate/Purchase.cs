@@ -32,7 +32,7 @@ public sealed class Purchase : Aggregate<Guid>
     public static Result<Purchase> Create(Guid cardId)
     {
         if (cardId == Guid.Empty)
-            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(cardId)} cannot be empty"));
 
         var checkResult = Check.Create();
         if (checkResult.IsFailed)
@@ -44,9 +44,9 @@ public sealed class Purchase : Aggregate<Guid>
     public Result AddOrUpdate(Product product, Quantity quantity)
     {
         if (product == null)
-            return Result.Fail(new InvalidData($"{nameof(product)} cannot be null"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(product)} cannot be null"));
         if (quantity > product.Quantity)
-            return Result.Fail(new Conflict($"{nameof(quantity)} must be less than available product quantity"));
+            return Result.Fail(Errors.Conflict.LowAvailableQuantity($"{nameof(quantity)} must be less than available product quantity"));
             
         var item = _purchaseItems.SingleOrDefault(pi => pi.Product.Id == product.Id);
         
@@ -72,11 +72,11 @@ public sealed class Purchase : Aggregate<Guid>
     {
         var item = _purchaseItems.FirstOrDefault(pi => pi.Product.Id == product.Id);
         if (item == null)
-            return Result.Fail(new NotFound("Product not found in purchase"));
+            return Result.Fail(Errors.NotFound.EntityNotFound("Product not found in purchase"));
                     
         var newQuantityResult = item.Remove(quantity);
         if (newQuantityResult.IsFailed)
-            return Result.Fail(new Conflict("Cannot remove more quantity than exists"));
+            return Result.Fail(Errors.Conflict.LowAvailableQuantity("Cannot remove more quantity than exists"));
 
         if (item.Quantity.Value == 0)
             _purchaseItems.Remove(item);

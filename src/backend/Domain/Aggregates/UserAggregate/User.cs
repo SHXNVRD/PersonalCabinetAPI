@@ -34,13 +34,13 @@ public class User : IdentityUser<Guid>
     public static Result<User> Create(string email, string phoneNumber, string userName, Name name)
     {
         if (string.IsNullOrWhiteSpace(email))
-            return Result.Fail(new InvalidData($"{nameof(email)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(email)} cannot be empty"));
         if (string.IsNullOrWhiteSpace(phoneNumber))
-            return Result.Fail(new InvalidData($"{nameof(phoneNumber)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(phoneNumber)} cannot be empty"));
         if (string.IsNullOrWhiteSpace(userName))
-            return Result.Fail(new InvalidData($"{nameof(userName)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(userName)} cannot be empty"));
         if (name is null)
-            return Result.Fail(new InvalidData($"{nameof(name)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(name)} cannot be empty"));
 
         return new User(email.Trim(), phoneNumber.Trim(), userName.Trim(), name);
     }
@@ -48,25 +48,25 @@ public class User : IdentityUser<Guid>
     public Result BlockCard(Guid cardId)
     {
         if (cardId == Guid.Empty)
-            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(cardId)} cannot be empty"));
 
         var card = _cards.SingleOrDefault(c => c.Id == cardId);
         if (card == null)
-            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound($"Card with id {cardId} was not found"));
 
         card.Block();
             
         return Result.Ok();
     }
-
+ 
     public Result FreezeCard(Guid cardId)
     {
         if (cardId == Guid.Empty)
-            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(cardId)} cannot be empty"));
 
         var card = _cards.SingleOrDefault(c => c.Id == cardId);
         if (card == null)
-            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound($"Card with id {cardId} was not found"));
 
         card.Freeze();
             
@@ -76,11 +76,11 @@ public class User : IdentityUser<Guid>
     public Result UnFreezeCard(Guid cardId)
     {
         if (cardId == Guid.Empty)
-            return Result.Fail(new InvalidData($"{nameof(cardId)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(cardId)} cannot be empty"));
 
         var card = _cards.SingleOrDefault(c => c.Id == cardId);
         if (card == null)
-            return Result.Fail(new NotFound($"Card with id {cardId} was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound($"Card with id {cardId} was not found"));
 
         card.UnFreeze();
             

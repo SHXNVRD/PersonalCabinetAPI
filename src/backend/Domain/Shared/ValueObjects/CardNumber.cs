@@ -13,14 +13,14 @@ public class CardNumber : ValueObject
     public static FluentResults.Result<CardNumber> Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return Result.Fail(new InvalidData("Card number cannot be empty"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(value)} cannot be empty"));
 
         var number = value.Trim().Replace(" ", "");
 
         if (number.Length != 12)
-            return Result.Fail(new InvalidData("Card number must be 12 digits"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed("Card number must be 12 digits"));
         if (!number.All(char.IsDigit))
-            return Result.Fail(new InvalidData("Card number must be a number"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed("Card number must be a number"));
 
         return new CardNumber(number);
     }

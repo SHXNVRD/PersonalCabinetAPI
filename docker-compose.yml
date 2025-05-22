@@ -5,19 +5,19 @@
     restart: no
     build:
       context: .
-      dockerfile: src/API/Dockerfile
+      dockerfile: src/backend/API/Dockerfile
       args:
         - BUILD_CONFIGURATION=Release
         - DOTNET_VERSION=8.0
     env_file:
       - .env
     volumes:
-      - ${USERPROFILE}\.aspnet\https:/root/.aspnet/https:ro
+      - ${USERPROFILE}\\.aspnet\\https:/certs:ro
     depends_on:
       gas-station.db:
         condition: service_healthy
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=https://+:8082;http://+:8080
       - ASPNETCORE_HTTPS_PORTS=8082
       - ASPNETCORE_HTTP_PORTS=8080

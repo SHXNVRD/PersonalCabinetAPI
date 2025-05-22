@@ -13,23 +13,15 @@ public class Quantity : ValueObject
     public static FluentResults.Result<Quantity> Create(double value)
     {
         if (value < 0)
-            return Result.Fail(new InvalidData("Quantity must be greater than or equals zero"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed("Quantity must be greater than or equals zero"));
 
         return new Quantity(value);
-    }
-
-    public static FluentResults.Result<Quantity> Create(string value)
-    {
-        if (!double.TryParse(value, out var quantity))
-            return Result.Fail(new InvalidData($"Cannot convert {value} to digit"));
-
-        return Create(quantity);
     }
 
     public FluentResults.Result<Quantity> Add(Quantity quantity)
     {
         if (quantity is null)
-            return Result.Fail($"{nameof(quantity)} cannot ne null");
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(quantity)} cannot ne null"));
         
         var newValue = Value + quantity.Value;
         return Create(newValue);
@@ -38,7 +30,7 @@ public class Quantity : ValueObject
     public FluentResults.Result<Quantity> Subtract(Quantity quantity)
     {
         if (quantity is null)
-            return Result.Fail($"{nameof(quantity)} cannot ne null");
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(quantity)} cannot ne null"));
         
         var newValue = Value - quantity.Value;
         return Create(newValue);

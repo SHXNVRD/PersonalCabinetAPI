@@ -23,11 +23,11 @@ public class Name : ValueObject
     public static FluentResults.Result<Name> Create(string firstName, string lastName, string? patronymic = null)
     {
         if (string.IsNullOrWhiteSpace(firstName))
-            return Result.Fail(new InvalidData($"{nameof(firstName)} cannot be empty"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(firstName)} cannot be empty"));
         if (string.IsNullOrWhiteSpace(lastName))
-            return Result.Fail(new InvalidData($"{nameof(lastName)} cannot be empty"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(lastName)} cannot be empty"));
         if (patronymic is not null && string.IsNullOrWhiteSpace(patronymic))
-            return Result.Fail(new InvalidData($"{nameof(patronymic)} cannot be empty while not null"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(patronymic)} cannot be empty"));
 
         return new Name(firstName, lastName, patronymic);
     }

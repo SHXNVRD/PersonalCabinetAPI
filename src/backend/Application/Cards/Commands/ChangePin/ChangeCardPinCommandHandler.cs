@@ -19,7 +19,7 @@ public class ChangeCardPinCommandHandler : IRequestHandler<ChangeCardPinCommand,
     {
         var card = await _unitOfWork.CardRepository.FindByIdAsync(request.CardId, TrackingType.Tracking);
         if (card is null)
-            return Result.Fail(new NotFound($"Card with id {request.CardId} was not found"));
+            return Result.Fail(new NotFoundError($"Card with id {request.CardId} was not found"));
 
         var pinHashResult = CardPinHash.Create(request.Pin);
         if (pinHashResult.IsFailed)

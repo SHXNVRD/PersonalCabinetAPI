@@ -28,7 +28,7 @@ public class CreateEmailConfirmationLinkCommandHandler : IRequestHandler<CreateE
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail(new NotFound("User with specified email not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound("User with specified email not found"));
             
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
    

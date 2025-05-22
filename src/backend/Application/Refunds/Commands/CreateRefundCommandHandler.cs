@@ -26,7 +26,7 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, R
         var card = await _unitOfWork.CardRepository.FindByNumberWithPurchasesAndRefundsAsync(cardNumberResult.Value, TrackingType.Tracking);
 
         if (card == null)
-            return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
+            return Result.Fail(new NotFoundError($"Card with number {request.CardNumber} was not found"));
 
         var quantityResult = Quantity.Create(request.Quantity);
         if (quantityResult.IsFailed)

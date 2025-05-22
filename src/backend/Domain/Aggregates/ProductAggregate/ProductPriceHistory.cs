@@ -18,7 +18,7 @@ public sealed class ProductPriceHistory : Identity<Guid>
     public static Result<ProductPriceHistory> Create(decimal price)
     {
         if (price <= 0)
-            return Result.Fail(new InvalidData($"{nameof(price)} must be greater than zero"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(price)} must be greater than zero"));
 
         return new ProductPriceHistory(price);
     }

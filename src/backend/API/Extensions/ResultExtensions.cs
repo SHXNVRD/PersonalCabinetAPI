@@ -45,11 +45,11 @@ public static class ResultExtensions
     
     private static readonly Dictionary<Type, int> ErrorTypes = new()
     {
-        [typeof(InvalidData)] = StatusCodes.Status400BadRequest,
-        [typeof(Unauthorized)] = StatusCodes.Status401Unauthorized,
-        [typeof(Forbidden)] = StatusCodes.Status403Forbidden,
-        [typeof(NotFound)] = StatusCodes.Status200OK,
-        [typeof(Conflict)] = StatusCodes.Status409Conflict
+        [typeof(InvalidDataError)] = StatusCodes.Status400BadRequest,
+        [typeof(UnauthorizedError)] = StatusCodes.Status401Unauthorized,
+        [typeof(ForbiddenError)] = StatusCodes.Status403Forbidden,
+        [typeof(NotFoundError)] = StatusCodes.Status200OK,
+        [typeof(ConflictError)] = StatusCodes.Status409Conflict
     };
 
     private static int MapToStatusCode(Type errorType)

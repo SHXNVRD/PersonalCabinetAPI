@@ -21,7 +21,7 @@ public sealed class Category : Identity<Guid>
     public static Result<Category> Create(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
-            return Result.Fail(new InvalidData($"{nameof(title)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(title)} cannot be empty"));
 
         return new Category(title.Trim());
     }

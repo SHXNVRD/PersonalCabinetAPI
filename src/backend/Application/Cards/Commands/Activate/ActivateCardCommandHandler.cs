@@ -26,10 +26,10 @@ public class ActivateCardCommandHandler : IRequestHandler<ActivateCardCommand, R
 
             var card = await _unitOfWork.CardRepository.FindByNumberAsync(cardNumberResult.Value, TrackingType.Tracking);
             if (card == null)
-                return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
+                return Result.Fail(new NotFoundError($"Card with number {request.CardNumber} was not found"));
 
             if (!Guid.TryParse(request.UserId, out var userId))
-                return Result.Fail(new InvalidData("Invalid user id"));
+                return Result.Fail(new InvalidDataError("Invalid user id"));
             
             var activateResult = card.Activate(userId);
             if (activateResult.IsFailed)

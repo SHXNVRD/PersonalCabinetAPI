@@ -19,6 +19,7 @@ public class RegistrationCommandHandlerTests
     private readonly string _patronymic = "patronymic";
     private readonly string _role = "user";
     private readonly RegistrationCommand _command = new();
+    private readonly IdentityErrorDescriber _errorDescriber = new();
     
     private readonly Mock<AppUserManager> _appUserManagerMock = 
         new(new Mock<IUserStore<User>>().Object, null, null, null, null, null, null, null, null);
@@ -39,7 +40,8 @@ public class RegistrationCommandHandlerTests
     [Fact]
     public async Task Handle_FailedToCreateUser_ReturnsFail()
     {
-        IdentityError[] identityErrors = [new IdentityError()];
+        var error = _errorDescriber.InvalidEmail(_command.Email);
+        var failedIdentityResult = IdentityResult.Failed(error);
         
         _appUserManagerMock
             .Setup(x => x.CreateAsync(
@@ -50,7 +52,7 @@ public class RegistrationCommandHandlerTests
                              u.Name.LastName == _command.LastName &&
                              u.Name.Patronymic == _command.Patronymic),
                     _command.Password))
-            .ReturnsAsync(IdentityResult.Failed(identityErrors));
+            .ReturnsAsync(failedIdentityResult);
 
         _unitOfWorkMock
             .Setup(x => x.BeginTransactionAsync(It.IsAny<bool>()))
@@ -76,8 +78,6 @@ public class RegistrationCommandHandlerTests
     [Fact]
     public async Task Handle_FailedToAddUserToRole_ReturnsFail()
     {
-        IdentityError[] identityErrors = [new IdentityError()];
-        
         _appUserManagerMock
             .Setup(x => x.CreateAsync(
                 It.Is<User>(
@@ -89,6 +89,9 @@ public class RegistrationCommandHandlerTests
                 _command.Password))
             .ReturnsAsync(IdentityResult.Success);
 
+        var error = _errorDescriber.UserAlreadyInRole(_role);
+        var failedIdentityResult = IdentityResult.Failed(error);
+        
         _appUserManagerMock
             .Setup(x => x.AddToRoleAsync(
                 It.Is<User>(
@@ -98,7 +101,7 @@ public class RegistrationCommandHandlerTests
                          u.Name.LastName == _command.LastName &&
                          u.Name.Patronymic == _command.Patronymic),
                 _role))
-            .ReturnsAsync(IdentityResult.Failed(identityErrors));
+            .ReturnsAsync(failedIdentityResult);
         
         _unitOfWorkMock
             .Setup(x => x.BeginTransactionAsync(It.IsAny<bool>()))

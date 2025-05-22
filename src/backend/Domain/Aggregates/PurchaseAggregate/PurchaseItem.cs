@@ -30,12 +30,12 @@ public sealed class PurchaseItem : Identity<Guid>
     public static Result<PurchaseItem> Create(Product product, Quantity quantity)
     {
         if (product == null)
-            return Result.Fail(new InvalidData($"{nameof(product)} cannot be null"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(product)} cannot be null"));
 
         var removeResult = product.Remove(quantity);
         if (removeResult.IsFailed)
             return Result.Fail(
-                new Conflict($"{nameof(quantity)} must be less than the available product quantity")
+                Errors.Conflict.LowAvailableQuantity($"{nameof(quantity)} must be less than the available product quantity")
                     .CausedBy(removeResult.Errors));
         
         return new PurchaseItem(product, quantity, product.Price);
@@ -50,7 +50,7 @@ public sealed class PurchaseItem : Identity<Guid>
         var removeProductQuantityResult = Product.Remove(quantity);
         if (removeProductQuantityResult.IsFailed)
             return Result.Fail(
-                new Conflict($"{nameof(quantity)} must be less than the available product quantity")
+                Errors.Conflict.LowAvailableQuantity($"{nameof(quantity)} must be less than the available product quantity")
                     .CausedBy(removeProductQuantityResult.Errors));
                 
         Quantity = addResult.Value;

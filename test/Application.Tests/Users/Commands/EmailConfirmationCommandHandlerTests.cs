@@ -14,7 +14,8 @@ public class EmailConfirmationCommandHandlerTests
     private readonly string _userName = "Test";
     private readonly Name _name = Name.Create("firstname", "lastname", "patronymic").Value;
     private readonly string _token = "token";
-    private readonly EmailConfirmationCommand _command = new ();
+    private readonly EmailConfirmationCommand _command = new();
+    private readonly IdentityErrorDescriber _errorDescriber = new();
     
     private readonly Mock<AppUserManager> _appUserManagerMock = 
         new(new Mock<IUserStore<User>>().Object, null, null, null, null, null, null, null, null);
@@ -43,11 +44,7 @@ public class EmailConfirmationCommandHandlerTests
     public async Task Handle_FailedToConfirmEmail_ReturnsFail()
     {
         var user = User.Create(_email, _phoneNumber, _userName, _name).Value;
-        var error = new IdentityError
-        {
-            Code = "Code",
-            Description = "Description"
-        };
+        var error = _errorDescriber.DefaultError();
         var identityResult = IdentityResult.Failed(error);
             
         _appUserManagerMock

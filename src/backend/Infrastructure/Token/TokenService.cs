@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Application.Extensions;
 using Application.Interfaces.Token;
 using Domain.Aggregates.UserAggregate;
 using Domain.Shared.Errors;
@@ -90,11 +91,11 @@ public class TokenService : ITokenService
     {
         var revokeResult = await _userManager.RemoveAuthenticationTokenAsync(user, TokenProvider.RefreshProvider, RefreshTokenPurpose);
         if (!revokeResult.Succeeded)
-            return Result.Fail(new Conflict(revokeResult.Errors.First().Description));
+            return revokeResult.ToFluentResult();
 
         var updateResult = await _userManager.UpdateSecurityStampAsync(user);
         if (!updateResult.Succeeded)
-            return Result.Fail(new Conflict(updateResult.Errors.First().Description));
+            return updateResult.ToFluentResult();
 
         return Result.Ok();
     }

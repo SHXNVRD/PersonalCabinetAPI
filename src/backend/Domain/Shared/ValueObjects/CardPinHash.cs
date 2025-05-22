@@ -15,14 +15,14 @@ public class CardPinHash : ValueObject
     public static FluentResults.Result<CardPinHash> Create(string pin)
     {
         if (string.IsNullOrWhiteSpace(pin)) 
-            return Result.Fail(new InvalidData($"{nameof(pin)} cannot be empty"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed($"{nameof(pin)} cannot be empty"));
                         
         var trimmedPin = pin.Trim().Replace(" ", "");
         
         if (trimmedPin.Length != 4)
-            return Result.Fail(new InvalidData("Card PIN must represent a four-digit number"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed("Card pin must be 4 digits"));
         if (!trimmedPin.All(char.IsDigit))
-            return Result.Fail(new InvalidData("Card PIN must be a number"));
+            return Result.Fail(Errors.Errors.InvalidData.ValidationFailed("Card pin must be a number"));
         
         var hash = Hasher.ComputeSha256Hash(trimmedPin);
 

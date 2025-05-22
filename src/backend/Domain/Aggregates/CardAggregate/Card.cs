@@ -43,11 +43,11 @@ public sealed class Card : Aggregate<Guid>
     public static Result<Card> Create(CardNumber number, CardPinHash pin, decimal balance)
     {
         if (number is null)
-            return Result.Fail(new InvalidData($"{nameof(number)} cannot be null"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"Card {nameof(number)} cannot be null"));
         if (pin is null)
-            return Result.Fail(new InvalidData($"{nameof(pin)} cannot be null"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"Card {nameof(pin)} cannot be empty"));
         if (balance < 0)
-            return Result.Fail(new InvalidData($"{nameof(balance)} must be greater or equals zero"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"Card {nameof(balance)} must be greater or equals zero"));
             
         return new Card(number, pin, balance);
     }
@@ -55,9 +55,9 @@ public sealed class Card : Aggregate<Guid>
     public Result Activate(Guid userId)
     {
         if (userId == Guid.Empty)
-            return Result.Fail(new InvalidData($"{nameof(userId)} cannot be empty"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(userId)} cannot be empty"));
         if (!Status.CanChangeTo(Status.Activated) || Status == Status.Frozen)
-            return Result.Fail(new Conflict("Activation failed. Status cannot be settled"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status));
 
         UserId = userId;
         Status = Status.Activated;
@@ -69,7 +69,7 @@ public sealed class Card : Aggregate<Guid>
     public Result Freeze()
     {
         if (!Status.CanChangeTo(Status.Frozen))
-            return Result.Fail(new Conflict("Freeze failed. Status cannot be settled"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status));
 
         Status = Status.Frozen;
         
@@ -79,7 +79,7 @@ public sealed class Card : Aggregate<Guid>
     public Result UnFreeze()
     {
         if (!Status.CanChangeTo(Status.Activated) || Status == Status.Unused)
-            return Result.Fail(new Conflict("Unfreeze failed. Status cannot be settled"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status));
 
         Status = Status.Activated;
 
@@ -89,7 +89,7 @@ public sealed class Card : Aggregate<Guid>
     public Result Block()
     {
         if (!Status.CanChangeTo(Status.Blocked))
-            return Result.Fail(new Conflict("Blocking failed. Status cannot be settled"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status));
 
         Status = Status.Blocked;
         AddDomainEvent(new CardBlockedDomainEvent(UserId!.Value, Number.Value));
@@ -107,7 +107,7 @@ public sealed class Card : Aggregate<Guid>
         
         AddDomainEvent(new CardPinVerificationFailedDomainEvent(Id));
         
-        return Result.Fail(new Conflict("Wrong card pin"));
+        return Result.Fail(Errors.Conflict.WrongCardPin());
     }
     
     public void IncrementVerificationAttempt()
@@ -131,15 +131,15 @@ public sealed class Card : Aggregate<Guid>
     private Result CanBuy(Purchase purchase)
     {
         if (purchase is null)
-            return Result.Fail(new InvalidData($"{nameof(purchase)} cannot be null"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"{nameof(purchase)} cannot be empty"));
         if (Status != Status.Activated)
-            return Result.Fail(new Conflict("Card must be activated to make purchases"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status, "Card must be activated to make purchases"));
         if (purchase.PurchaseItems.Count == 0)
-            return Result.Fail(new Conflict("Purchase must contain at least one item"));
+            return Result.Fail(Errors.InvalidData.ValidationFailed("Purchase must contain at least one item"));
         if (Balance < purchase.Total)
-            return Result.Fail(new LowCardBalance("Insufficient funds"));
+            return Result.Fail(Errors.Conflict.InsufficientCardFunds(""));
         if (_purchases.Any(p => p.Id == purchase.Id))
-            return Result.Fail(new Conflict("Duplicated purchase"));
+            return Result.Fail(Errors.Conflict.Duplicate("Duplicated purchase"));
 
         return Result.Ok();
     }
@@ -148,10 +148,10 @@ public sealed class Card : Aggregate<Guid>
     {
         var purchase = _purchases.MaxBy(p => p.CreatedAt);
         if (purchase == null)
-            return Result.Fail(new Conflict("No purchases for refund"));
+            return Result.Fail(Errors.Conflict.CannotRefundPurchase());
         
         if (!CanRefund(purchase, productId, productPrice, productQuantity))
-            return Result.Fail(new Conflict("Cannot refund purchase"));
+            return Result.Fail(Errors.Conflict.CannotRefundPurchase());
 
         var refundResult = Refund.Create(Id, purchase);
         if (refundResult.IsFailed)
@@ -179,14 +179,14 @@ public sealed class Card : Aggregate<Guid>
         return true;
     }
 
-    public Result ChangePin(CardPinHash pinHash)
+    public Result ChangePin(CardPinHash pin)
     {
-        if (pinHash is null)
-            return Result.Fail(new InvalidData($"{nameof(pinHash)} cannot be null"));
+        if (pin is null)
+            return Result.Fail(Errors.InvalidData.ValidationFailed($"Card {nameof(pin)} cannot be empty"));
         if (Status != Status.Activated)
-            return Result.Fail(new Conflict("Card must be activated to change pin"));
+            return Result.Fail(Errors.Conflict.InvalidCurrentCardStatus(Status, "Card must be activated to change pin"));
 
-        PinHash = pinHash;
+        PinHash = pin;
 
         return Result.Ok();
     }

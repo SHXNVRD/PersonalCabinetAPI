@@ -20,11 +20,11 @@ public class EmailConfirmationCommandHandler : IRequestHandler<EmailConfirmation
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return Result.Fail(new NotFound("User with the specified email address was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound("User with the specified email address was not found"));
 
         var result = await _userManager.ConfirmEmailAsync(user, request.Token);
         if (!result.Succeeded)
-            return Result.Fail(new Conflict(result.Errors.First().Description));
+            return result.ToFluentResult();
 
         return Result.Ok();
     }

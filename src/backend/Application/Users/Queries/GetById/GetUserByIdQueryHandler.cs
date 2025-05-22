@@ -23,7 +23,7 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
         var getUserCommand = new CommandDefinition(_getUserSql, new { request.Id }, cancellationToken: cancellationToken);
         var user = await connection.QuerySingleOrDefaultAsync<DapperUserModel>(getUserCommand);
         if (user is null)
-            return Result.Fail(new NotFound($"User with id {request.Id} was not found"));
+            return Result.Fail(new NotFoundError($"User with id {request.Id} was not found"));
 
         var getUserCardsCommand = new CommandDefinition(
             _getUserCardsSql, 

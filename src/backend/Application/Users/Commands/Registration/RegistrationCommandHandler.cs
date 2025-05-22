@@ -47,13 +47,13 @@ public class RegistrationCommandHandler : IRequestHandler<RegistrationCommand, R
         {
             var userResult = await _userManager.CreateAsync(user, request.Password);
             if (!userResult.Succeeded)
-                return Result.Fail(new Conflict(userResult.Errors.First().Description));
+                return userResult.ToFluentResult();
                 
             var roleResult = await _userManager.AddToRoleAsync(user, "user");
             if (!roleResult.Succeeded)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Result.Fail(new Conflict(roleResult.Errors.First().Description));
+                return roleResult.ToFluentResult();
             }
         }
         catch (Exception e)

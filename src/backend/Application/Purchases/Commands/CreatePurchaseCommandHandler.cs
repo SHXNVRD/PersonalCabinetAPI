@@ -25,7 +25,7 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
         var card = await _unitOfWork.CardRepository.FindByNumberAsync(cardNumberResult.Value, TrackingType.Tracking);
 
         if (card == null)
-            return Result.Fail(new NotFound($"Card with number {request.CardNumber} was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound($"Card with number {request.CardNumber} was not found"));
 
         var cardPinHashResult = CardPinHash.Create(request.CardPin);
         if (cardPinHashResult.IsFailed)
@@ -38,9 +38,9 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
         var product = await _unitOfWork.ProductRepository.FindById(request.ProductId, TrackingType.Tracking);
 
         if (product == null)
-            return Result.Fail(new NotFound($"Product with id {request.ProductId} was not found"));
+            return Result.Fail(Errors.NotFound.EntityNotFound($"Product with id {request.ProductId} was not found"));
         if (product.Price != request.ProductPrice)
-            return Result.Fail(new Conflict("Product price discrepancy"));
+            return Result.Fail(Errors.Conflict.Mismatch("Product price discrepancy"));
 
         var purchaseResult = Purchase.Create(card.Id);
         if (purchaseResult.IsFailed)
@@ -51,9 +51,9 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
             return Result.Fail(quantityResult.Errors);
         
         var purchase = purchaseResult.Value;
-        var addResult = purchase.AddOrUpdate(product, quantityResult.Value);
-        if (addResult.IsFailed)
-            return Result.Fail(quantityResult.Errors);
+        var addOrUpdateResult = purchase.AddOrUpdate(product, quantityResult.Value);
+        if (addOrUpdateResult.IsFailed)
+            return Result.Fail(addOrUpdateResult.Errors);
 
         var buyResult = card.Buy(purchase);
         if (buyResult.IsFailed)
@@ -62,6 +62,7 @@ public class CreatePurchaseCommandHandler : IRequestHandler<CreatePurchaseComman
         await _unitOfWork.PurchaseRepository.AddAsync(purchase);
         var changesSaved = await _unitOfWork.SaveChangesAsync();
 
+        //TODO Подумать над обработкой ошибок БД
         if (!changesSaved)
             return Result.Fail("Failed to save changes");
 

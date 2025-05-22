@@ -23,7 +23,7 @@ public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTok
     {
         var user = await _userManager.FindByIdAsync(request.UserId.ToString());
         if (user == null)
-            return Result.Fail(new NotFound("User with specified id not found"));
+            return Result.Fail(new NotFoundError("User with specified id not found"));
 
         var revokeResult = await _tokenService.RevokeRefreshTokenAsync(user);
         if (revokeResult.IsFailed)

@@ -1,3 +1,6 @@
+using System.Xml.XPath;
+using Domain.Shared.Errors;
+using Domain.Shared.Errors.Base;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
@@ -7,33 +10,37 @@ public static class IdentityResultExtensions
 {
     public static Result<T> ToFluentResult<T>(this IdentityResult result)
     {
-        if (!result.Errors.Any())
-            throw new InvalidCastException("Result do not have errors");
-
-        var fluentResult = new Result<T>();
-
         if (result.Succeeded)
-            return fluentResult;
-            
-        var errors = result.Errors.Select(e => new Error(e.Description));
-        fluentResult.WithErrors(errors);
+            return new Result<T>();
 
-        return fluentResult;
+        return ProcessFailedResult<T>(result);
     }
-        
+
+    private static Result<T> ProcessFailedResult<T>(IdentityResult result)
+    {
+        if (result.Succeeded)
+            throw new InvalidCastException($"{nameof(result)} must be failed");
+        if (!result.Errors.Any())
+            return Result.Fail<T>("Undefined error");
+
+        return Result.Fail<T>(result.Errors.Select(e => e.ToDomainError()));
+    }
+    
     public static Result ToFluentResult(this IdentityResult result)
     {
-        if (!result.Errors.Any())
-            throw new InvalidCastException("Result do not have errors");
-
-        var fluentResult = new Result();
-
         if (result.Succeeded)
-            return fluentResult;
-            
-        var errors = result.Errors.Select(e => new Error(e.Description));
-        fluentResult.WithErrors(errors);
+            return new Result();
 
-        return fluentResult;
+        return ProcessFailedResult(result);
+    }
+
+    private static Result ProcessFailedResult(IdentityResult result)
+    {
+        if (result.Succeeded)
+            throw new InvalidCastException($"{nameof(result)} must be failed");
+        if (!result.Errors.Any())
+            return Result.Fail("Undefined error");
+
+        return Result.Fail(result.Errors.Select(e => e.ToDomainError()));
     }
 }

@@ -28,9 +28,9 @@ public class CreatePurchaseTcpRequestHandler : ITcpRequestHandler<CreatePurchase
         var requestBody = request.R.Row;
 
         if (!double.TryParse(requestBody.Quantity, CultureInfo.InvariantCulture, out var quantity))
-            return Result.Fail(new InvalidData($"Invalid quantity of product: {requestBody.Quantity}"));
+            return Result.Fail(new InvalidDataError($"Invalid quantity of product: {requestBody.Quantity}"));
         if (!decimal.TryParse(requestBody.ProductPrice, CultureInfo.InvariantCulture, out var price))
-            return Result.Fail(new InvalidData($"Invalid price of product: {requestBody.ProductPrice}"));
+            return Result.Fail(new InvalidDataError($"Invalid price of product: {requestBody.ProductPrice}"));
         
         CreatePurchaseCommand command = new(
             requestBody.CardNumber, 

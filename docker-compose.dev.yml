@@ -1,0 +1,46 @@
+﻿services:
+  perscab.api:
+    container_name: perscab.api
+    restart: no
+    build:
+      context: .
+      dockerfile: src/API/Dockerfile
+      args:
+        - BUILD_CONFIGURATION=Release
+    image: ${DOCKER_REGISTRY}/perscabapi:dev_1
+    env_file:
+      - .env
+    volumes:
+      - C:\Users\Rodion\.aspnet\https:/home/appuser/.aspnet/https:ro
+    depends_on:
+      perscab.db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8082;http://+:8080
+      - ASPNETCORE_HTTPS_PORT=8082
+      - ASPNETCORE_HTTP_PORT=8080
+    ports:
+      - "8082:8082"
+      - "8080:8080"
+      - "8081:8081"
+  
+  perscab.db:
+    image: postgres:17.1
+    container_name: perscab.db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  

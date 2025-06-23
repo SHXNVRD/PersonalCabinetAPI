@@ -1,0 +1,45 @@
+﻿using Application.Interfaces;
+using Domain.Aggregates.UserAggregate;
+using Microsoft.AspNetCore.Identity;
+
+namespace Infrastructure.Data.Identity.Validators;
+
+public class UserPhoneNumberValidator<TUser> : IUserValidator<TUser>
+    where TUser : User
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public UserPhoneNumberValidator(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
+    {
+        List<IdentityError> errors = [];
+
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber))
+        {
+            errors.Add(new IdentityError
+            {
+                Code = "InvalidPhone",
+                Description = "Invalid phone number."
+            });
+
+            return IdentityResult.Failed(errors.ToArray());
+        }
+
+        var owner = await _unitOfWork.UserRepository.FindByPhoneNumberAsync(user.PhoneNumber);
+
+        if (owner != null && owner.Id != user.Id)
+            errors.Add(new IdentityError
+            {
+                Code = "DuplicatePhone",
+                Description = $"Phone number {user.PhoneNumber} is already taken."
+            });
+        
+        return errors.Count > 0
+            ? IdentityResult.Failed(errors.ToArray())
+            : IdentityResult.Success;
+    }
+}

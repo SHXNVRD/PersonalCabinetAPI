@@ -1,0 +1,337 @@
+﻿@page "/users"
+@using Web.Services.Users
+@using System.Collections.ObjectModel
+@using System.Globalization
+@using System.Linq.Expressions
+
+<PageTitle>Пользователи - Dotneft Admin</PageTitle>
+
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12"
+             md="12">
+        <MudDataGrid Items="_users"
+                     @ref="_dataGrid"
+                     Dense="true"
+                     T="User"
+                     SortMode="SortMode.Multiple"
+                     Filterable="true"
+                     FilterMode="DataGridFilterMode.ColumnFilterMenu"
+                     Hover="true"
+                     QuickFilter="@QuickFilter"
+                     FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive"
+                     EditMode="DataGridEditMode.Form"
+                     DragDropColumnReordering="true"
+                     ApplyDropClassesOnDragStarted="true"
+                     ColumnsPanelReordering="true"
+                     Hideable="true"
+                     Class="py-4">
+
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Пользователи</MudText>
+                <MudSpacer/>
+                <MudTextField @bind-Value="_searchString"
+                              T="string"
+                              Placeholder="Поиск"
+                              Adornment="Adornment.Start"
+                              Immediate="true"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"/>
+            </ToolBarContent>
+
+            <Columns>
+                <PropertyColumn Property="u => u.Id" Sortable="false" Filterable="false" Title="Ид" Editable="false"/>
+                <PropertyColumn Property="u => u.UserName" Title="Никнейм"/>
+                <PropertyColumn Property="u => u.Name" Title="ФИО"/>
+                <TemplateColumn T="User" Title="Дата рождения">
+                    <CellTemplate>
+                        @(context.Item.DayOfBirth?.ToString() ?? "–")
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="u => u.Email" Title="Электронная почта"/>
+                <TemplateColumn Title="Электронная почта подтверждена" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.EmailConfirmed"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="u => u.PhoneNumber" Title="Номер телефона"/>
+                <TemplateColumn Title="Номер телефона подтверждён" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.PhoneNumberConfirmed"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Двухфакторная аутениификация" Editable="false">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.TwoFactorEnabled"/>
+                    </CellTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="u => u.RegisteredAt" Title="Дата регистрации" Editable="false"/>
+                <PropertyColumn Property="u => u.AccessFailedCount" Title="Неудачных попыток входа" Editable="false"/>
+                <TemplateColumn Title="Статус" T="User">
+                    <CellTemplate>
+                        <BooleanDisplay Value="context.Item.IsBlocked"
+                                        TrueMessage="Заблокирован"
+                                        FalseMessage="Активен"
+                                        TrueColor="Color.Error"
+                                        FalseColor="Color.Success"/>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+
+            <PagerContent>
+                <MudStack Row
+                          AlignItems="AlignItems.End"
+                          Justify="Justify.FlexEnd">
+                    <MudSelect T="int"
+                               @bind-Value="_pageSize"
+                               FitContent="true"
+                               Class="pt-4"
+                               Label="Элементов на страницу">
+                        <MudSelectItem Value="15"/>
+                        <MudSelectItem Value="20"/>
+                        <MudSelectItem Value="25"/>
+                        <MudSelectItem Value="50"/>
+                        <MudSelectItem Value="100"/>
+                    </MudSelect>
+                    <MudPagination ShowFirstButton="true" 
+                                   ShowLastButton="true" 
+                                   @bind-Selected="_page"
+                                   SelectedChanged="PageChanged"
+                                   Count="@(_dataGrid.FilteredItems.Count() / _pageSize)"/>
+                </MudStack>
+            </PagerContent>
+        </MudDataGrid>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    [Inject] public UserService UserService { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    private MudDataGrid<User> _dataGrid;
+    private int _pageSize = 15;
+    private int _page = 1;
+
+    private ObservableCollection<User> _users;
+    private string _searchString;
+    
+    private Func<User, bool> QuickFilter => u =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (u.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.DayOfBirth is not null && u.DayOfBirth.ToString()!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.Id.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.RegisteredAt.ToString(CultureInfo.CurrentCulture).Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (u.AccessFailedCount.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+            
+        return false;
+    };
+
+    private async Task<GridData<User>> ReloadData(GridState<User> state)
+    {
+        var data = _users
+            .Where(Search)
+            .AsEnumerable();
+        
+        if (state.FilterDefinitions.Any())
+        {
+            foreach (var filterDefinition in state.FilterDefinitions)
+            {
+                //data = ApplyFilter(filteredData, filterDefinition);
+            }
+        }
+
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition is not null)
+        {
+            switch (sortDefinition.SortBy)
+            {
+                case nameof(User.UserName):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                case nameof(User.Name):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+                case nameof(User.DayOfBirth):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                case nameof(User.Email):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+                case nameof(User.EmailConfirmed):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                case nameof(User.PhoneNumber):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+                case nameof(User.PhoneNumberConfirmed):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                case nameof(User.TwoFactorEnabled):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+                case nameof(User.RegisteredAt):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                case nameof(User.AccessFailedCount):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+                case nameof(User.IsBlocked):
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.UserName);
+                    break;
+                default:
+                    data = data.OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        u => u.Name);
+                    break;
+            }
+        }
+
+        var pagedData = data
+            .Skip(_pageSize - 1 * _pageSize)
+            .Take(_pageSize);
+        
+        return new GridData<User>
+        {
+            
+        };
+    }
+    
+    private IQueryable<User> ApplyFilter(IQueryable<User> query, FilterDefinition<User> filterDefinition)
+    {
+        var propertyName = filterDefinition.Column.PropertyName;
+        var value = filterDefinition.Value;
+        var operatorType = filterDefinition.Operator;
+
+        return operatorType switch
+        {
+            "contains" => query.Where(u => GetPropertyValue(u, propertyName).ToString().Contains(value.ToString(), StringComparison.OrdinalIgnoreCase)),
+            
+            "equals" => query.Where(u => 
+                GetPropertyValue(u, propertyName).ToString().Equals(value.ToString(), StringComparison.OrdinalIgnoreCase)),
+            
+            "starts with" => query.Where(u => 
+                GetPropertyValue(u, propertyName).ToString().StartsWith(value.ToString(), StringComparison.OrdinalIgnoreCase)),
+            
+            "ends with" => query.Where(u => 
+                GetPropertyValue(u, propertyName).ToString().EndsWith(value.ToString(), StringComparison.OrdinalIgnoreCase)),
+            
+            "not equals" => query.Where(u => 
+                !GetPropertyValue(u, propertyName)
+                    .ToString()
+                    .Equals(value.ToString(), StringComparison.OrdinalIgnoreCase)),
+            
+            _ => query
+        };
+    }
+
+    private Expression<Func<User, object>> GetPropertyExpression(string propertyName)
+    {
+        return propertyName switch
+        {
+            nameof(User.UserName) => u => u.UserName,
+            nameof(User.Name) => u => u.Name,
+            nameof(User.DayOfBirth) => u => u.DayOfBirth,
+            nameof(User.Email) => u => u.Email,
+            nameof(User.PhoneNumber) => u => u.PhoneNumber,
+            nameof(User.RegisteredAt) => u => u.RegisteredAt,
+            nameof(User.AccessFailedCount) => u => u.AccessFailedCount,
+            _ => u => u.Id
+        };
+    }
+    
+    private object? GetPropertyValue(User user, string propertyName)
+    {
+        return propertyName switch
+        {
+            nameof(User.Id) => user.Id,
+            nameof(User.UserName) => user.UserName,
+            nameof(User.Name) => user.Name,
+            nameof(User.DayOfBirth) => user.DayOfBirth,
+            nameof(User.Email) => user.Email,
+            nameof(User.EmailConfirmed) => user.EmailConfirmed,
+            nameof(User.PhoneNumber) => user.PhoneNumber,
+            nameof(User.PhoneNumberConfirmed) => user.PhoneNumberConfirmed,
+            nameof(User.TwoFactorEnabled) => user.TwoFactorEnabled,
+            nameof(User.RegisteredAt) => user.RegisteredAt,
+            nameof(User.AccessFailedCount) => user.AccessFailedCount,
+            nameof(User.IsBlocked) => user.IsBlocked,
+            _ => throw new ArgumentException($"Unknown property: {propertyName}")
+        };
+    }
+
+    private bool Search(User user)
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (user.UserName.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.DayOfBirth is not null && user.DayOfBirth.ToString()!.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.Email.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.PhoneNumber.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.Id.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.RegisteredAt.ToString(CultureInfo.CurrentCulture).Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (user.AccessFailedCount.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+            
+        return false;
+    }
+
+    private void PageChanged()
+    {
+        
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var usersResult = await UserService.GetAllAsync();
+        if (usersResult.IsFailed)
+            Snackbar.Add(usersResult.Errors.First().Message);
+
+        _users = [..usersResult.Value];
+        await _dataGrid.ReloadServerData();
+    }
+}

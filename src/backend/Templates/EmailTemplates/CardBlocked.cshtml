@@ -1,0 +1,17 @@
+﻿@model Templates.EmailTemplates.CardBlockedViewModel;
+@{ Layout = "_Layout.cshtml";}
+<div>
+    <h2 style="font-size: 24px; font-weight: 700;">Блокировка топливной карты</h2>
+    <br>
+    <p>
+        Здравствуйте @Model.UserName, ваша карта с номером @Model.CardNumber заблокирована. 
+        Если у Вас есть вопросы, свяжитесь с технической поддержкой, реквизиты указаны ниже.
+    </p>
+    <br>
+    <p>
+        С уважением,
+    </p>
+    <p>
+        Company name Team.
+    </p>
+</div>
